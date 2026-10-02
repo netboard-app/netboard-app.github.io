@@ -3,104 +3,100 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="{{AKZENT}}">
+<meta name="theme-color" content="#0B5FA5">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-title" content="{{NAME}}">
+<meta name="apple-mobile-web-app-title" content="Logenrunde">
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="apple-touch-icon" href="icon-192.png">
-<title>{{NAME}}</title>
+<title>Logenrunde</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=Public+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
 <style>
-/* Farben als Variablen. Der Dunkelmodus überschreibt nur diese Werte. */
 :root{
   --paper:#F6F8FB; --surface:#FFFFFF; --surface-2:#F1F6FC;
   --line:#D5E2F1; --line-soft:#E8EFF8;
   --ink:#0E1B2A; --ink-2:#42566C; --ink-3:#7789A0;
-  --accent:{{AKZENT}}; --accent-soft:{{AKZENT_WEICH}}; --accent-ink:{{AKZENT_TIEF}};
+  --accent:#0B5FA5; --accent-soft:#E1EDF9; --accent-ink:#084B83;
   --ok:#0F7355; --ok-soft:#DFF1EA;
   --bad:#B3261E; --bad-soft:#FAE8E6;
-  --warn:#9C5A00; --warn-soft:#FAEFDF;
-  --shadow:0 1px 2px rgba(14,27,42,.05),0 10px 26px -14px rgba(14,27,42,.22);
+  --warn:#D25A00; --warn-soft:#FBEADD;
+  --shadow:0 1px 2px rgba(14,27,42,.05),0 10px 26px -14px rgba(11,95,165,.28);
   --radius:10px;
   --font-display:"Archivo","Helvetica Neue",Arial,sans-serif;
   --font-body:"Public Sans","Helvetica Neue",Arial,sans-serif;
   --font-mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
 }
-/* Dunkel in echtem Schwarz, weiße Schrift. So will Eljakim es in seinen Apps. */
 :root[data-theme="dunkel"]{
   --paper:#000000; --surface:#0A0A0B; --surface-2:#141417;
   --line:#1E1E22; --line-soft:#151518;
   --ink:#FFFFFF; --ink-2:#C8C8CE; --ink-3:#8B8B93;
-  --accent:{{AKZENT_DUNKEL}}; --accent-soft:{{AKZENT_DUNKEL_WEICH}}; --accent-ink:{{AKZENT_DUNKEL_TIEF}};
+  --accent:#2F5FA8; --accent-soft:#111B2C; --accent-ink:#8CB4E8;
   --ok:#4FAE86; --ok-soft:#0E241C;
   --bad:#D97B72; --bad-soft:#2A1817;
-  --warn:#C69455; --warn-soft:#241D12;
+  --warn:#E08A4A; --warn-soft:#2A1A0E;
   --shadow:0 1px 2px rgba(0,0,0,.6),0 10px 26px -14px rgba(0,0,0,.9);
 }
 *{box-sizing:border-box}
-/* clip statt hidden, sonst kleben Kopfzeile und Leisten nicht mehr */
 html,body{max-width:100%;overflow-x:hidden;overflow-x:clip;overscroll-behavior-x:none}
 body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--font-body);font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased}
 h1,h2,h3{font-family:var(--font-display);margin:0;letter-spacing:-.01em;text-wrap:balance}
 button,input,select,textarea{font:inherit;color:inherit}
 button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+a{color:var(--accent-ink)}
 .mono{font-family:var(--font-mono);font-variant-numeric:tabular-nums}
 [hidden]{display:none!important}
 
-/* Kopfzeile */
 header.kopf{position:sticky;top:0;z-index:30;background:var(--surface);border-bottom:1px solid var(--line)}
 .kopf-in{max-width:940px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:10px}
 .marke{border:0;background:transparent;padding:0;cursor:pointer;font-family:var(--font-display);font-weight:800;font-size:19px;letter-spacing:-.03em;color:var(--accent)}
 .spacer{flex:1}
 .rund{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:4px 10px 4px 4px;cursor:pointer;min-height:40px}
-.avatar{width:30px;height:30px;border-radius:999px;display:grid;place-items:center;font-family:var(--font-display);font-weight:700;font-size:12px;background:var(--accent-soft);color:var(--accent-ink)}
+.avatar{width:30px;height:30px;border-radius:999px;display:grid;place-items:center;font-family:var(--font-display);font-weight:700;font-size:12px;background:var(--accent-soft);color:var(--accent-ink);flex:0 0 auto}
 .ico{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:0 0 auto}
 
-/* Inhalt */
 main{max-width:940px;margin:0 auto;padding:16px 16px 96px}
 .hallo h2{font-size:24px}
 .hallo p{margin:4px 0 16px;color:var(--ink-2)}
-.sec-label{font-size:11px;text-transform:uppercase;letter-spacing:.09em;color:var(--ink-3);font-weight:600;margin:18px 0 8px}
+.sec-label{font-size:11px;text-transform:uppercase;letter-spacing:.09em;color:var(--ink-3);font-weight:600;margin:20px 0 8px}
 .liste{display:flex;flex-direction:column;gap:8px}
 .karte{display:flex;align-items:center;gap:12px;width:100%;text-align:left;cursor:pointer;
   background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:12px 14px;min-height:56px}
 .karte:hover{border-color:var(--accent)}
 .karte b{display:block;font-size:15px}
 .karte small{display:block;color:var(--ink-3);font-size:12.5px}
-.karte .rechts{margin-left:auto;font-family:var(--font-mono);font-size:13px;color:var(--ink-2);font-variant-numeric:tabular-nums}
+.karte .rechts{margin-left:auto;font-family:var(--font-mono);font-size:13px;color:var(--ink-2);font-variant-numeric:tabular-nums;text-align:right}
 .leer{border:1px dashed var(--line);border-radius:var(--radius);padding:18px;color:var(--ink-3);text-align:center}
+.box{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:14px 16px;box-shadow:var(--shadow)}
 
-/* Knöpfe */
 .btn{border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:10px 14px;border-radius:8px;font-weight:600;font-size:14px;cursor:pointer;min-height:44px}
 .btn:hover{border-color:var(--accent)}
 .btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
 .btn.ghost{border-color:transparent;background:transparent;color:var(--ink-2)}
 .btn.danger{color:var(--bad);border-color:var(--bad)}
-.modus{display:inline-flex;background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:3px;gap:2px}
-.modus button{border:0;background:transparent;border-radius:8px;padding:9px 16px;font-size:13.5px;font-weight:600;color:var(--ink-3);cursor:pointer}
+.btn.klein{min-height:40px;padding:8px 12px;font-size:13.5px}
+.knopfreihe{display:flex;gap:8px;flex-wrap:wrap}
+.modus{display:inline-flex;background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:3px;gap:2px;max-width:100%;overflow-x:auto}
+.modus button{border:0;background:transparent;border-radius:8px;padding:9px 14px;font-size:13.5px;font-weight:600;color:var(--ink-3);cursor:pointer;white-space:nowrap;min-height:40px}
 .modus button[aria-pressed="true"]{background:var(--surface);color:var(--accent-ink);box-shadow:0 1px 2px rgba(15,35,70,.12)}
 
-/* Felder */
 .field{display:flex;flex-direction:column;gap:5px}
 .field label{font-size:11.5px;text-transform:uppercase;letter-spacing:.07em;color:var(--ink-3);font-weight:600}
 .field input,.field select,.field textarea{border:1px solid var(--line);background:var(--surface-2);border-radius:8px;padding:10px 11px;width:100%;min-height:44px}
 .field input:focus,.field select:focus,.field textarea:focus{background:var(--surface)}
 .field textarea{min-height:90px;resize:vertical}
 .two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-@media (max-width:640px){ .two{grid-template-columns:1fr} }
-/* Unter 16 Punkt zoomt das iPhone beim Antippen ran und bleibt vergrößert */
+.three{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+@media (max-width:640px){ .two{grid-template-columns:1fr} .three{grid-template-columns:1fr 1fr} }
 @media (max-width:900px),(pointer:coarse){ input,select,textarea{font-size:16px} }
 .check{display:flex;gap:10px;align-items:flex-start;font-size:12.5px;color:var(--ink-3);cursor:pointer;line-height:1.4;border:1px solid var(--line);border-radius:9px;padding:11px 12px}
 .check b{color:var(--ink);font-size:14px;font-weight:600}
 .check input{margin-top:3px;flex:0 0 auto;width:18px;height:18px}
 .hint{font-size:12.5px;color:var(--ink-3)}
 .err{font-size:13px;color:var(--bad);font-weight:600}
-.warnbox{border:1px solid var(--warn);background:var(--warn-soft);border-radius:9px;padding:10px 12px;font-size:13px}
-.okbox{border:1px solid var(--ok);background:var(--ok-soft);border-radius:9px;padding:10px 12px;font-size:13px}
-/* Erklärtexte lassen sich in den Einstellungen ausblenden */
+.warnbox{border:1px solid var(--warn);background:var(--warn-soft);border-radius:9px;padding:10px 12px;font-size:13.5px;margin:0}
+.okbox{border:1px solid var(--ok);background:var(--ok-soft);border-radius:9px;padding:10px 12px;font-size:13.5px;margin:0}
+.infobox{border:1px solid var(--line);background:var(--surface-2);border-radius:9px;padding:10px 12px;font-size:13.5px;margin:0}
 body.ohne-hilfe .erkl{display:none}
 .kv{display:grid;grid-template-columns:96px 1fr;gap:6px 12px;font-size:14px;margin:0}
 .kv dt{color:var(--ink-3);font-size:12px;text-transform:uppercase;letter-spacing:.06em;padding-top:2px}
@@ -110,7 +106,50 @@ hr.sep{border:0;border-top:1px solid var(--line-soft);margin:4px 0;width:100%}
 .schritte span{flex:1;font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-3);border-top:3px solid var(--line);padding-top:6px}
 .schritte span[aria-current="true"]{color:var(--accent);border-color:var(--accent)}
 
-/* Untere Leiste: links und rechts gleich breit, dadurch sitzt die Mitte immer mittig */
+/* Status-Chips: Farbe plus weicher Hintergrund */
+.chip{display:inline-flex;align-items:center;font-size:12px;font-weight:600;border-radius:999px;padding:2px 9px;background:var(--surface-2);color:var(--ink-2);border:1px solid var(--line);white-space:nowrap}
+.chip.ok{background:var(--ok-soft);color:var(--ok);border-color:transparent}
+.chip.bad{background:var(--bad-soft);color:var(--bad);border-color:transparent}
+.chip.warn{background:var(--warn-soft);color:var(--warn);border-color:transparent}
+.chip.akz{background:var(--accent-soft);color:var(--accent-ink);border-color:transparent}
+.tags{display:flex;flex-wrap:wrap;gap:5px}
+
+/* Kandidatenkarte */
+.kand{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:14px;display:flex;flex-direction:column;gap:10px}
+.kand-kopf{display:flex;gap:12px;align-items:flex-start}
+.kand-kopf .wer{flex:1;min-width:0}
+.kand-kopf b{font-size:16px;display:block}
+.kand-kopf small{display:block;color:var(--ink-2);font-size:13px}
+.gesamt{font-family:var(--font-mono);font-variant-numeric:tabular-nums;font-size:24px;font-weight:600;color:var(--accent-ink);line-height:1;text-align:right}
+.gesamt small{display:block;font-family:var(--font-body);font-size:11px;color:var(--ink-3);font-weight:500;margin-top:4px}
+.werte{display:grid;grid-template-columns:repeat(3,1fr);gap:6px 14px}
+@media (max-width:640px){ .werte{grid-template-columns:1fr 1fr} }
+.wert{font-size:12px;color:var(--ink-3);min-width:0}
+.wert .zeile{display:flex;justify-content:space-between;gap:6px}
+.wert .zeile span:last-child{font-family:var(--font-mono);color:var(--ink);font-variant-numeric:tabular-nums}
+.wert .zeile span.unb{color:var(--ink-3);font-family:var(--font-body);font-style:italic}
+.balken{height:4px;border-radius:2px;background:var(--line-soft);margin-top:3px;overflow:hidden}
+.balken i{display:block;height:100%;background:var(--accent)}
+.warum{font-size:13.5px;color:var(--ink-2);margin:0}
+.warum b{color:var(--ink)}
+
+/* Runde */
+.zeile-gast{display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:10px 12px;flex-wrap:wrap}
+.zeile-gast .wer{flex:1;min-width:150px;cursor:pointer}
+.zeile-gast .wer b{display:block;font-size:14.5px}
+.zeile-gast .wer small{color:var(--ink-3);font-size:12.5px}
+.zeile-gast select{border:1px solid var(--line);background:var(--surface-2);border-radius:8px;padding:8px;min-height:40px;max-width:100%}
+.paar{display:flex;flex-direction:column;gap:2px;border-left:3px solid var(--accent);padding:4px 0 4px 10px}
+.paar b{font-size:14px}
+.paar small{color:var(--ink-2);font-size:12.5px}
+.zahlen{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+@media (max-width:640px){ .zahlen{grid-template-columns:repeat(2,1fr)} }
+.zahl{background:var(--surface-2);border-radius:9px;padding:10px 12px}
+.zahl b{display:block;font-family:var(--font-mono);font-size:22px;font-variant-numeric:tabular-nums}
+.zahl span{font-size:12px;color:var(--ink-3)}
+.textkarte{background:var(--surface-2);border:1px solid var(--line);border-radius:9px;padding:12px;font-size:14px;white-space:pre-wrap;overflow-wrap:anywhere}
+.quelle{font-size:13px;overflow-wrap:anywhere}
+
 .untenleiste{position:fixed;left:0;right:0;bottom:0;z-index:28;display:flex;align-items:center;justify-content:center;gap:8px;
   background:var(--surface);border-top:1px solid var(--line);
   padding:6px max(10px,env(safe-area-inset-left)) calc(6px + env(safe-area-inset-bottom)) max(10px,env(safe-area-inset-right))}
@@ -119,9 +158,8 @@ hr.sep{border:0;border-top:1px solid var(--line-soft);margin:4px 0;width:100%}
 .ul-knopf[aria-selected="true"]{color:var(--accent)}
 .ul-haupt{flex:0 0 auto;border:0;background:var(--accent);color:#fff;border-radius:11px;font-size:15px;font-weight:700;cursor:pointer;padding:0 22px;height:46px;min-width:136px}
 
-/* Fenster: von rechts, auf dem Handy genau Bildschirmgröße */
 .scrim{position:fixed;inset:0;background:rgba(10,25,45,.44);z-index:40;border:0;padding:0}
-.panel{position:fixed;top:0;right:0;bottom:0;width:min(440px,100%);z-index:50;background:var(--surface);border-left:1px solid var(--line);display:flex;flex-direction:column;box-shadow:var(--shadow)}
+.panel{position:fixed;top:0;right:0;bottom:0;width:min(480px,100%);z-index:50;background:var(--surface);border-left:1px solid var(--line);display:flex;flex-direction:column;box-shadow:var(--shadow)}
 .panel-head{display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid var(--line)}
 .panel-head h3{font-size:17px;flex:1}
 .panel-body{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:14px;overscroll-behavior:contain}
@@ -138,7 +176,6 @@ hr.sep{border:0;border-top:1px solid var(--line-soft);margin:4px 0;width:100%}
   .panel{animation:rein .18s ease-out}
   @keyframes rein{from{transform:translateX(18px);opacity:.4}to{transform:none;opacity:1}}
 }
-
 .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(76px + env(safe-area-inset-bottom));z-index:70;background:var(--ink);color:var(--paper);padding:11px 16px;border-radius:9px;font-size:14px;box-shadow:var(--shadow);max-width:min(520px,92vw)}
 .fassung{position:fixed;left:12px;right:12px;bottom:calc(76px + env(safe-area-inset-bottom));z-index:60;display:flex;align-items:center;gap:8px;
   background:var(--surface);border:1px solid var(--accent);border-radius:var(--radius);padding:10px 12px;box-shadow:var(--shadow)}
@@ -148,10 +185,10 @@ hr.sep{border:0;border-top:1px solid var(--line-soft);margin:4px 0;width:100%}
 <body>
 <header class="kopf">
   <div class="kopf-in">
-    <button class="marke" id="markeBtn" title="Zur Startseite">{{NAME}}</button>
+    <button class="marke" id="markeBtn" title="Zur Startseite">Logenrunde</button>
     <div class="spacer"></div>
     <button class="rund" id="einstBtn" aria-label="Einstellungen">
-      <span class="avatar" id="initialen">?</span>
+      <span class="avatar">IF</span>
       <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
     </button>
   </div>
@@ -159,16 +196,17 @@ hr.sep{border:0;border-top:1px solid var(--line-soft);margin:4px 0;width:100%}
 
 <main>
   <section id="sicht-start"></section>
-  <section id="sicht-liste" hidden></section>
+  <section id="sicht-event" hidden></section>
+  <section id="sicht-personen" hidden></section>
 </main>
 
 <nav class="untenleiste">
   <button class="ul-knopf" data-sicht="start" aria-label="Start">
     <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/></svg><span>Start</span>
   </button>
-  <button class="ul-haupt" id="neuBtn">+ Eintrag</button>
-  <button class="ul-knopf" data-sicht="liste" aria-label="Alle">
-    <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 6h13M8 12h13M8 18h13"/><path d="M3 6h.01M3 12h.01M3 18h.01"/></svg><span>Alle</span>
+  <button class="ul-haupt" id="neuBtn">+ Event</button>
+  <button class="ul-knopf" data-sicht="personen" aria-label="Netzwerk">
+    <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.2"/><path d="M3.5 19c.6-3.2 2.8-5 5.5-5s4.9 1.8 5.5 5"/><circle cx="17" cy="9" r="2.4"/><path d="M15.5 14.2c2.6-.5 4.6 1 5 4.3"/></svg><span>Netzwerk</span>
   </button>
 </nav>
 <div id="fenster"></div>
@@ -177,8 +215,41 @@ hr.sep{border:0;border-top:1px solid var(--line-soft);margin:4px 0;width:100%}
 (function(){
 "use strict";
 
-var VERSION = "{{STAND}}";
-var S = { sicht:"start", eintraege:[], ich:{ name:"{{NUTZER}}" }, letzteSicht:null };
+var VERSION = "entwurf";
+
+/* ---------------- Feste Listen ---------------- */
+var STATUS = [
+  {k:"vorgeschlagen", t:"Vorgeschlagen", f:""},
+  {k:"ausgewaehlt", t:"Ausgewählt", f:"akz"},
+  {k:"eingeladen", t:"Eingeladen", f:"warn"},
+  {k:"zugesagt", t:"Zugesagt", f:"ok"},
+  {k:"abgesagt", t:"Abgesagt", f:"bad"},
+  {k:"keine_antwort", t:"Keine Antwort", f:"warn"},
+  {k:"erschienen", t:"Erschienen", f:"ok"},
+  {k:"nicht_erschienen", t:"Nicht erschienen", f:"bad"},
+  {k:"aussortiert", t:"Nicht relevant", f:""}
+];
+var IN_RUNDE = ["ausgewaehlt","eingeladen","zugesagt","erschienen"];
+var JA = ["zugesagt","erschienen","nicht_erschienen"];
+var NEIN = ["abgesagt","keine_antwort"];
+var ZIELE = ["allgemeines Networking","Neukunden","Geschäftspartner","Kooperationen","Investoren","Unternehmer","Recruiting","Branchenkontakte","Entscheider","Multiplikatoren"];
+var TEILE = [
+  {k:"thema", t:"Thema"},
+  {k:"beruf", t:"Beruf"},
+  {k:"netzwerk", t:"Netzwerk"},
+  {k:"runde", t:"Passt zur Runde"},
+  {k:"region", t:"Region"},
+  {k:"historie", t:"Zusagen bisher"}
+];
+var GEWICHTE_STANDARD = { thema:30, beruf:20, netzwerk:20, runde:15, region:5, historie:10 };
+var MARKER = [
+  {k:"wertvoll", t:"Wertvoller Kontakt"},
+  {k:"passte", t:"Hat gut zur Gruppe gepasst"},
+  {k:"erneut", t:"Erneut einladen"},
+  {k:"nicht_erneut", t:"Nicht erneut einladen"},
+  {k:"geschaeft", t:"Geschäftlicher Kontakt entstanden"}
+];
+var TEXT_STANDARD = "Guten Tag {name},\n\nich melde mich im Auftrag der IFBA. Zum Spiel {spiel} am {datum} laden wir eine kleine Runde von Unternehmern in unsere Loge beim BVB ein. Thema des Abends: {thema}.\n\n{grund}\n\nWir würden uns freuen, Sie als unseren Gast zu begrüßen. Hätten Sie Interesse?";
 
 /* ---------------- Helfer ---------------- */
 function $(id){ return document.getElementById(id); }
@@ -186,56 +257,175 @@ function esc(s){ return String(s==null?"":s).replace(/[&<>"']/g,function(c){ ret
 function pad(n){ return n<10?"0"+n:""+n; }
 function uid(){ return "x"+Date.now().toString(36)+Math.random().toString(36).slice(2,7); }
 function ymd(d){ return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate()); }
+var TAGE=["Sonntag","Montag","Dienstag","Mittwoch","Donnerstag","Freitag","Samstag"];
 function deDatum(s){ var t=String(s||"").split("-"); return t.length===3 ? t[2]+"."+t[1]+"."+t[0] : ""; }
-function initialen(n){ return String(n||"?").split(/\s+/).map(function(w){ return w.charAt(0); }).join("").slice(0,2).toUpperCase(); }
+function deDatumLang(s){ if(!s) return ""; var d=new Date(s+"T12:00:00"); return TAGE[d.getDay()]+", "+deDatum(s); }
+function deZeit(iso){ if(!iso) return ""; var d=new Date(iso); return pad(d.getDate())+"."+pad(d.getMonth()+1)+"."+d.getFullYear()+" "+pad(d.getHours())+":"+pad(d.getMinutes()); }
+function initialen(n){ return String(n||"?").replace(/\(.*?\)/g,"").trim().split(/\s+/).map(function(w){ return w.charAt(0); }).join("").slice(0,2).toUpperCase(); }
+function norm(s){ return String(s||"").trim().toLowerCase(); }
+function zahl(v){ if(v===null||v===undefined||v==="") return null; var n=Number(v); if(isNaN(n)) return null; return Math.max(0,Math.min(100,Math.round(n))); }
+function liste(s){ return String(s||"").split(",").map(function(x){ return x.trim(); }).filter(Boolean); }
+function statusInfo(k){ return STATUS.filter(function(s){ return s.k===k; })[0]||STATUS[0]; }
+function chip(k){ var s=statusInfo(k); return '<span class="chip '+s.f+'">'+esc(s.t)+'</span>'; }
+function plural(n,eins,mehr){ return n+" "+(n===1?eins:mehr); }
+
+/* Speicher testen: in der Chat-Vorschau ist localStorage gesperrt */
+var OHNE_SPEICHER=false;
+try{ localStorage.setItem("lr_test","1"); localStorage.removeItem("lr_test"); }catch(e){ OHNE_SPEICHER=true; }
 var LS={
-  get:function(k){ try{ return localStorage.getItem(k); }catch(e){ return null; } },
-  set:function(k,v){ try{ localStorage.setItem(k,v); }catch(e){} }
+  get:function(k){ if(OHNE_SPEICHER) return null; try{ return localStorage.getItem(k); }catch(e){ return null; } },
+  set:function(k,v){ if(OHNE_SPEICHER) return; try{ localStorage.setItem(k,v); }catch(e){ toast("Speicher voll. Bitte Sicherung herunterladen."); } }
 };
 function toast(t){
   var el=document.createElement("div"); el.className="toast"; el.textContent=t;
   document.body.appendChild(el); setTimeout(function(){ el.remove(); },2600);
 }
+function kopieren(text){
+  function alt(){
+    var t=document.createElement("textarea"); t.value=text; t.style.position="fixed"; t.style.opacity="0";
+    document.body.appendChild(t); t.select(); try{ document.execCommand("copy"); }catch(e){} t.remove();
+  }
+  if(navigator.clipboard && window.isSecureContext){ navigator.clipboard.writeText(text).catch(alt); } else alt();
+  toast("Text kopiert.");
+}
+function herunterladen(name,inhalt){
+  var b=new Blob([inhalt],{type:"application/json"}); var a=document.createElement("a");
+  a.href=URL.createObjectURL(b); a.download=name; document.body.appendChild(a); a.click();
+  setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); },500);
+}
 
 /* ---------------- Datenspeicher ----------------
-   Heute im Browser (localStorage). Für mehrere Nutzer durch einen Supabase-Speicher mit
-   denselben drei Funktionen ersetzen, der Rest der App merkt davon nichts. */
-function lokalSpeicher(){
-  var SCHLUESSEL="{{KURZ}}_eintraege";
-  function lesen(){ try{ return JSON.parse(LS.get(SCHLUESSEL)||"null"); }catch(e){ return null; } }
-  var daten=lesen();
-  if(!daten){
-    // Beispielinhalt, damit die Vorlage nicht leer startet. Beim echten Bau entfernen.
-    var h=new Date();
-    daten=[
-      { id:uid(), titel:"Erster Beispieleintrag", datum:ymd(h), notiz:"Antippen zum Öffnen.", erledigt:false },
-      { id:uid(), titel:"Zweiter Beispieleintrag", datum:ymd(new Date(h.getTime()+86400000)), notiz:"", erledigt:false }
-    ];
-  }
-  var cb=null;
-  function sichern(){ LS.set(SCHLUESSEL,JSON.stringify(daten)); if(cb) cb(daten.slice()); }
-  return {
-    beobachten:function(f){ cb=f; f(daten.slice()); },
-    speichern:function(e){ daten=daten.filter(function(x){ return x.id!==e.id; }).concat([e]); sichern(); return Promise.resolve(e); },
-    loeschen:function(id){ daten=daten.filter(function(x){ return x.id!==id; }); sichern(); return Promise.resolve(); }
-  };
+   Heute im Browser (localStorage), alles in einem Paket. Für mehrere Nutzer durch einen
+   Supabase-Speicher mit denselben zwei Funktionen ersetzen, der Rest merkt davon nichts.
+   Tabellen später: events, personen, einladungen, verbindungen. */
+var SCHLUESSEL="logenrunde_daten";
+function leer(){ return { events:[], personen:[], einladungen:[], verbindungen:[], gewichte:JSON.parse(JSON.stringify(GEWICHTE_STANDARD)) }; }
+var speicher={
+  laden:function(){
+    var d=null; try{ d=JSON.parse(LS.get(SCHLUESSEL)||"null"); }catch(e){}
+    d=d||leer();
+    ["events","personen","einladungen","verbindungen"].forEach(function(k){ if(!Array.isArray(d[k])) d[k]=[]; });
+    if(!d.gewichte) d.gewichte=JSON.parse(JSON.stringify(GEWICHTE_STANDARD));
+    return d;
+  },
+  sichern:function(d){ LS.set(SCHLUESSEL,JSON.stringify(d)); }
+};
+var D=speicher.laden();
+var S={ sicht:"start", eventId:null, tab:"kandidaten", filter:"vorschlaege", suche:"", letzteSicht:null };
+function sichern(){ speicher.sichern(D); zeichnen(); }
+
+/* ---------------- Zugriff ---------------- */
+function ev(id){ return D.events.filter(function(e){ return e.id===id; })[0]; }
+function pers(id){ return D.personen.filter(function(p){ return p.id===id; })[0]; }
+function einlVon(eventId){ return D.einladungen.filter(function(x){ return x.eventId===eventId; }); }
+function einl(eventId,personId){ return D.einladungen.filter(function(x){ return x.eventId===eventId && x.personId===personId; })[0]; }
+function statusSetzen(x,status){
+  if(x.status===status) return;
+  x.status=status; x.verlauf=x.verlauf||[]; x.verlauf.push({status:status, zeit:new Date().toISOString()});
 }
-var speicher=lokalSpeicher();
+function zurEvent(eventId,personId,status){
+  var x=einl(eventId,personId);
+  if(!x){ x={ id:uid(), eventId:eventId, personId:personId, status:null, verlauf:[], ergebnis:{} }; D.einladungen.push(x); }
+  if(status) statusSetzen(x,status);
+  return x;
+}
+function naechstesEvent(){
+  var heute=ymd(new Date());
+  var kommend=D.events.filter(function(e){ return e.datum>=heute; }).sort(function(a,b){ return a.datum<b.datum?-1:1; });
+  return kommend[0]||null;
+}
+
+/* ---------------- Scoring ----------------
+   Keine KI hier. Thema, Beruf, Netzwerk und Region kommen aus der Recherche (mit Quelle),
+   Runde und Zusagen rechnet die App selbst. Was unbekannt ist, zählt nicht mit, statt geraten zu werden. */
+function runde(eventId,ohneId){
+  return einlVon(eventId).filter(function(x){ return IN_RUNDE.indexOf(x.status)>=0 && x.personId!==ohneId; })
+    .map(function(x){ return pers(x.personId); }).filter(Boolean);
+}
+function rundenwert(p,e){
+  var g=runde(e.id,p.id);
+  if(!g.length) return { wert:null, grund:"Noch niemand ausgewählt, also noch keine Runde zum Vergleichen." };
+  var gleich=g.filter(function(q){ return norm(q.rolle) && norm(q.rolle)===norm(p.rolle); }).length;
+  var gewuenscht=(e.rollen||[]).some(function(r){ return norm(r)===norm(p.rolle); });
+  var w, grund;
+  if(!norm(p.rolle)){ w=50; grund="Keine Rolle hinterlegt, deshalb neutral bewertet."; }
+  else if(gleich===0){ w=gewuenscht?100:85; grund="Rolle „"+p.rolle+"“ fehlt der Runde noch"+(gewuenscht?" und steht auf der Wunschliste.":"."); }
+  else if(gleich===1){ w=60; grund="Rolle „"+p.rolle+"“ ist schon einmal in der Runde."; }
+  else if(gleich===2){ w=35; grund="Rolle „"+p.rolle+"“ ist schon zweimal in der Runde."; }
+  else { w=15; grund="Rolle „"+p.rolle+"“ ist schon "+gleich+" Mal in der Runde."; }
+  // Gemeinsame Themen mit der Runde heben den Wert leicht
+  var gemeinsam=0; (p.tags||[]).forEach(function(t){ if(g.some(function(q){ return (q.tags||[]).map(norm).indexOf(norm(t))>=0; })) gemeinsam++; });
+  if(gemeinsam){ w=Math.min(100,w+Math.min(15,gemeinsam*5)); grund+=" "+plural(gemeinsam,"gemeinsames Thema","gemeinsame Themen")+" mit der Runde."; }
+  return { wert:w, grund:grund };
+}
+function historie(p,ohneEventId){
+  var xs=D.einladungen.filter(function(x){ return x.personId===p.id && x.eventId!==ohneEventId; });
+  var ja=xs.filter(function(x){ return JA.indexOf(x.status)>=0; }).length;
+  var nein=xs.filter(function(x){ return NEIN.indexOf(x.status)>=0; }).length;
+  var n=ja+nein;
+  if(n>=3) return { wert:Math.round(ja/n*100), text:Math.round(ja/n*100)+" %, Basis "+plural(n,"Einladung","Einladungen") };
+  // Sonst die Rolle als Gruppe, aber nur mit genug Fällen
+  if(norm(p.rolle)){
+    var ids=D.personen.filter(function(q){ return norm(q.rolle)===norm(p.rolle); }).map(function(q){ return q.id; });
+    var gx=D.einladungen.filter(function(x){ return ids.indexOf(x.personId)>=0 && x.eventId!==ohneEventId; });
+    var gja=gx.filter(function(x){ return JA.indexOf(x.status)>=0; }).length;
+    var gn=gja+gx.filter(function(x){ return NEIN.indexOf(x.status)>=0; }).length;
+    if(gn>=8) return { wert:Math.round(gja/gn*100), text:Math.round(gja/gn*100)+" % bei der Rolle „"+p.rolle+"“, Basis "+gn+" Einladungen" };
+  }
+  return { wert:null, text:n ? "nicht genug Daten ("+plural(n,"Einladung","Einladungen")+")" : "nicht genug Daten" };
+}
+function teilwerte(p,e){
+  var w=p.werte||{}; var r=e?rundenwert(p,e):{wert:null,grund:""}; var h=historie(p,e?e.id:null);
+  return { thema:zahl(w.thema), beruf:zahl(w.beruf), netzwerk:zahl(w.netzwerk), region:zahl(w.region),
+           runde:r.wert, rundeGrund:r.grund, historie:h.wert, historieText:h.text };
+}
+function gesamt(tw){
+  var summe=0, gew=0, bekannt=0;
+  TEILE.forEach(function(t){
+    var g=Number(D.gewichte[t.k])||0;
+    if(tw[t.k]!==null && tw[t.k]!==undefined){ summe+=g*tw[t.k]; gew+=g; bekannt++; }
+  });
+  return { wert: gew ? Math.round(summe/gew) : null, bekannt:bekannt };
+}
+
+/* ---------------- Matching ----------------
+   Nachvollziehbar statt Blackbox: jede Verbindung hat ihre Gründe. */
+function paar(a,b){
+  var staerke=0, gruende=[];
+  var ta=(a.tags||[]).map(norm), gem=(b.tags||[]).filter(function(t){ return ta.indexOf(norm(t))>=0; });
+  if(gem.length){ staerke+=Math.min(45,gem.length*15); gruende.push("Gemeinsame Themen: "+gem.join(", ")); }
+  if(norm(a.rolle) && norm(b.rolle)){
+    if(norm(a.rolle)!==norm(b.rolle)){ staerke+=25; gruende.push("Ergänzen sich: "+a.rolle+" trifft "+b.rolle); }
+    else { staerke+=10; gruende.push("Gleiche Rolle, Austausch unter Kollegen"); }
+  }
+  if(norm(a.branche) && norm(a.branche)===norm(b.branche)){ staerke+=10; gruende.push("Gleiche Branche: "+a.branche); }
+  if(norm(a.ort) && norm(a.ort)===norm(b.ort)){ staerke+=10; gruende.push("Beide aus "+a.ort); }
+  var frueher=D.verbindungen.filter(function(v){ return (v.a===a.id&&v.b===b.id)||(v.a===b.id&&v.b===a.id); });
+  if(frueher.some(function(v){ return v.art==="geschaeft"; })){ staerke+=10; gruende.push("Aus früherer Begegnung ist schon ein Geschäftskontakt entstanden"); }
+  else if(frueher.length){ gruende.push("Wurden sich schon einmal vorgestellt"); }
+  return { staerke:Math.min(100,staerke), gruende:gruende };
+}
+function paareDer(gruppe){
+  var out=[];
+  for(var i=0;i<gruppe.length;i++) for(var j=i+1;j<gruppe.length;j++){
+    var r=paar(gruppe[i],gruppe[j]); if(r.staerke>0) out.push({a:gruppe[i],b:gruppe[j],staerke:r.staerke,gruende:r.gruende});
+  }
+  return out.sort(function(x,y){ return y.staerke-x.staerke; });
+}
 
 /* ---------------- Darstellung ---------------- */
-function thema(){ return LS.get("{{KURZ}}_thema")==="dunkel"?"dunkel":"hell"; }
+function thema(){ return LS.get("logenrunde_thema")==="dunkel"?"dunkel":"hell"; }
 function themaAnwenden(){
   var t=thema();
   if(t==="dunkel") document.documentElement.setAttribute("data-theme","dunkel");
   else document.documentElement.removeAttribute("data-theme");
   var m=document.querySelector('meta[name="theme-color"]');
-  if(m) m.setAttribute("content", t==="dunkel" ? "#000000" : "{{AKZENT}}");
+  if(m) m.setAttribute("content", t==="dunkel" ? "#000000" : "#0B5FA5");
 }
-function hilfe(){ return LS.get("{{KURZ}}_hilfe")==="aus"?"aus":"an"; }
+function hilfe(){ return LS.get("logenrunde_hilfe")==="aus"?"aus":"an"; }
 function hilfeAnwenden(){ document.body.classList.toggle("ohne-hilfe", hilfe()==="aus"); }
 
-/* ---------------- Fenster ----------------
-   Die Seite dahinter wird festgehalten. overflow:hidden allein reicht auf dem iPhone nicht. */
+/* ---------------- Fenster ---------------- */
 var seiteFest=null;
 function seiteFesthalten(){
   if(seiteFest!==null) return;
@@ -263,92 +453,481 @@ function fenster(titel,inhalt,fuss){
   $("fensterZu").onclick=fensterZu;
 }
 function fensterZu(){ $("fenster").innerHTML=""; seiteFreigeben(); }
+function alle(sel,f,box){ Array.prototype.forEach.call((box||document).querySelectorAll(sel),f); }
 
 /* ---------------- Ansichten ---------------- */
 function zeichnen(){
+  if(S.sicht==="event" && !ev(S.eventId)) S.sicht="start";
   $("sicht-start").hidden = S.sicht!=="start";
-  $("sicht-liste").hidden = S.sicht!=="liste";
-  Array.prototype.forEach.call(document.querySelectorAll(".ul-knopf"),function(b){
-    b.setAttribute("aria-selected",String(b.dataset.sicht===S.sicht));
-  });
-  // Beim Wechsel oben anfangen, nicht bei jedem Neuzeichnen
-  if(S.letzteSicht!==S.sicht){ S.letzteSicht=S.sicht; window.scrollTo(0,0); }
-  if(S.sicht==="start") zeichneStart(); else zeichneListe();
+  $("sicht-event").hidden = S.sicht!=="event";
+  $("sicht-personen").hidden = S.sicht!=="personen";
+  alle(".ul-knopf",function(b){ b.setAttribute("aria-selected",String(b.dataset.sicht===S.sicht)); });
+  if(S.letzteSicht!==S.sicht+S.eventId){ S.letzteSicht=S.sicht+S.eventId; window.scrollTo(0,0); }
+  if(S.sicht==="start") zeichneStart();
+  else if(S.sicht==="event") zeichneEvent();
+  else zeichnePersonen();
+}
+function eventOeffnen(id,tab){ S.sicht="event"; S.eventId=id; if(tab) S.tab=tab; fensterZu(); zeichnen(); }
+
+function zaehlen(e){
+  var xs=einlVon(e.id), z={};
+  STATUS.forEach(function(s){ z[s.k]=0; });
+  xs.forEach(function(x){ if(x.status) z[x.status]++; });
+  return z;
 }
 
-function karte(e){
-  return '<button class="karte" data-id="'+esc(e.id)+'">'+
-    '<span><b>'+esc(e.titel)+'</b><small>'+esc(e.erledigt?"erledigt":(e.notiz||"ohne Notiz"))+'</small></span>'+
-    '<span class="rechts">'+esc(deDatum(e.datum))+'</span></button>';
-}
-function kartenVerdrahten(box){
-  Array.prototype.forEach.call(box.querySelectorAll(".karte"),function(b){
-    b.onclick=function(){ oeffnen(b.dataset.id); };
-  });
+/* Wie viele Einladungen braucht es noch? Rechnet mit der Quote aus den Daten, sonst mit der Annahme im Event. */
+function kapazitaet(e){
+  var z=zaehlen(e);
+  var alleJa=D.einladungen.filter(function(x){ return JA.indexOf(x.status)>=0 && x.eventId!==e.id; }).length;
+  var alleN=alleJa+D.einladungen.filter(function(x){ return NEIN.indexOf(x.status)>=0 && x.eventId!==e.id; }).length;
+  var q, quelle;
+  if(alleN>=20){ q=alleJa/alleN; quelle="aus "+alleN+" früheren Einladungen"; }
+  else { q=(Number(e.quote)||10)/100; quelle="Annahme im Event, noch zu wenig eigene Daten"; }
+  var zu=z.zugesagt+z.erschienen+z.nicht_erschienen, offen=z.eingeladen;
+  var erwartet=zu+offen*q;
+  var fehlt=Math.max(0,(Number(e.plaetze)||0)-erwartet);
+  var noch=q>0?Math.ceil(fehlt/q):0;
+  return { z:z, zu:zu, offen:offen, q:q, quelle:quelle, erwartet:erwartet, noch:noch, frei:Math.max(0,(Number(e.plaetze)||0)-zu) };
 }
 
 function zeichneStart(){
-  var heute=ymd(new Date());
-  var offen=S.eintraege.filter(function(e){ return !e.erledigt; })
-    .sort(function(a,b){ return a.datum<b.datum?-1:1; });
   var box=$("sicht-start");
-  box.innerHTML='<div class="hallo"><h2>Hallo '+esc(S.ich.name)+'</h2>'+
-      '<p>'+(offen.length?'Das steht als Nächstes an.':'Gerade ist nichts offen.')+'</p></div>'+
-    (offen.length
-      ? '<div class="liste">'+offen.slice(0,5).map(karte).join("")+'</div>'
-      : '<div class="leer">Über <b>+ Eintrag</b> unten legst du den ersten an.</div>')+
-    (offen.some(function(e){ return e.datum<heute; })
-      ? '<p class="warnbox" style="margin-top:12px">Ein Eintrag ist überfällig.</p>' : '');
-  kartenVerdrahten(box);
+  var e=naechstesEvent();
+  var h='<div class="hallo"><h2>Logenrunde</h2><p>Die richtigen Gäste für die BVB-Loge, mit Begründung.</p></div>';
+  if(OHNE_SPEICHER) h+='<p class="warnbox" style="margin-bottom:12px">Vorschau ohne Speichern. Änderungen gehen beim Neuladen verloren.</p>';
+  if(!D.events.length){
+    h+='<div class="leer">Noch kein Event angelegt. Über <b>+ Event</b> unten legst du das erste an.'+
+       '<div class="knopfreihe" style="justify-content:center;margin-top:12px"><button class="btn" id="beispielBtn">Beispiel ansehen</button></div></div>';
+    box.innerHTML=h;
+    $("beispielBtn").onclick=beispielLaden;
+    return;
+  }
+  if(e){
+    var k=kapazitaet(e);
+    h+='<div class="sec-label">Nächstes Event</div><div class="box" style="display:flex;flex-direction:column;gap:12px">'+
+      '<div><h3 style="font-size:20px">'+esc(e.name)+'</h3>'+
+      '<p class="hint" style="margin:2px 0 0">'+esc(deDatumLang(e.datum))+(e.uhrzeit?' · '+esc(e.uhrzeit)+' Uhr':'')+' · Thema: <b style="color:var(--ink)">'+esc(e.thema||"offen")+'</b></p></div>'+
+      '<div class="zahlen">'+
+        '<div class="zahl"><b>'+k.zu+'</b><span>zugesagt von '+esc(e.plaetze||0)+'</span></div>'+
+        '<div class="zahl"><b>'+k.offen+'</b><span>eingeladen, offen</span></div>'+
+        '<div class="zahl"><b>'+(k.z.abgesagt+k.z.keine_antwort)+'</b><span>abgesagt oder still</span></div>'+
+        '<div class="zahl"><b>'+k.frei+'</b><span>'+(k.frei===1?'Platz frei':'Plätze frei')+'</span></div>'+
+      '</div>'+
+      (k.noch>0 ? '<p class="infobox">Bei '+Math.round(k.q*100)+' % Zusagequote ('+esc(k.quelle)+') brauchst du noch etwa <b class="mono">'+k.noch+'</b> Einladungen.</p>'
+                : (k.frei>0?'<p class="okbox">Mit den offenen Einladungen ist die Loge rechnerisch voll.</p>':'<p class="okbox">Die Loge ist voll.</p>'))+
+      '<div class="two">'+
+        '<button class="btn primary" data-geh="kandidaten">Kandidaten finden</button>'+
+        '<button class="btn" data-geh="runde">Gästeliste analysieren</button>'+
+        '<button class="btn" data-geh="fehlt">Fehlende Person finden</button>'+
+        '<button class="btn" data-geh="texte">Einladungen verwalten</button>'+
+      '</div></div>';
+  }
+  var heute=ymd(new Date());
+  var rest=D.events.filter(function(x){ return !e || x.id!==e.id; }).sort(function(a,b){ return a.datum<b.datum?1:-1; });
+  if(rest.length){
+    h+='<div class="sec-label">'+(e?'Weitere Events':'Events')+'</div><div class="liste">'+rest.map(function(x){
+      var k=kapazitaet(x);
+      return '<button class="karte" data-ev="'+esc(x.id)+'"><span><b>'+esc(x.name)+'</b><small>'+esc(x.thema||"")+(x.datum<heute?' · vorbei':'')+'</small></span>'+
+        '<span class="rechts">'+esc(deDatum(x.datum))+'<br><small>'+k.zu+' / '+esc(x.plaetze||0)+'</small></span></button>';
+    }).join("")+'</div>';
+  }
+  box.innerHTML=h;
+  alle("[data-ev]",function(b){ b.onclick=function(){ eventOeffnen(b.dataset.ev,"kandidaten"); }; },box);
+  alle("[data-geh]",function(b){ b.onclick=function(){
+    var g=b.dataset.geh;
+    if(g==="texte"){ eventOeffnen(e.id,"runde"); einladungstexte(e); }
+    else if(g==="fehlt"){ eventOeffnen(e.id,"runde"); setTimeout(function(){ var a=$("fehltAnker"); if(a) a.scrollIntoView({block:"start"}); },50); }
+    else eventOeffnen(e.id,g);
+  }; },box);
 }
 
-function zeichneListe(){
-  var alle=S.eintraege.slice().sort(function(a,b){ return a.datum<b.datum?-1:1; });
-  var box=$("sicht-liste");
-  box.innerHTML='<h2 style="font-size:20px;margin-bottom:12px">Alle Einträge</h2>'+
-    (alle.length ? '<div class="liste">'+alle.map(karte).join("")+'</div>'
-                 : '<div class="leer">Noch nichts eingetragen.</div>');
-  kartenVerdrahten(box);
+/* ---------------- Event ---------------- */
+function zeichneEvent(){
+  var e=ev(S.eventId), box=$("sicht-event");
+  var k=kapazitaet(e);
+  var h='<div style="display:flex;gap:10px;align-items:flex-start;margin-bottom:12px">'+
+      '<div style="flex:1;min-width:0"><h2 style="font-size:22px">'+esc(e.name)+'</h2>'+
+      '<p class="hint" style="margin:2px 0 0">'+esc(deDatumLang(e.datum))+(e.uhrzeit?' · '+esc(e.uhrzeit)+' Uhr':'')+' · Thema: <b style="color:var(--ink)">'+esc(e.thema||"offen")+'</b> · '+k.zu+' von '+esc(e.plaetze||0)+' zugesagt</p></div>'+
+      '<button class="btn klein" id="evBearb">Bearbeiten</button></div>'+
+    '<div class="modus" id="tabs" style="margin-bottom:14px">'+
+      '<button data-tab="kandidaten">Kandidaten</button><button data-tab="runde">Runde</button><button data-tab="danach">Nach dem Spiel</button></div>'+
+    '<div id="tabInhalt"></div>';
+  box.innerHTML=h;
+  $("evBearb").onclick=function(){ eventFormular(e); };
+  alle("#tabs button",function(b){
+    b.setAttribute("aria-pressed",String(b.dataset.tab===S.tab));
+    b.onclick=function(){ S.tab=b.dataset.tab; zeichneEvent(); };
+  },box);
+  if(S.tab==="kandidaten") tabKandidaten(e);
+  else if(S.tab==="runde") tabRunde(e);
+  else tabDanach(e);
 }
 
-/* ---------------- Eintrag ansehen ---------------- */
-function oeffnen(id){
-  var e=S.eintraege.filter(function(x){ return x.id===id; })[0]; if(!e) return;
-  fenster(e.titel,
-    '<dl class="kv"><dt>Datum</dt><dd class="mono">'+esc(deDatum(e.datum))+'</dd>'+
-      (e.notiz?'<dt>Notiz</dt><dd>'+esc(e.notiz)+'</dd>':'')+
-      '<dt>Stand</dt><dd>'+(e.erledigt?'erledigt':'offen')+'</dd></dl>',
-    '<button class="btn" id="bearbBtn">Bearbeiten</button>'+
-    '<button class="btn primary" id="erlBtn">'+(e.erledigt?'Wieder öffnen':'Erledigt')+'</button>');
-  $("bearbBtn").onclick=function(){ formular(e); };
-  $("erlBtn").onclick=function(){
-    e.erledigt=!e.erledigt;
-    speicher.speichern(e).then(function(){ fensterZu(); toast(e.erledigt?"Erledigt.":"Wieder offen."); });
+function wertZeile(t,v,titel){
+  return '<div class="wert" title="'+esc(titel||"")+'"><div class="zeile"><span>'+esc(t)+'</span>'+
+    (v===null||v===undefined?'<span class="unb">unbekannt</span>':'<span>'+v+'</span>')+'</div>'+
+    '<div class="balken"><i style="width:'+(v||0)+'%"></i></div></div>';
+}
+function kandKarte(p,e,x){
+  var tw=teilwerte(p,e), g=gesamt(tw);
+  var knoepfe;
+  if(x.status==="vorgeschlagen") knoepfe='<button class="btn primary klein" data-wahl="'+esc(p.id)+'">Auswählen</button><button class="btn klein" data-prof="'+esc(p.id)+'">Profil</button><button class="btn ghost klein" data-weg="'+esc(p.id)+'">Nicht relevant</button>';
+  else if(x.status==="aussortiert") knoepfe='<button class="btn klein" data-zurueck="'+esc(p.id)+'">Zurückholen</button><button class="btn klein" data-prof="'+esc(p.id)+'">Profil</button>';
+  else knoepfe=chip(x.status)+'<button class="btn klein" data-prof="'+esc(p.id)+'">Profil</button>';
+  return '<div class="kand">'+
+    '<div class="kand-kopf"><span class="avatar" style="width:40px;height:40px;font-size:14px">'+esc(initialen(p.name))+'</span>'+
+      '<div class="wer"><b>'+esc(p.name)+'</b><small>'+esc([p.position,p.firma].filter(Boolean).join(" · ")||"Position unbekannt")+'</small>'+
+      '<small style="color:var(--ink-3)">'+esc([p.rolle?("Rolle: "+p.rolle):"",p.ort].filter(Boolean).join(" · "))+'</small></div>'+
+      '<div class="gesamt">'+(g.wert===null?'–':g.wert)+'<small>'+g.bekannt+' von 6 bekannt</small></div></div>'+
+    '<div class="werte">'+
+      wertZeile("Thema",tw.thema)+wertZeile("Beruf",tw.beruf)+wertZeile("Netzwerk",tw.netzwerk)+
+      wertZeile("Passt zur Runde",tw.runde,tw.rundeGrund)+wertZeile("Region",tw.region)+
+      '<div class="wert"><div class="zeile"><span>Zusagen</span>'+(tw.historie===null?'<span class="unb">zu wenig Daten</span>':'<span>'+tw.historie+' %</span>')+'</div></div>'+
+    '</div>'+
+    (p.begruendung?'<p class="warum"><b>Warum interessant:</b> '+esc(p.begruendung)+'</p>':'<p class="warum hint">Noch keine Begründung hinterlegt.</p>')+
+    '<p class="hint" style="margin:0">'+((p.quellen||[]).length?plural(p.quellen.length,"Quelle","Quellen")+' hinterlegt':'<span style="color:var(--warn)">Keine Quelle hinterlegt</span>')+'</p>'+
+    '<div class="knopfreihe" style="align-items:center">'+knoepfe+'</div></div>';
+}
+
+function tabKandidaten(e){
+  var xs=einlVon(e.id);
+  var grp={ vorschlaege:xs.filter(function(x){ return x.status==="vorgeschlagen"; }),
+            gewaehlt:xs.filter(function(x){ return x.status!=="vorgeschlagen" && x.status!=="aussortiert"; }),
+            aussortiert:xs.filter(function(x){ return x.status==="aussortiert"; }) };
+  var sicht=grp[S.filter]||grp.vorschlaege;
+  var reihe=sicht.map(function(x){ var p=pers(x.personId); return p?{p:p,x:x,g:gesamt(teilwerte(p,e)).wert}:null; })
+    .filter(Boolean).sort(function(a,b){ return (b.g===null?-1:b.g)-(a.g===null?-1:a.g); });
+  var h='<div class="knopfreihe" style="margin-bottom:12px">'+
+      '<button class="btn primary" id="importBtn">Recherche importieren</button>'+
+      '<button class="btn" id="personNeu">+ Person von Hand</button>'+
+      '<button class="btn" id="ausNetzBtn">Aus dem Netzwerk</button></div>'+
+    '<p class="hint erkl" style="margin:0 0 12px">Die Recherche macht Claude im Hintergrund und liefert eine Datei. Die Punkte für Thema, Beruf, Netzwerk und Region kommen von dort, jeweils mit Quelle. „Passt zur Runde“ und „Zusagen“ rechnet die App selbst.</p>'+
+    '<div class="modus" id="filter" style="margin-bottom:12px">'+
+      '<button data-f="vorschlaege">Vorschläge '+grp.vorschlaege.length+'</button>'+
+      '<button data-f="gewaehlt">In der Runde '+grp.gewaehlt.length+'</button>'+
+      '<button data-f="aussortiert">Aussortiert '+grp.aussortiert.length+'</button></div>';
+  h+= reihe.length ? '<div class="liste">'+reihe.map(function(r){ return kandKarte(r.p,e,r.x); }).join("")+'</div>'
+    : '<div class="leer">'+(S.filter==="vorschlaege"?'Keine offenen Vorschläge. Importiere eine Recherche oder leg Personen von Hand an.':'Hier ist noch niemand.')+'</div>';
+  var box=$("tabInhalt"); box.innerHTML=h;
+  alle("#filter button",function(b){ b.setAttribute("aria-pressed",String(b.dataset.f===S.filter)); b.onclick=function(){ S.filter=b.dataset.f; zeichneEvent(); }; },box);
+  $("importBtn").onclick=function(){ importFenster(e); };
+  $("personNeu").onclick=function(){ personFormular(null,e); };
+  $("ausNetzBtn").onclick=function(){ ausNetzwerk(e); };
+  alle("[data-wahl]",function(b){ b.onclick=function(){ statusSetzen(einl(e.id,b.dataset.wahl),"ausgewaehlt"); sichern(); toast("Ausgewählt. Steht jetzt in der Runde."); }; },box);
+  alle("[data-weg]",function(b){ b.onclick=function(){ statusSetzen(einl(e.id,b.dataset.weg),"aussortiert"); sichern(); toast("Aussortiert."); }; },box);
+  alle("[data-zurueck]",function(b){ b.onclick=function(){ statusSetzen(einl(e.id,b.dataset.zurueck),"vorgeschlagen"); sichern(); }; },box);
+  alle("[data-prof]",function(b){ b.onclick=function(){ profil(b.dataset.prof,e); }; },box);
+}
+
+function ausNetzwerk(e){
+  var drin=einlVon(e.id).map(function(x){ return x.personId; });
+  var rest=D.personen.filter(function(p){ return drin.indexOf(p.id)<0; })
+    .map(function(p){ return {p:p,g:gesamt(teilwerte(p,e)).wert}; })
+    .sort(function(a,b){ return (b.g||0)-(a.g||0); });
+  fenster("Aus dem Netzwerk",
+    '<p class="hint" style="margin:0">Personen aus früheren Events, die bei diesem noch nicht dabei sind. Antippen nimmt sie als Vorschlag auf.</p>'+
+    (rest.length?'<div class="liste">'+rest.map(function(r){
+      var b=bilanz(r.p);
+      return '<button class="karte" data-auf="'+esc(r.p.id)+'"><span><b>'+esc(r.p.name)+'</b><small>'+esc(r.p.rolle||r.p.position||"")+' · '+b.einladungen+' eingeladen, '+b.teilnahmen+' dabei'+(b.erneut?' · erneut einladen':'')+'</small></span><span class="rechts">'+(r.g===null?'–':r.g)+'</span></button>';
+    }).join("")+'</div>':'<div class="leer">Alle bekannten Personen sind schon in diesem Event.</div>'));
+  alle("[data-auf]",function(b){ b.onclick=function(){ zurEvent(e.id,b.dataset.auf,"vorgeschlagen"); b.remove(); speicher.sichern(D); zeichnen(); toast("Als Vorschlag aufgenommen."); }; });
+}
+
+/* ---------------- Runde ---------------- */
+function tabRunde(e){
+  var xs=einlVon(e.id).filter(function(x){ return x.status!=="vorgeschlagen" && x.status!=="aussortiert"; });
+  var k=kapazitaet(e);
+  var reihenfolge=["zugesagt","eingeladen","ausgewaehlt","keine_antwort","abgesagt","erschienen","nicht_erschienen"];
+  var h='<div class="zahlen" style="margin-bottom:12px">'+
+      '<div class="zahl"><b>'+k.z.ausgewaehlt+'</b><span>ausgewählt, nicht eingeladen</span></div>'+
+      '<div class="zahl"><b>'+k.offen+'</b><span>eingeladen, offen</span></div>'+
+      '<div class="zahl"><b>'+k.zu+'</b><span>zugesagt von '+esc(e.plaetze||0)+'</span></div>'+
+      '<div class="zahl"><b>'+(k.z.abgesagt+k.z.keine_antwort)+'</b><span>abgesagt oder still</span></div></div>'+
+    (k.noch>0?'<p class="infobox" style="margin-bottom:12px">Bei '+Math.round(k.q*100)+' % Zusagequote ('+esc(k.quelle)+') brauchst du noch etwa <b class="mono">'+k.noch+'</b> Einladungen.</p>':'')+
+    '<div class="knopfreihe" style="margin-bottom:6px"><button class="btn primary" id="texteBtn">Einladungstexte</button></div>'+
+    '<p class="hint erkl" style="margin:0 0 6px">Die App verschickt nichts. Text kopieren, selbst senden, dann Status setzen.</p>';
+  if(!xs.length) h+='<div class="leer">Noch niemand in der Runde. Wähle unter <b>Kandidaten</b> Personen aus.</div>';
+  reihenfolge.forEach(function(st){
+    var g=xs.filter(function(x){ return x.status===st; }); if(!g.length) return;
+    h+='<div class="sec-label">'+esc(statusInfo(st).t)+' · '+g.length+'</div><div class="liste">'+g.map(function(x){
+      var p=pers(x.personId); if(!p) return "";
+      var letzte=(x.verlauf||[]).slice(-1)[0];
+      return '<div class="zeile-gast"><div class="wer" data-prof="'+esc(p.id)+'"><b>'+esc(p.name)+'</b><small>'+esc([p.rolle,p.firma].filter(Boolean).join(" · "))+(letzte?' · seit '+esc(deZeit(letzte.zeit)):'')+'</small></div>'+
+        '<select data-st="'+esc(x.id)+'" aria-label="Status von '+esc(p.name)+'">'+STATUS.filter(function(s){ return s.k!=="vorgeschlagen"; }).map(function(s){
+          return '<option value="'+s.k+'"'+(s.k===x.status?' selected':'')+'>'+esc(s.t)+'</option>'; }).join("")+'</select></div>';
+    }).join("")+'</div>';
+  });
+  h+='<div class="sec-label">Wie gut ist die Runde?</div>'+analyse(e);
+  var box=$("tabInhalt"); box.innerHTML=h;
+  $("texteBtn").onclick=function(){ einladungstexte(e); };
+  alle("[data-prof]",function(b){ b.onclick=function(){ profil(b.dataset.prof,e); }; },box);
+  alle("select[data-st]",function(s){ s.onchange=function(){
+    var x=D.einladungen.filter(function(y){ return y.id===s.dataset.st; })[0];
+    statusSetzen(x,s.value); sichern(); toast("Status: "+statusInfo(s.value).t+".");
+  }; },box);
+  alle("[data-vorschlag]",function(b){ b.onclick=function(){ profil(b.dataset.vorschlag,e); }; },box);
+}
+
+/* Gruppenanalyse: erklärt statt nur eine Zahl. Gerechnet, nicht geraten. */
+function analyse(e){
+  var g=runde(e.id,null);
+  if(g.length<2) return '<div class="leer">Ab zwei Personen in der Runde erscheint hier die Analyse.</div>';
+  var h='';
+  // Rollen
+  var rollen={}; g.forEach(function(p){ var r=p.rolle||"ohne Rolle"; rollen[r]=(rollen[r]||0)+1; });
+  h+='<div class="box" style="display:flex;flex-direction:column;gap:8px"><b>Rollen in der Runde</b><div class="tags">'+
+    Object.keys(rollen).sort(function(a,b){ return rollen[b]-rollen[a]; }).map(function(r){ return '<span class="chip'+(rollen[r]>=3?' warn':'')+'">'+esc(r)+' · '+rollen[r]+'</span>'; }).join("")+'</div>';
+  var doppelt=Object.keys(rollen).filter(function(r){ return rollen[r]>=3; });
+  if(doppelt.length) h+='<p class="warnbox">Mehrfach besetzt: '+esc(doppelt.join(", "))+'. Viele Gleiche reden über dasselbe, weniger Neues entsteht.</p>';
+  h+='</div>';
+  // Themen
+  var themen={}; g.forEach(function(p){ (p.tags||[]).forEach(function(t){ var n=norm(t); themen[n]=themen[n]||{t:t,n:0}; themen[n].n++; }); });
+  var gemeinsam=Object.keys(themen).map(function(k){ return themen[k]; }).filter(function(t){ return t.n>=2; }).sort(function(a,b){ return b.n-a.n; });
+  h+='<div class="box" style="display:flex;flex-direction:column;gap:8px;margin-top:8px"><b>Gemeinsame Themen</b>'+
+    (gemeinsam.length?'<div class="tags">'+gemeinsam.map(function(t){ return '<span class="chip akz">'+esc(t.t)+' · '+t.n+'</span>'; }).join("")+'</div>'
+      :'<p class="hint" style="margin:0">Keine Themen, die mindestens zwei Gäste teilen. Gesprächsstoff gibt dann vor allem das Abendthema.</p>')+'</div>';
+  // Verbindungen
+  var paare=paareDer(g);
+  h+='<div class="box" style="display:flex;flex-direction:column;gap:10px;margin-top:8px"><b>Stärkste Verbindungen</b>'+
+    (paare.length?paare.slice(0,6).map(function(x){
+      return '<div class="paar"><b>'+esc(x.a.name)+' ↔ '+esc(x.b.name)+' <span class="mono" style="color:var(--ink-3);font-weight:500">'+x.staerke+'</span></b><small>'+esc(x.gruende.join(" · "))+'</small></div>';
+    }).join(""):'<p class="hint" style="margin:0">Noch keine erkennbaren Verbindungen. Rollen und Themen bei den Personen ergänzen.</p>');
+  // Wer findet wenig Anschluss?
+  var allein=g.filter(function(p){
+    return !paare.some(function(x){ return (x.a.id===p.id||x.b.id===p.id) && x.staerke>=35; });
+  });
+  if(allein.length) h+='<p class="warnbox">Wenig Anschluss: '+esc(allein.map(function(p){ return p.name; }).join(", "))+'. Für sie fehlt ein passendes Gegenüber in der Runde.</p>';
+  h+='</div>';
+  // Wer fehlt
+  h+='<div id="fehltAnker" class="box" style="display:flex;flex-direction:column;gap:10px;margin-top:8px;scroll-margin-top:70px"><b>Welche Person fehlt noch?</b>';
+  var wunsch=e.rollen||[];
+  var pool=einlVon(e.id).filter(function(x){ return x.status==="vorgeschlagen"; }).map(function(x){ return pers(x.personId); }).filter(Boolean);
+  var fehlend=wunsch.filter(function(r){ return !g.some(function(p){ return norm(p.rolle)===norm(r); }); });
+  if(!wunsch.length) h+='<p class="hint" style="margin:0">Leg im Event fest, welche Rollen du am Tisch haben willst. Dann zeigt die App hier, welche noch fehlen.</p>';
+  else if(!fehlend.length) h+='<p class="okbox">Alle gewünschten Rollen sind besetzt: '+esc(wunsch.join(", "))+'.</p>';
+  fehlend.forEach(function(r){
+    var kand=pool.filter(function(p){ return norm(p.rolle)===norm(r); })
+      .map(function(p){ return {p:p,g:gesamt(teilwerte(p,e)).wert}; }).sort(function(a,b){ return (b.g||0)-(a.g||0); }).slice(0,3);
+    h+='<div class="paar" style="border-color:var(--warn)"><b>Es fehlt: '+esc(r)+'</b>'+
+      (kand.length?'<small>Beste Vorschläge dafür:</small><div class="knopfreihe">'+kand.map(function(k){
+        return '<button class="btn klein" data-vorschlag="'+esc(k.p.id)+'">'+esc(k.p.name)+' · '+(k.g===null?'–':k.g)+'</button>'; }).join("")+'</div>'
+        :'<small>Im Pool ist niemand mit dieser Rolle. Gezielt danach recherchieren lassen.</small>')+'</div>';
+  });
+  // Rollen im Pool, die weder gewünscht noch vertreten sind
+  var poolRollen={}; pool.forEach(function(p){ if(p.rolle && !g.some(function(q){ return norm(q.rolle)===norm(p.rolle); }) && !wunsch.some(function(r){ return norm(r)===norm(p.rolle); })) poolRollen[p.rolle]=(poolRollen[p.rolle]||0)+1; });
+  var pr=Object.keys(poolRollen);
+  if(pr.length) h+='<p class="hint" style="margin:0">Im Pool, aber noch nicht in der Runde: '+esc(pr.join(", "))+'.</p>';
+  h+='</div>';
+  return h;
+}
+
+/* ---------------- Einladungstexte ---------------- */
+function textFuer(p,e){
+  var vorlage=e.einladungstext||TEXT_STANDARD;
+  return vorlage.replace(/\{name\}/g,p.name.replace(/\s*\(.*?\)\s*/g,"").trim())
+    .replace(/\{thema\}/g,e.thema||"").replace(/\{datum\}/g,deDatumLang(e.datum))
+    .replace(/\{spiel\}/g,e.spiel||"des BVB").replace(/\{grund\}/g,p.einladungsgrund||"")
+    .replace(/\n{3,}/g,"\n\n").trim();
+}
+function einladungstexte(e){
+  var xs=einlVon(e.id).filter(function(x){ return x.status==="ausgewaehlt"; });
+  fenster("Einladungstexte",
+    '<p class="hint" style="margin:0">Alle Ausgewählten, die noch nicht eingeladen sind. Kopieren, selbst verschicken, dann auf „Eingeladen“ tippen. Die Vorlage änderst du im Event unter Bearbeiten.</p>'+
+    (xs.length?xs.map(function(x){
+      var p=pers(x.personId); if(!p) return "";
+      return '<div style="display:flex;flex-direction:column;gap:8px" data-block="'+esc(x.id)+'"><b>'+esc(p.name)+'</b>'+
+        ((p.profile||[]).length?'<span class="hint">'+p.profile.map(function(l){ return '<a href="'+esc(l.url)+'" target="_blank" rel="noopener">'+esc(l.art||"Profil")+'</a>'; }).join(" · ")+'</span>':'')+
+        '<div class="textkarte">'+esc(textFuer(p,e))+'</div>'+
+        '<div class="knopfreihe"><button class="btn klein" data-kopie="'+esc(p.id)+'">Text kopieren</button><button class="btn primary klein" data-eingeladen="'+esc(x.id)+'">Eingeladen</button></div><hr class="sep"></div>';
+    }).join(""):'<div class="leer">Niemand ausgewählt, der noch eingeladen werden muss.</div>'));
+  alle("[data-kopie]",function(b){ b.onclick=function(){ kopieren(textFuer(pers(b.dataset.kopie),e)); }; });
+  alle("[data-eingeladen]",function(b){ b.onclick=function(){
+    var x=D.einladungen.filter(function(y){ return y.id===b.dataset.eingeladen; })[0];
+    statusSetzen(x,"eingeladen"); speicher.sichern(D); zeichnen();
+    var blk=document.querySelector('[data-block="'+x.id+'"]'); if(blk) blk.remove();
+    toast("Als eingeladen markiert.");
+  }; });
+}
+
+/* ---------------- Nach dem Spiel ---------------- */
+function tabDanach(e){
+  var xs=einlVon(e.id).filter(function(x){ return ["zugesagt","erschienen","nicht_erschienen"].indexOf(x.status)>=0; });
+  var h='<p class="hint erkl" style="margin:0 0 12px">Nach dem Spiel festhalten, wer da war und was entstanden ist. Daraus lernt die App für die nächsten Events.</p>';
+  if(!xs.length){ $("tabInhalt").innerHTML=h+'<div class="leer">Noch keine Zusagen. Hier erscheinen später alle, die zugesagt haben.</div>'; return; }
+  h+='<div class="liste">'+xs.map(function(x){
+    var p=pers(x.personId); if(!p) return ""; x.ergebnis=x.ergebnis||{};
+    return '<div class="kand"><div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><b style="flex:1;min-width:140px">'+esc(p.name)+'</b>'+
+      '<div class="modus"><button data-da="'+esc(x.id)+'" data-wert="erschienen" aria-pressed="'+(x.status==="erschienen")+'">Da</button>'+
+      '<button data-da="'+esc(x.id)+'" data-wert="nicht_erschienen" aria-pressed="'+(x.status==="nicht_erschienen")+'">Nicht da</button></div></div>'+
+      (x.status==="erschienen"?'<div class="two">'+MARKER.map(function(m){
+        return '<label class="check" style="padding:9px 10px"><input type="checkbox" data-mark="'+esc(x.id)+'" data-k="'+m.k+'"'+(x.ergebnis[m.k]?' checked':'')+'><span><b>'+esc(m.t)+'</b></span></label>';
+      }).join("")+'</div>':'')+'</div>';
+  }).join("")+'</div>';
+  var da=xs.filter(function(x){ return x.status==="erschienen"; }).map(function(x){ return pers(x.personId); }).filter(Boolean);
+  var vb=D.verbindungen.filter(function(v){ return v.eventId===e.id; });
+  h+='<div class="sec-label">Wer hat wen kennengelernt?</div>';
+  if(da.length>=2){
+    var opts=da.map(function(p){ return '<option value="'+esc(p.id)+'">'+esc(p.name)+'</option>'; }).join("");
+    h+='<div class="box" style="display:flex;flex-direction:column;gap:10px"><div class="two">'+
+      '<div class="field"><label for="vA">Person</label><select id="vA">'+opts+'</select></div>'+
+      '<div class="field"><label for="vB">hat kennengelernt</label><select id="vB">'+opts+'</select></div></div>'+
+      '<div class="field"><label for="vArt">Was ist daraus geworden?</label><select id="vArt"><option value="vorgestellt">Vorgestellt, mehr noch nicht</option><option value="geschaeft">Geschäftskontakt entstanden</option></select></div>'+
+      '<button class="btn primary" id="vSpeichern">Verbindung festhalten</button></div>';
+  } else h+='<div class="leer">Sobald mindestens zwei Gäste als „Da“ markiert sind, kannst du hier Verbindungen festhalten.</div>';
+  if(vb.length) h+='<div class="liste" style="margin-top:8px">'+vb.map(function(v){
+    var a=pers(v.a), b=pers(v.b); if(!a||!b) return "";
+    return '<div class="paar"><b>'+esc(a.name)+' ↔ '+esc(b.name)+'</b><small>'+(v.art==="geschaeft"?'Geschäftskontakt entstanden':'Vorgestellt')+' · '+esc(deZeit(v.zeit))+'</small></div>';
+  }).join("")+'</div>';
+  var box=$("tabInhalt"); box.innerHTML=h;
+  alle("[data-da]",function(b){ b.onclick=function(){ var x=D.einladungen.filter(function(y){ return y.id===b.dataset.da; })[0]; statusSetzen(x,b.dataset.wert); sichern(); }; },box);
+  alle("[data-mark]",function(c){ c.onchange=function(){
+    var x=D.einladungen.filter(function(y){ return y.id===c.dataset.mark; })[0]; x.ergebnis=x.ergebnis||{};
+    x.ergebnis[c.dataset.k]=c.checked;
+    if(c.checked && c.dataset.k==="erneut") x.ergebnis.nicht_erneut=false;
+    if(c.checked && c.dataset.k==="nicht_erneut") x.ergebnis.erneut=false;
+    sichern();
+  }; },box);
+  if($("vSpeichern")){
+    if(da.length>1) $("vB").selectedIndex=1;
+    $("vSpeichern").onclick=function(){
+      var a=$("vA").value, b=$("vB").value;
+      if(a===b){ toast("Zwei verschiedene Personen wählen."); return; }
+      var alt=D.verbindungen.filter(function(v){ return v.eventId===e.id && ((v.a===a&&v.b===b)||(v.a===b&&v.b===a)); })[0];
+      if(alt){ alt.art=$("vArt").value; alt.zeit=new Date().toISOString(); }
+      else D.verbindungen.push({ id:uid(), eventId:e.id, a:a, b:b, art:$("vArt").value, zeit:new Date().toISOString() });
+      sichern(); toast("Verbindung festgehalten.");
+    };
+  }
+}
+
+/* ---------------- Netzwerk (alle Personen) ---------------- */
+function bilanz(p){
+  var xs=D.einladungen.filter(function(x){ return x.personId===p.id; });
+  var eing=xs.filter(function(x){ return ["eingeladen","zugesagt","abgesagt","keine_antwort","erschienen","nicht_erschienen"].indexOf(x.status)>=0; });
+  return {
+    events:xs.length,
+    einladungen:eing.length,
+    zusagen:xs.filter(function(x){ return JA.indexOf(x.status)>=0; }).length,
+    teilnahmen:xs.filter(function(x){ return x.status==="erschienen"; }).length,
+    erneut:xs.some(function(x){ return x.ergebnis&&x.ergebnis.erneut; }),
+    nichtErneut:xs.some(function(x){ return x.ergebnis&&x.ergebnis.nicht_erneut; }),
+    wertvoll:xs.some(function(x){ return x.ergebnis&&x.ergebnis.wertvoll; }),
+    kontakte:D.verbindungen.filter(function(v){ return v.a===p.id||v.b===p.id; }).length
+  };
+}
+function zeichnePersonen(){
+  var box=$("sicht-personen");
+  var q=norm(S.suche);
+  var ps=D.personen.filter(function(p){
+    return !q || [p.name,p.firma,p.rolle,p.branche,p.ort,(p.tags||[]).join(" ")].join(" ").toLowerCase().indexOf(q)>=0;
+  }).sort(function(a,b){ return a.name.localeCompare(b.name,"de"); });
+  var h='<h2 style="font-size:22px">Netzwerk</h2><p class="hint" style="margin:2px 0 12px">Alle Personen aus allen Events, mit Verlauf.</p>'+
+    '<div class="field" style="margin-bottom:12px"><input id="suche" type="search" placeholder="Name, Firma, Rolle, Thema" value="'+esc(S.suche)+'" aria-label="Suchen"></div>';
+  h+= ps.length ? '<div class="liste">'+ps.map(function(p){
+    var b=bilanz(p);
+    var marken=[b.wertvoll?'<span class="chip ok">wertvoll</span>':'', b.erneut?'<span class="chip akz">erneut einladen</span>':'', b.nichtErneut?'<span class="chip bad">nicht erneut</span>':''].join("");
+    return '<button class="karte" data-prof="'+esc(p.id)+'"><span class="avatar">'+esc(initialen(p.name))+'</span><span style="min-width:0"><b>'+esc(p.name)+'</b><small>'+esc([p.rolle,p.firma].filter(Boolean).join(" · "))+'</small>'+(marken?'<span class="tags" style="margin-top:4px">'+marken+'</span>':'')+'</span>'+
+      '<span class="rechts">'+b.einladungen+' / '+b.zusagen+' / '+b.teilnahmen+'<br><small>eingel. / zu / da</small></span></button>';
+  }).join("")+'</div>'
+    : '<div class="leer">'+(D.personen.length?'Niemand gefunden.':'Noch keine Personen. Sie kommen über die Recherche oder von Hand in einem Event dazu.')+'</div>';
+  box.innerHTML=h;
+  var s=$("suche"); s.oninput=function(){ S.suche=s.value; var pos=s.selectionStart; zeichnePersonen(); var n=$("suche"); n.focus(); try{ n.setSelectionRange(pos,pos); }catch(e){} };
+  alle("[data-prof]",function(b){ b.onclick=function(){ profil(b.dataset.prof,null); }; },box);
+}
+
+/* ---------------- Profil ---------------- */
+function profil(id,e){
+  var p=pers(id); if(!p) return;
+  var tw=teilwerte(p,e), g=gesamt(tw), b=bilanz(p);
+  var x=e?einl(e.id,p.id):null;
+  var h='<div style="display:flex;gap:12px;align-items:center"><span class="avatar" style="width:52px;height:52px;font-size:17px">'+esc(initialen(p.name))+'</span>'+
+      '<div style="flex:1;min-width:0"><b style="font-size:17px">'+esc(p.name)+'</b><div class="hint">'+esc([p.position,p.firma].filter(Boolean).join(" · ")||"Position unbekannt")+'</div></div>'+
+      (e?'<div class="gesamt">'+(g.wert===null?'–':g.wert)+'<small>Gesamt</small></div>':'')+'</div>';
+  if(p.beispiel) h+='<p class="infobox">Ausgedachte Beispielperson zum Ausprobieren. Keine echte Person.</p>';
+  h+='<dl class="kv">'+
+    '<dt>Rolle</dt><dd>'+esc(p.rolle||"unbekannt")+'</dd>'+
+    '<dt>Branche</dt><dd>'+esc(p.branche||"unbekannt")+'</dd>'+
+    '<dt>Ort</dt><dd>'+esc(p.ort||"unbekannt")+'</dd>'+
+    (p.website?'<dt>Website</dt><dd><a href="'+esc(p.website)+'" target="_blank" rel="noopener">'+esc(p.website.replace(/^https?:\/\//,""))+'</a></dd>':'')+
+    ((p.profile||[]).length?'<dt>Profile</dt><dd>'+p.profile.map(function(l){ return '<a href="'+esc(l.url)+'" target="_blank" rel="noopener">'+esc(l.art||"Profil")+'</a>'; }).join(" · ")+'</dd>':'')+
+    ((p.tags||[]).length?'<dt>Themen</dt><dd><span class="tags">'+p.tags.map(function(t){ return '<span class="chip">'+esc(t)+'</span>'; }).join("")+'</span></dd>':'')+
+    (x?'<dt>Status</dt><dd>'+chip(x.status)+'</dd>':'')+
+  '</dl>';
+  if(e){
+    h+='<div><div class="sec-label" style="margin-top:0">Bewertung für dieses Event</div><div class="werte" style="grid-template-columns:1fr 1fr">'+
+      wertZeile("Thema · "+D.gewichte.thema+" %",tw.thema)+wertZeile("Beruf · "+D.gewichte.beruf+" %",tw.beruf)+
+      wertZeile("Netzwerk · "+D.gewichte.netzwerk+" %",tw.netzwerk)+wertZeile("Runde · "+D.gewichte.runde+" %",tw.runde)+
+      wertZeile("Region · "+D.gewichte.region+" %",tw.region)+wertZeile("Zusagen · "+D.gewichte.historie+" %",tw.historie)+'</div>'+
+      '<p class="hint" style="margin:8px 0 0">Runde: '+esc(tw.rundeGrund)+'<br>Zusagen: '+esc(tw.historieText)+'<br>Unbekannte Werte zählen nicht mit, die übrigen werden nach Gewicht verrechnet.</p></div>';
+  }
+  h+='<div><div class="sec-label" style="margin-top:0">Warum interessant</div><p style="margin:0">'+(p.begruendung?esc(p.begruendung):'<span class="hint">Noch keine Begründung.</span>')+'</p></div>';
+  h+='<div><div class="sec-label" style="margin-top:0">Quellen</div>'+((p.quellen||[]).length?'<div class="liste" style="gap:6px">'+p.quellen.map(function(q){
+      return '<div class="quelle">'+esc(q.text||"")+(q.url?' <a href="'+esc(q.url)+'" target="_blank" rel="noopener">öffnen</a>':'')+'</div>'; }).join("")+'</div>'
+      :'<p class="warnbox">Keine Quelle. Aussagen über diese Person sind nicht belegt.</p>')+'</div>';
+  if(e){
+    var g2=runde(e.id,p.id);
+    var top=g2.map(function(q){ var r=paar(p,q); return {q:q,s:r.staerke,gr:r.gruende}; }).filter(function(r){ return r.s>0; }).sort(function(a,b){ return b.s-a.s; }).slice(0,3);
+    h+='<div><div class="sec-label" style="margin-top:0">Passt zu wem in der Runde</div>'+(top.length?top.map(function(r){
+      return '<div class="paar" style="margin-bottom:6px"><b>'+esc(r.q.name)+' <span class="mono" style="color:var(--ink-3);font-weight:500">'+r.s+'</span></b><small>'+esc(r.gr.join(" · "))+'</small></div>'; }).join("")
+      :'<p class="hint" style="margin:0">Noch niemand in der Runde, der erkennbar passt.</p>')+'</div>';
+  }
+  h+='<div><div class="sec-label" style="margin-top:0">Verlauf</div><p class="hint" style="margin:0 0 6px">'+b.einladungen+' eingeladen · '+b.zusagen+' zugesagt · '+b.teilnahmen+' dabei · '+plural(b.kontakte,"Verbindung","Verbindungen")+'</p>'+
+    D.einladungen.filter(function(y){ return y.personId===p.id; }).map(function(y){
+      var ee=ev(y.eventId); if(!ee) return "";
+      var erg=MARKER.filter(function(m){ return y.ergebnis&&y.ergebnis[m.k]; }).map(function(m){ return m.t; });
+      return '<div class="paar" style="margin-bottom:6px;border-color:var(--line)"><b>'+esc(ee.name)+' · '+esc(deDatum(ee.datum))+'</b><small>'+esc(statusInfo(y.status).t)+(erg.length?' · '+esc(erg.join(", ")):'')+'</small></div>';
+    }).join("")+'</div>';
+  var vb=D.verbindungen.filter(function(v){ return v.a===p.id||v.b===p.id; });
+  if(vb.length) h+='<div><div class="sec-label" style="margin-top:0">Kennengelernt</div>'+vb.map(function(v){
+    var o=pers(v.a===p.id?v.b:v.a); var ee=ev(v.eventId); if(!o) return "";
+    return '<div class="hint">'+esc(o.name)+' · '+(v.art==="geschaeft"?'Geschäftskontakt':'vorgestellt')+(ee?' · '+esc(ee.name):'')+'</div>'; }).join("")+'</div>';
+  if(p.notizen) h+='<div><div class="sec-label" style="margin-top:0">Notizen</div><p style="margin:0;white-space:pre-wrap">'+esc(p.notizen)+'</p></div>';
+  var fuss='<button class="btn" id="pBearb">Bearbeiten</button>';
+  if(e && x && x.status==="vorgeschlagen") fuss+='<button class="btn primary" id="pWahl">Auswählen</button>';
+  if(e && x && x.status!=="vorgeschlagen" && x.status!=="aussortiert") fuss+='<button class="btn primary" id="pText">Einladungstext</button>';
+  fenster("Profil",h,fuss);
+  $("pBearb").onclick=function(){ personFormular(p,e); };
+  if($("pWahl")) $("pWahl").onclick=function(){ statusSetzen(x,"ausgewaehlt"); speicher.sichern(D); zeichnen(); profil(id,e); toast("Ausgewählt."); };
+  if($("pText")) $("pText").onclick=function(){
+    fenster("Einladungstext",'<p class="hint" style="margin:0">Für '+esc(p.name)+'. Die App verschickt nichts.</p><div class="textkarte">'+esc(textFuer(p,e))+'</div>',
+      '<button class="btn" id="zurProf">Zurück</button><button class="btn primary" id="kop">Text kopieren</button>');
+    $("zurProf").onclick=function(){ profil(id,e); };
+    $("kop").onclick=function(){ kopieren(textFuer(p,e)); };
   };
 }
 
-/* ---------------- Formular in zwei Schritten ----------------
-   Schritt 1: was man zum Handeln braucht. Schritt 2: Details. Löschen nur hier. */
-function formular(alt){
-  var e=alt||{ datum:ymd(new Date()) };
-  fenster(alt?"Eintrag bearbeiten":"Neuer Eintrag",
+/* ---------------- Formulare ---------------- */
+function eventFormular(alt){
+  var e=alt||{ datum:ymd(new Date(Date.now()+5*86400000)), plaetze:14, quote:10, ort:"BVB-Loge, Signal Iduna Park Dortmund", region:"Dortmund + 100 km", ziel:"allgemeines Networking", rollen:[], einladungstext:TEXT_STANDARD };
+  fenster(alt?"Event bearbeiten":"Neues Event",
     '<div class="schritte"><span id="sk1">1 Das Wichtigste</span><span id="sk2">2 Details</span></div>'+
     '<div id="s1" style="display:flex;flex-direction:column;gap:12px">'+
-      '<div class="field"><label for="f_titel">Titel</label><input id="f_titel" value="'+esc(e.titel||"")+'" autocomplete="off"></div>'+
-      '<div class="field"><label for="f_datum">Datum</label><input id="f_datum" type="date" class="mono" value="'+esc(e.datum||"")+'"></div>'+
+      '<div class="field"><label for="f_name">Eventname</label><input id="f_name" value="'+esc(e.name||"")+'" placeholder="BVB-Abend Jagd" autocomplete="off"></div>'+
+      '<div class="field"><label for="f_spiel">Spiel</label><input id="f_spiel" value="'+esc(e.spiel||"")+'" placeholder="BVB gegen …" autocomplete="off"></div>'+
+      '<div class="two"><div class="field"><label for="f_datum">Datum</label><input id="f_datum" type="date" class="mono" value="'+esc(e.datum||"")+'"></div>'+
+        '<div class="field"><label for="f_zeit">Uhrzeit</label><input id="f_zeit" type="time" class="mono" value="'+esc(e.uhrzeit||"")+'"></div></div>'+
+      '<div class="field"><label for="f_thema">Thema</label><input id="f_thema" value="'+esc(e.thema||"")+'" placeholder="Jagd" autocomplete="off"></div>'+
+      '<div class="two"><div class="field"><label for="f_plaetze">Plätze</label><input id="f_plaetze" type="number" min="1" class="mono" value="'+esc(e.plaetze||"")+'"></div>'+
+        '<div class="field"><label for="f_quote">Erwartete Zusagequote %</label><input id="f_quote" type="number" min="1" max="100" class="mono" value="'+esc(e.quote||10)+'">'+
+        '<span class="hint erkl">Erfahrungswert. Sobald genug eigene Daten da sind, rechnet die App mit denen.</span></div></div>'+
     '</div>'+
     '<div id="s2" hidden style="display:flex;flex-direction:column;gap:12px">'+
-      '<div class="field"><label for="f_notiz">Notiz</label><textarea id="f_notiz">'+esc(e.notiz||"")+'</textarea>'+
-        '<span class="hint erkl">Kurz halten. Was hier steht, sehen alle, die den Eintrag öffnen.</span></div>'+
-      '<label class="check"><input type="checkbox" id="f_erl"'+(e.erledigt?" checked":"")+'>'+
-        '<span><b>Schon erledigt</b><span class="erkl"><br>Erledigte Einträge verschwinden von der Startseite.</span></span></label>'+
+      '<div class="field"><label for="f_rollen">Gewünschte Rollen am Tisch</label><input id="f_rollen" value="'+esc((e.rollen||[]).join(", "))+'" placeholder="Jagdpächter, Verband, Jagdhandel, Forst, Bank" autocomplete="off">'+
+        '<span class="hint erkl">Mit Komma getrennt. Daraus erkennt die App, welche Person noch fehlt.</span></div>'+
+      '<div class="field"><label for="f_branchen">Gewünschte Branchen</label><input id="f_branchen" value="'+esc(e.branchen||"")+'" autocomplete="off"></div>'+
+      '<div class="field"><label for="f_ziel">Ziel des Abends</label><select id="f_ziel">'+ZIELE.map(function(z){ return '<option'+(z===e.ziel?' selected':'')+'>'+esc(z)+'</option>'; }).join("")+'</select></div>'+
+      '<div class="two"><div class="field"><label for="f_ort">Ort</label><input id="f_ort" value="'+esc(e.ort||"")+'"></div>'+
+        '<div class="field"><label for="f_region">Suchregion</label><input id="f_region" value="'+esc(e.region||"")+'"></div></div>'+
+      '<div class="field"><label for="f_beschr">Beschreibung</label><textarea id="f_beschr">'+esc(e.beschreibung||"")+'</textarea></div>'+
+      '<div class="field"><label for="f_text">Vorlage Einladungstext</label><textarea id="f_text" style="min-height:180px">'+esc(e.einladungstext||TEXT_STANDARD)+'</textarea>'+
+        '<span class="hint erkl">Platzhalter: {name} {thema} {datum} {spiel} {grund}. {grund} ist der persönliche Satz aus der Recherche.</span></div>'+
     '</div>'+
     '<p class="err" id="f_err" hidden></p>',
     '<button class="btn ghost" id="zurBtn" hidden>Zurück</button>'+
     '<button class="btn primary" id="weiterBtn">Weiter</button>'+
-    '<button class="btn primary" id="speichernBtn" hidden>'+(alt?"Speichern":"Eintragen")+'</button>'+
+    '<button class="btn primary" id="speichernBtn" hidden>'+(alt?"Speichern":"Event anlegen")+'</button>'+
     (alt?'<div class="spacer"></div><button class="btn ghost" id="loeschBtn" style="color:var(--bad)">Löschen</button>':''));
-
   function schritt(n){
     $("s1").hidden=(n!==1); $("s2").hidden=(n!==2);
     $("weiterBtn").hidden=(n!==1); $("speichernBtn").hidden=(n!==2); $("zurBtn").hidden=(n!==2);
@@ -357,8 +936,10 @@ function formular(alt){
   function fehler(t,feld){ var f=$("f_err"); f.hidden=false; f.textContent=t; if(feld) $(feld).focus(); return false; }
   function s1Ok(){
     $("f_err").hidden=true;
-    if(!$("f_titel").value.trim()) return fehler("Gib dem Eintrag einen Titel.","f_titel");
+    if(!$("f_name").value.trim()) return fehler("Gib dem Event einen Namen.","f_name");
     if(!$("f_datum").value) return fehler("Wähl ein Datum.","f_datum");
+    if(!$("f_thema").value.trim()) return fehler("Ohne Thema kann die Recherche nicht suchen.","f_thema");
+    if(!(Number($("f_plaetze").value)>0)) return fehler("Wie viele Plätze hat die Loge?","f_plaetze");
     return true;
   }
   schritt(1);
@@ -366,77 +947,220 @@ function formular(alt){
   $("zurBtn").onclick=function(){ schritt(1); };
   $("speichernBtn").onclick=function(){
     if(!s1Ok()){ schritt(1); return; }
-    var neu={ id:e.id||uid(), titel:$("f_titel").value.trim(), datum:$("f_datum").value,
-              notiz:$("f_notiz").value.trim(), erledigt:$("f_erl").checked };
-    speicher.speichern(neu).then(function(){ fensterZu(); toast(alt?"Gespeichert.":"Eingetragen."); });
+    var neu=alt||{ id:uid() };
+    neu.name=$("f_name").value.trim(); neu.spiel=$("f_spiel").value.trim(); neu.datum=$("f_datum").value; neu.uhrzeit=$("f_zeit").value;
+    neu.thema=$("f_thema").value.trim(); neu.plaetze=Number($("f_plaetze").value); neu.quote=Number($("f_quote").value)||10;
+    neu.rollen=liste($("f_rollen").value); neu.branchen=$("f_branchen").value.trim(); neu.ziel=$("f_ziel").value;
+    neu.ort=$("f_ort").value.trim(); neu.region=$("f_region").value.trim(); neu.beschreibung=$("f_beschr").value.trim();
+    neu.einladungstext=$("f_text").value.trim()||TEXT_STANDARD;
+    if(!alt) D.events.push(neu);
+    speicher.sichern(D); fensterZu(); eventOeffnen(neu.id,"kandidaten"); toast(alt?"Gespeichert.":"Event angelegt.");
   };
   if($("loeschBtn")) $("loeschBtn").onclick=function(){
-    // Rückfrage direkt an der Stelle, kein Browser-confirm
     var f=document.querySelector(".panel-foot");
-    f.innerHTML='<div class="bestaetigen"><p style="margin:0"><b>'+esc(alt.titel)+'</b> endgültig löschen?</p>'+
+    f.innerHTML='<div class="bestaetigen"><p style="margin:0"><b>'+esc(alt.name)+'</b> mit allen Einladungen löschen? Die Personen bleiben im Netzwerk.</p>'+
       '<div class="reihe"><button class="btn danger" id="jaBtn">Löschen</button><button class="btn" id="neinBtn">Abbrechen</button></div></div>';
-    $("neinBtn").onclick=function(){ formular(alt); };
-    $("jaBtn").onclick=function(){ speicher.loeschen(alt.id).then(function(){ fensterZu(); toast("Gelöscht."); }); };
+    $("neinBtn").onclick=function(){ eventFormular(alt); };
+    $("jaBtn").onclick=function(){
+      D.events=D.events.filter(function(x){ return x.id!==alt.id; });
+      D.einladungen=D.einladungen.filter(function(x){ return x.eventId!==alt.id; });
+      D.verbindungen=D.verbindungen.filter(function(x){ return x.eventId!==alt.id; });
+      S.sicht="start"; fensterZu(); sichern(); toast("Event gelöscht.");
+    };
   };
-  setTimeout(function(){ if(!alt) $("f_titel").focus(); },60);
+  setTimeout(function(){ if(!alt) $("f_name").focus(); },60);
+}
+
+function personFormular(alt,e){
+  var p=alt||{ werte:{} };
+  var w=p.werte||{};
+  var rollenVorschlag={}; (e&&e.rollen||[]).concat(D.personen.map(function(q){ return q.rolle; })).forEach(function(r){ if(r) rollenVorschlag[r]=1; });
+  function wf(k,t){ return '<div class="field"><label for="w_'+k+'">'+t+'</label><input id="w_'+k+'" type="number" min="0" max="100" class="mono" placeholder="unbekannt" value="'+(w[k]===null||w[k]===undefined?"":esc(w[k]))+'"></div>'; }
+  fenster(alt?"Person bearbeiten":"Neue Person",
+    '<div class="field"><label for="p_name">Name</label><input id="p_name" value="'+esc(p.name||"")+'" autocomplete="off"></div>'+
+    '<div class="two"><div class="field"><label for="p_pos">Position</label><input id="p_pos" value="'+esc(p.position||"")+'"></div>'+
+      '<div class="field"><label for="p_firma">Unternehmen</label><input id="p_firma" value="'+esc(p.firma||"")+'"></div></div>'+
+    '<div class="two"><div class="field"><label for="p_rolle">Rolle am Tisch</label><input id="p_rolle" list="rollenListe" value="'+esc(p.rolle||"")+'" autocomplete="off">'+
+      '<datalist id="rollenListe">'+Object.keys(rollenVorschlag).map(function(r){ return '<option value="'+esc(r)+'">'; }).join("")+'</datalist></div>'+
+      '<div class="field"><label for="p_branche">Branche</label><input id="p_branche" value="'+esc(p.branche||"")+'"></div></div>'+
+    '<div class="two"><div class="field"><label for="p_ort">Ort</label><input id="p_ort" value="'+esc(p.ort||"")+'"></div>'+
+      '<div class="field"><label for="p_web">Website</label><input id="p_web" type="url" value="'+esc(p.website||"")+'"></div></div>'+
+    '<div class="field"><label for="p_profile">Profile, eins pro Zeile</label><textarea id="p_profile" placeholder="LinkedIn https://…">'+esc((p.profile||[]).map(function(l){ return (l.art?l.art+" ":"")+l.url; }).join("\n"))+'</textarea></div>'+
+    '<div class="field"><label for="p_tags">Themen</label><input id="p_tags" value="'+esc((p.tags||[]).join(", "))+'" placeholder="Jagd, Forst, Mittelstand"></div>'+
+    '<div class="sec-label" style="margin:4px 0 0">Bewertung 0 bis 100, leer heißt unbekannt</div>'+
+    '<div class="two">'+wf("thema","Thema")+wf("beruf","Beruf")+wf("netzwerk","Netzwerk")+wf("region","Region")+'</div>'+
+    '<div class="field"><label for="p_begr">Warum interessant</label><textarea id="p_begr">'+esc(p.begruendung||"")+'</textarea></div>'+
+    '<div class="field"><label for="p_grund">Persönlicher Satz für die Einladung</label><input id="p_grund" value="'+esc(p.einladungsgrund||"")+'"></div>'+
+    '<div class="field"><label for="p_quellen">Quellen, eine pro Zeile</label><textarea id="p_quellen" placeholder="Vorstand Kreisjägerschaft laut Website https://…">'+esc((p.quellen||[]).map(function(q){ return [q.text,q.url].filter(Boolean).join(" "); }).join("\n"))+'</textarea>'+
+      '<span class="hint erkl">Ohne Quelle keine Aussage. Was nicht belegt ist, bleibt leer.</span></div>'+
+    '<div class="field"><label for="p_notiz">Notizen</label><textarea id="p_notiz">'+esc(p.notizen||"")+'</textarea></div>'+
+    '<p class="err" id="p_err" hidden></p>',
+    '<button class="btn primary" id="pSpeichern">'+(alt?"Speichern":"Person anlegen")+'</button>'+
+    (alt?'<div class="spacer"></div><button class="btn ghost" id="pLoesch" style="color:var(--bad)">Löschen</button>':''));
+  function zeilenLinks(t){ return String(t||"").split("\n").map(function(z){ z=z.trim(); if(!z) return null;
+    var m=z.match(/^(.*?)(https?:\/\/\S+)\s*$/); return m?{ art:m[1].trim(), url:m[2], text:m[1].trim() }:{ art:"", url:"", text:z }; }).filter(Boolean); }
+  $("pSpeichern").onclick=function(){
+    if(!$("p_name").value.trim()){ var f=$("p_err"); f.hidden=false; f.textContent="Ohne Namen geht es nicht."; $("p_name").focus(); return; }
+    var neu=alt||{ id:uid(), angelegt:new Date().toISOString(), herkunft:"von Hand" };
+    neu.name=$("p_name").value.trim(); neu.position=$("p_pos").value.trim(); neu.firma=$("p_firma").value.trim();
+    neu.rolle=$("p_rolle").value.trim(); neu.branche=$("p_branche").value.trim(); neu.ort=$("p_ort").value.trim(); neu.website=$("p_web").value.trim();
+    neu.profile=zeilenLinks($("p_profile").value).filter(function(l){ return l.url; }).map(function(l){ return {art:l.art||"Profil",url:l.url}; });
+    neu.tags=liste($("p_tags").value);
+    neu.werte={ thema:zahl($("w_thema").value), beruf:zahl($("w_beruf").value), netzwerk:zahl($("w_netzwerk").value), region:zahl($("w_region").value) };
+    neu.begruendung=$("p_begr").value.trim(); neu.einladungsgrund=$("p_grund").value.trim();
+    neu.quellen=zeilenLinks($("p_quellen").value).map(function(l){ return {text:l.text,url:l.url}; });
+    neu.notizen=$("p_notiz").value.trim();
+    if(!alt){ D.personen.push(neu); if(e) zurEvent(e.id,neu.id,"vorgeschlagen"); }
+    speicher.sichern(D); zeichnen(); profil(neu.id,e); toast(alt?"Gespeichert.":"Person angelegt.");
+  };
+  if($("pLoesch")) $("pLoesch").onclick=function(){
+    var f=document.querySelector(".panel-foot");
+    f.innerHTML='<div class="bestaetigen"><p style="margin:0"><b>'+esc(alt.name)+'</b> endgültig löschen, mit allen Einladungen und Verbindungen?</p>'+
+      '<div class="reihe"><button class="btn danger" id="jaBtn">Löschen</button><button class="btn" id="neinBtn">Abbrechen</button></div></div>';
+    $("neinBtn").onclick=function(){ personFormular(alt,e); };
+    $("jaBtn").onclick=function(){
+      D.personen=D.personen.filter(function(x){ return x.id!==alt.id; });
+      D.einladungen=D.einladungen.filter(function(x){ return x.personId!==alt.id; });
+      D.verbindungen=D.verbindungen.filter(function(x){ return x.a!==alt.id && x.b!==alt.id; });
+      fensterZu(); sichern(); toast("Person gelöscht.");
+    };
+  };
+}
+
+/* ---------------- Import der Recherche ----------------
+   Format: {"personen":[{name, position, firma, branche, ort, website, rolle, tags[], profile[{art,url}],
+   werte{thema,beruf,netzwerk,region}, begruendung, einladungsgrund, quellen[{text,url}]}]}
+   Doppelte (gleicher Name und gleiche Firma) werden aktualisiert statt doppelt angelegt. */
+function importFenster(e){
+  fenster("Recherche importieren",
+    '<p class="hint" style="margin:0">Datei aus der Recherche wählen oder den Inhalt einfügen. Alle Personen landen als Vorschlag in <b>'+esc(e.name)+'</b>.</p>'+
+    '<div class="field"><label for="i_datei">Datei</label><input id="i_datei" type="file" accept=".json,application/json"></div>'+
+    '<div class="field"><label for="i_text">Oder einfügen</label><textarea id="i_text" style="min-height:160px" class="mono" placeholder="{&quot;personen&quot;:[…]}"></textarea></div>'+
+    '<p class="err" id="i_err" hidden></p>',
+    '<button class="btn primary" id="iLos">Importieren</button>');
+  $("i_datei").onchange=function(){
+    var f=this.files[0]; if(!f) return; var r=new FileReader();
+    r.onload=function(){ $("i_text").value=r.result; }; r.readAsText(f);
+  };
+  $("iLos").onclick=function(){
+    var roh; try{ roh=JSON.parse($("i_text").value); }catch(err){ var f=$("i_err"); f.hidden=false; f.textContent="Das ist keine gültige Recherche-Datei. Bitte die Datei unverändert einfügen."; return; }
+    var liste_=Array.isArray(roh)?roh:(roh.personen||[]);
+    var neu=0, akt=0;
+    liste_.forEach(function(r){
+      if(!r||!r.name) return;
+      var vorh=D.personen.filter(function(p){ return norm(p.name)===norm(r.name) && norm(p.firma)===norm(r.firma); })[0];
+      var p=vorh||{ id:uid(), angelegt:new Date().toISOString(), herkunft:"Recherche "+(e.thema||"") };
+      ["name","position","firma","branche","ort","website","rolle","begruendung","einladungsgrund"].forEach(function(k){ if(r[k]!==undefined&&r[k]!==null&&r[k]!=="") p[k]=String(r[k]); });
+      if(Array.isArray(r.tags)) p.tags=r.tags.map(String);
+      if(Array.isArray(r.profile)) p.profile=r.profile.filter(function(l){ return l&&l.url; });
+      if(Array.isArray(r.quellen)) p.quellen=r.quellen.filter(function(q){ return q&&(q.text||q.url); });
+      var w=r.werte||{}; p.werte={ thema:zahl(w.thema), beruf:zahl(w.beruf), netzwerk:zahl(w.netzwerk), region:zahl(w.region) };
+      if(!vorh){ D.personen.push(p); neu++; } else akt++;
+      if(!einl(e.id,p.id)) zurEvent(e.id,p.id,"vorgeschlagen");
+    });
+    S.filter="vorschlaege"; speicher.sichern(D); fensterZu(); zeichnen();
+    toast(neu+" neu, "+akt+" aktualisiert.");
+  };
 }
 
 /* ---------------- Einstellungen ---------------- */
 function einstellungen(){
+  var summe=TEILE.reduce(function(s,t){ return s+(Number(D.gewichte[t.k])||0); },0);
   fenster("Einstellungen",
+    '<div><div class="sec-label" style="margin-top:0">Gewichtung der Bewertung</div>'+
+      '<div class="three">'+TEILE.map(function(t){ return '<div class="field"><label for="g_'+t.k+'">'+esc(t.t)+' %</label><input id="g_'+t.k+'" type="number" min="0" max="100" class="mono" value="'+esc(D.gewichte[t.k])+'"></div>'; }).join("")+'</div>'+
+      '<p class="hint" style="margin:6px 0 0" id="gSumme">Summe: '+summe+' %'+(summe!==100?' · muss nicht 100 sein, die App rechnet anteilig':'')+'</p>'+
+      '<div class="knopfreihe" style="margin-top:8px"><button class="btn klein" id="gSpeichern">Gewichte übernehmen</button><button class="btn ghost klein" id="gStandard">Standard</button></div></div>'+
+    '<hr class="sep">'+
     '<div><div class="sec-label" style="margin-top:0">Darstellung</div>'+
       '<div class="modus" id="themaBar"><button data-t="hell">Hell</button><button data-t="dunkel">Dunkel</button></div></div>'+
-    '<hr class="sep">'+
     '<div><div class="sec-label" style="margin-top:0">Erklärungen</div>'+
-      '<div class="modus" id="hilfeBar"><button data-h="an">An</button><button data-h="aus">Aus</button></div>'+
-      '<p class="hint erkl" style="margin:6px 0 0">Die kleinen grauen Erklärtexte. Wer sich auskennt, schaltet sie aus. Warnungen bleiben.</p></div>'+
+      '<div class="modus" id="hilfeBar"><button data-h="an">An</button><button data-h="aus">Aus</button></div></div>'+
+    '<hr class="sep">'+
+    '<div><div class="sec-label" style="margin-top:0">Daten</div>'+
+      '<p class="hint" style="margin:0 0 8px">'+plural(D.events.length,"Event","Events")+' · '+plural(D.personen.length,"Person","Personen")+' · '+plural(D.verbindungen.length,"Verbindung","Verbindungen")+'. Liegt nur in diesem Browser.</p>'+
+      '<div class="knopfreihe"><button class="btn klein" id="expBtn">Sicherung herunterladen</button><button class="btn klein" id="impBtn">Sicherung einspielen</button>'+
+      '<button class="btn klein" id="bspBtn">Beispiel laden</button></div>'+
+      '<input type="file" id="impDatei" accept=".json,application/json" hidden>'+
+      '<div id="allesBox" style="margin-top:10px"><button class="btn ghost klein" id="allesBtn" style="color:var(--bad)">Alle Daten löschen</button></div></div>'+
     '<hr class="sep">'+
     '<div><div class="sec-label" style="margin-top:0">Fassung</div><p class="hint mono" style="margin:0">'+esc(VERSION)+'</p></div>');
   function knoepfe(){
-    Array.prototype.forEach.call(document.querySelectorAll("#themaBar button"),function(b){
-      b.setAttribute("aria-pressed",String(b.dataset.t===thema()));
-      b.onclick=function(){ LS.set("{{KURZ}}_thema",b.dataset.t); themaAnwenden(); knoepfe(); };
-    });
-    Array.prototype.forEach.call(document.querySelectorAll("#hilfeBar button"),function(b){
-      b.setAttribute("aria-pressed",String(b.dataset.h===hilfe()));
-      b.onclick=function(){ LS.set("{{KURZ}}_hilfe",b.dataset.h); hilfeAnwenden(); knoepfe(); };
-    });
+    alle("#themaBar button",function(b){ b.setAttribute("aria-pressed",String(b.dataset.t===thema())); b.onclick=function(){ LS.set("logenrunde_thema",b.dataset.t); themaAnwenden(); knoepfe(); }; });
+    alle("#hilfeBar button",function(b){ b.setAttribute("aria-pressed",String(b.dataset.h===hilfe())); b.onclick=function(){ LS.set("logenrunde_hilfe",b.dataset.h); hilfeAnwenden(); knoepfe(); }; });
   }
   knoepfe();
+  $("gSpeichern").onclick=function(){ TEILE.forEach(function(t){ D.gewichte[t.k]=Math.max(0,Number($("g_"+t.k).value)||0); }); sichern(); einstellungen(); toast("Gewichte übernommen."); };
+  $("gStandard").onclick=function(){ D.gewichte=JSON.parse(JSON.stringify(GEWICHTE_STANDARD)); sichern(); einstellungen(); };
+  $("expBtn").onclick=function(){ herunterladen("logenrunde-sicherung-"+ymd(new Date())+".json",JSON.stringify(D,null,2)); };
+  $("impBtn").onclick=function(){ $("impDatei").click(); };
+  $("impDatei").onchange=function(){
+    var f=this.files[0]; if(!f) return; var r=new FileReader();
+    r.onload=function(){
+      try{ var d=JSON.parse(r.result); if(!d.events||!d.personen) throw 0; D=d; speicher.sichern(D); D=speicher.laden(); fensterZu(); S.sicht="start"; zeichnen(); toast("Sicherung eingespielt."); }
+      catch(e){ toast("Das ist keine Sicherung aus der Logenrunde."); }
+    }; r.readAsText(f);
+  };
+  $("bspBtn").onclick=beispielLaden;
+  $("allesBtn").onclick=function(){
+    $("allesBox").innerHTML='<div class="bestaetigen"><p style="margin:0">Wirklich <b>alle</b> Events, Personen und Verbindungen löschen?</p>'+
+      '<div class="reihe"><button class="btn danger" id="jaBtn">Alles löschen</button><button class="btn" id="neinBtn">Abbrechen</button></div></div>';
+    $("neinBtn").onclick=einstellungen;
+    $("jaBtn").onclick=function(){ var g=D.gewichte; D=leer(); D.gewichte=g; S.sicht="start"; fensterZu(); sichern(); toast("Alles gelöscht."); };
+  };
 }
 
-/* ---------------- Neue Fassung ----------------
-   hochladen.sh schreibt version.json. Ist der Stand dort neuer, erscheint unten ein Hinweis. */
-function fassungPruefen(){
-  fetch("version.json?t="+Date.now(),{cache:"no-store"}).then(function(r){ return r.ok?r.json():null; })
-  .then(function(d){
-    if(!d||!d.stand||d.stand===VERSION||$("fassung")) return;
-    var b=document.createElement("div"); b.className="fassung"; b.id="fassung";
-    b.innerHTML='<span>Eine neue Fassung ist da.</span><button class="btn primary" id="ladenBtn">Jetzt laden</button><button class="btn ghost" id="spaeterBtn">Später</button>';
-    document.body.appendChild(b);
-    $("ladenBtn").onclick=function(){
-      this.disabled=true; b.querySelector("span").textContent="Lade neu …";
-      location.replace(location.pathname+"?v="+Date.now());
-    };
-    $("spaeterBtn").onclick=function(){ b.remove(); };
-  }).catch(function(){});
+/* ---------------- Beispiel ----------------
+   Ausgedachte Personen, deutlich markiert. Zeigt, wie die App aussieht, bevor echte Recherche da ist. */
+function beispielLaden(){
+  var heute=new Date();
+  var vorher=ymd(new Date(heute.getTime()-35*86400000)), bald=ymd(new Date(heute.getTime()+5*86400000));
+  var e0={ id:uid(), name:"Beispiel: Mittelstand", spiel:"BVB gegen Beispiel-Gegner", datum:vorher, uhrzeit:"18:30", thema:"Mittelstand", plaetze:12, quote:10, rollen:[], ziel:"Unternehmer", ort:"BVB-Loge", region:"Dortmund + 100 km", einladungstext:TEXT_STANDARD, beispiel:true };
+  var e1={ id:uid(), name:"Beispiel: Pflegekasse", spiel:"BVB gegen Beispiel-Gegner", datum:bald, uhrzeit:"18:30", thema:"Pflegekasse", plaetze:14, quote:10,
+    rollen:["Pflegeunternehmer","Krankenkasse","Klinikmanagement","Health-Tech","Wohnungswirtschaft","Bank"], ziel:"Kooperationen", ort:"BVB-Loge", region:"Dortmund + 100 km", einladungstext:TEXT_STANDARD, beispiel:true };
+  function P(name,pos,firma,rolle,branche,ort,tags,w,begr,grund){
+    return { id:uid(), name:name+" (Beispiel)", position:pos, firma:firma, rolle:rolle, branche:branche, ort:ort, tags:tags,
+      werte:{thema:w[0],beruf:w[1],netzwerk:w[2],region:w[3]}, begruendung:begr, einladungsgrund:grund, beispiel:true,
+      quellen:[{text:"Ausgedachte Quelle, nur zur Ansicht",url:""}], profile:[], herkunft:"Beispiel", angelegt:new Date().toISOString() };
+  }
+  var ps=[
+    P("Anna Muster","Geschäftsführerin","Musterpflege GmbH","Pflegeunternehmer","Pflege","Dortmund",["Pflege","Personal","Digitalisierung"],[94,85,72,100],"Führt einen ambulanten Pflegedienst mit mehreren Standorten. Direkter Bezug zum Abendthema.","Sie führen einen der größeren Pflegedienste der Region, das Thema des Abends betrifft Sie direkt."),
+    P("Bernd Beispiel","Bereichsleiter Pflege","Beispiel-Krankenkasse","Krankenkasse","Versicherung","Bochum",["Pflege","Prävention"],[90,80,85,90],"Verantwortet den Bereich Pflegeleistungen. Sitzt auf der anderen Seite des Antrags.",""),
+    P("Clara Probe","Kaufmännische Direktorin","Probe-Klinikum","Klinikmanagement","Krankenhaus","Hamm",["Entlassmanagement","Pflege"],[78,88,80,95],"Klinik mit Entlassmanagement, Schnittstelle zur häuslichen Pflege.",""),
+    P("David Test","Gründer","Testcare Software","Health-Tech","Software","Essen",["Digitalisierung","Pflege"],[70,75,65,85],"Software für Pflegedienste. Sucht Kontakt zu Kassen und Kliniken.",""),
+    P("Eva Vorlage","Vorstand","Wohnbau Vorlage eG","Wohnungswirtschaft","Wohnungsbau","Dortmund",["Barrierefreiheit","Senioren"],[72,82,78,100],"Genossenschaft mit vielen älteren Mietern. Muss Umbauten ohnehin zustimmen.",""),
+    P("Frank Fiktiv","Firmenkundenbetreuer","Fiktiv-Sparkasse","Bank","Finanzen","Unna",["Mittelstand","Finanzierung"],[40,80,90,95],"Betreut Mittelständler in der Region. Thematisch fern, aber starker Vermittler.",""),
+    P("Gerd Erfunden","Inhaber","Erfunden Sanitätshaus","Pflegeunternehmer","Hilfsmittel","Lünen",["Hilfsmittel","Pflege"],[85,70,null,95],"Sanitätshaus mit Hilfsmitteln für zu Hause. Netzwerk nicht belegt, deshalb unbekannt.",""),
+    P("Hanna Platzhalter","Geschäftsführerin","Platzhalter Pflegeheime","Pflegeunternehmer","Pflege","Münster",["Pflege","Personal"],[88,82,70,60],"Betreibt stationäre Einrichtungen, ergänzt die ambulante Sicht.",""),
+    P("Ingo Annahme","Leiter Sozialdienst","Annahme-Reha","Klinikmanagement","Reha","Bad Sassendorf",["Entlassmanagement","Reha"],[75,65,55,70],"Reha-Klinik mit Überleitung in die häusliche Versorgung.",""),
+    P("Jana Muster","Referentin","Beispiel-Landesverband Pflege","Verband","Verband","Düsseldorf",["Pflege","Politik"],[86,70,88,50],"Verbandsarbeit, kennt viele Träger. Klassische Multiplikatorin.","")
+  ];
+  D.events.push(e0,e1); ps.forEach(function(p){ D.personen.push(p); });
+  // Vergangenes Event mit Ergebnissen, damit Verlauf und Quote etwas zeigen
+  function X(ev_,p,st,erg){ var x=zurEvent(ev_.id,p.id,"ausgewaehlt"); statusSetzen(x,"eingeladen"); statusSetzen(x,st); x.ergebnis=erg||{}; return x; }
+  X(e0,ps[0],"erschienen",{wertvoll:true,erneut:true,passte:true});
+  X(e0,ps[5],"erschienen",{erneut:true,geschaeft:true});
+  X(e0,ps[4],"abgesagt"); X(e0,ps[1],"keine_antwort"); X(e0,ps[3],"erschienen",{passte:true});
+  D.verbindungen.push({ id:uid(), eventId:e0.id, a:ps[0].id, b:ps[5].id, art:"geschaeft", zeit:new Date(heute.getTime()-30*86400000).toISOString() });
+  D.verbindungen.push({ id:uid(), eventId:e0.id, a:ps[0].id, b:ps[3].id, art:"vorgestellt", zeit:new Date(heute.getTime()-30*86400000).toISOString() });
+  // Kommendes Event: einige in der Runde, Rest als Vorschlag
+  zurEvent(e1.id,ps[0].id,"ausgewaehlt"); statusSetzen(einl(e1.id,ps[0].id),"eingeladen"); statusSetzen(einl(e1.id,ps[0].id),"zugesagt");
+  zurEvent(e1.id,ps[2].id,"ausgewaehlt"); statusSetzen(einl(e1.id,ps[2].id),"eingeladen");
+  zurEvent(e1.id,ps[3].id,"ausgewaehlt");
+  zurEvent(e1.id,ps[7].id,"ausgewaehlt");
+  [1,4,5,6,8,9].forEach(function(i){ zurEvent(e1.id,ps[i].id,"vorgeschlagen"); });
+  speicher.sichern(D); fensterZu(); S.sicht="start"; zeichnen(); toast("Beispiel geladen. Alle Personen sind ausgedacht.");
 }
 
 /* ---------------- Start ---------------- */
 function start(){
   themaAnwenden(); hilfeAnwenden();
-  $("initialen").textContent=initialen(S.ich.name);
   $("markeBtn").onclick=function(){ fensterZu(); S.sicht="start"; zeichnen(); };
   $("einstBtn").onclick=einstellungen;
-  $("neuBtn").onclick=function(){ formular(null); };
-  Array.prototype.forEach.call(document.querySelectorAll(".ul-knopf"),function(b){
-    b.onclick=function(){ S.sicht=b.dataset.sicht; zeichnen(); };
-  });
-  speicher.beobachten(function(liste){ S.eintraege=liste; zeichnen(); });
+  $("neuBtn").onclick=function(){ eventFormular(null); };
+  alle(".ul-knopf",function(b){ b.onclick=function(){ fensterZu(); S.sicht=b.dataset.sicht; zeichnen(); }; });
+  zeichnen();
   if("serviceWorker" in navigator && location.protocol==="https:") navigator.serviceWorker.register("sw.js").catch(function(){});
-  fassungPruefen();
-  setInterval(fassungPruefen,600000);
-  document.addEventListener("visibilitychange",function(){ if(!document.hidden) fassungPruefen(); });
 }
 start();
 })();
