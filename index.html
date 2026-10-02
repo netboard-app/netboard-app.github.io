@@ -855,7 +855,7 @@ function personKarte(p){
   var b=bilanz(p);
   var marken=[b.wertvoll?'<span class="chip ok">wertvoll</span>':'', b.erneut?'<span class="chip akz">erneut einladen</span>':'', b.nichtErneut?'<span class="chip bad">nicht erneut</span>':''].join("");
   return '<button class="karte" data-prof="'+esc(p.id)+'"><span class="avatar">'+esc(initialen(p.name))+'</span><span style="min-width:0"><b>'+esc(p.name)+'</b><small>'+esc([p.position,p.firma].filter(Boolean).join(" · "))+'</small>'+(marken?'<span class="tags" style="margin-top:4px">'+marken+'</span>':'')+'</span>'+
-    '<span class="rechts">'+b.einladungen+' / '+b.zusagen+' / '+b.teilnahmen+'<br><small>eingel. / zu / da</small></span></button>';
+    '<span class="rechts" style="white-space:nowrap">'+(b.einladungen?b.teilnahmen+' von '+b.einladungen+'<br><small>dabei</small>':'<span class="chip">neu</span>')+'</span></button>';
 }
 function zeichnePersonen(){
   var box=$("sicht-personen");
