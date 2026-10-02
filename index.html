@@ -6,9 +6,9 @@
 <meta name="theme-color" content="#0B5FA5">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-title" content="Logenrunde">
+<meta name="apple-mobile-web-app-title" content="Netzwerkboard">
 <link rel="manifest" href="manifest.webmanifest">
-<title>Logenrunde</title>
+<title>Netzwerkboard</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=Public+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
@@ -149,6 +149,16 @@ hr.sep{border:0;border-top:1px solid var(--line-soft);margin:4px 0;width:100%}
 .zahl span{font-size:12px;color:var(--ink-3)}
 .textkarte{background:var(--surface-2);border:1px solid var(--line);border-radius:9px;padding:12px;font-size:14px;white-space:pre-wrap;overflow-wrap:anywhere}
 .quelle{font-size:13px;overflow-wrap:anywhere}
+/* Themen im Netzwerk */
+.kats{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;margin-bottom:6px;scrollbar-width:none}
+.kats::-webkit-scrollbar{display:none}
+.kat{flex:0 0 auto;border:1px solid var(--line);background:var(--surface);color:var(--ink-2);border-radius:999px;padding:8px 14px;min-height:40px;font-size:13.5px;font-weight:600;cursor:pointer;white-space:nowrap}
+.kat span{color:var(--ink-3);font-weight:500;margin-left:4px}
+.kat[aria-pressed="true"]{background:var(--accent-soft);color:var(--accent-ink);border-color:transparent}
+.gruppe{margin-top:12px}
+.gruppe summary{list-style:none;display:flex;justify-content:space-between;align-items:center;cursor:pointer;padding:10px 2px;font-family:var(--font-display);font-weight:700;font-size:16px;border-bottom:1px solid var(--line-soft);margin-bottom:8px;min-height:44px}
+.gruppe summary::-webkit-details-marker{display:none}
+.gruppe summary .mono{font-size:13px;color:var(--ink-3);font-weight:500}
 
 .untenleiste{position:fixed;left:0;right:0;bottom:0;z-index:28;display:flex;align-items:center;justify-content:center;gap:8px;
   background:var(--surface);border-top:1px solid var(--line);
@@ -185,7 +195,7 @@ hr.sep{border:0;border-top:1px solid var(--line-soft);margin:4px 0;width:100%}
 <body>
 <header class="kopf">
   <div class="kopf-in">
-    <button class="marke" id="markeBtn" title="Zur Startseite">Logenrunde</button>
+    <button class="marke" id="markeBtn" title="Zur Startseite">Netzwerkboard</button>
     <div class="spacer"></div>
     <button class="rund" id="einstBtn" aria-label="Einstellungen">
       <span class="avatar">IF</span>
@@ -249,7 +259,8 @@ var MARKER = [
   {k:"nicht_erneut", t:"Nicht erneut einladen"},
   {k:"geschaeft", t:"Geschäftlicher Kontakt entstanden"}
 ];
-var TEXT_STANDARD = "Guten Tag {name},\n\nich melde mich im Auftrag der IFBA. Zum Spiel {spiel} am {datum} laden wir eine kleine Runde von Unternehmern in unsere Loge beim BVB ein. Thema des Abends: {thema}.\n\n{grund}\n\nWir würden uns freuen, Sie als unseren Gast zu begrüßen. Hätten Sie Interesse?";
+var TEXT_STANDARD = "Guten Tag {name},\n\nich melde mich im Auftrag der IFBA. Am {datum} laden wir eine kleine Runde von Unternehmern ein. Anlass: {anlass}{ort}. Thema des Abends: {thema}.\n\n{grund}\n\nWir würden uns freuen, Sie als unseren Gast zu begrüßen. Hätten Sie Interesse?";
+var THEMEN_STANDARD = ["Jagd","Pflegekasse","Fußball","Hotels","Wohnungswirtschaft","Unternehmer"];
 
 /* ---------------- Helfer ---------------- */
 function $(id){ return document.getElementById(id); }
@@ -298,7 +309,9 @@ function herunterladen(name,inhalt){
    Heute im Browser (localStorage), alles in einem Paket. Für mehrere Nutzer durch einen
    Supabase-Speicher mit denselben zwei Funktionen ersetzen, der Rest merkt davon nichts.
    Tabellen später: events, personen, einladungen, verbindungen. */
-var SCHLUESSEL="logenrunde_daten";
+var SCHLUESSEL="netzwerkboard_daten";
+// Daten aus der Zeit, als die App noch Logenrunde hieß, einmal übernehmen
+if(!LS.get(SCHLUESSEL) && LS.get("logenrunde_daten")) LS.set(SCHLUESSEL,LS.get("logenrunde_daten"));
 function leer(){ return { events:[], personen:[], einladungen:[], verbindungen:[], gewichte:JSON.parse(JSON.stringify(GEWICHTE_STANDARD)) }; }
 var speicher={
   laden:function(){
@@ -414,7 +427,7 @@ function paareDer(gruppe){
 }
 
 /* ---------------- Darstellung ---------------- */
-function thema(){ return LS.get("logenrunde_thema")==="dunkel"?"dunkel":"hell"; }
+function thema(){ return LS.get("netzwerkboard_thema")==="dunkel"?"dunkel":"hell"; }
 function themaAnwenden(){
   var t=thema();
   if(t==="dunkel") document.documentElement.setAttribute("data-theme","dunkel");
@@ -422,7 +435,7 @@ function themaAnwenden(){
   var m=document.querySelector('meta[name="theme-color"]');
   if(m) m.setAttribute("content", t==="dunkel" ? "#000000" : "#0B5FA5");
 }
-function hilfe(){ return LS.get("logenrunde_hilfe")==="aus"?"aus":"an"; }
+function hilfe(){ return LS.get("netzwerkboard_hilfe")==="aus"?"aus":"an"; }
 function hilfeAnwenden(){ document.body.classList.toggle("ohne-hilfe", hilfe()==="aus"); }
 
 /* ---------------- Fenster ---------------- */
@@ -494,7 +507,7 @@ function kapazitaet(e){
 function zeichneStart(){
   var box=$("sicht-start");
   var e=naechstesEvent();
-  var h='<div class="hallo"><h2>Logenrunde</h2><p>Die richtigen Gäste für die BVB-Loge, mit Begründung.</p></div>';
+  var h='<div class="hallo"><h2>Netzwerkboard</h2><p>Die richtigen Gäste für jeden Netzwerkabend, mit Begründung.</p></div>';
   if(OHNE_SPEICHER) h+='<p class="warnbox" style="margin-bottom:12px">Vorschau ohne Speichern. Änderungen gehen beim Neuladen verloren.</p>';
   if(!D.events.length){
     h+='<div class="leer">Noch kein Event angelegt. Über <b>+ Event</b> unten legst du das erste an.'+
@@ -588,12 +601,8 @@ function kandKarte(p,e,x){
     '<div class="kand-kopf"><span class="avatar" style="width:40px;height:40px;font-size:14px">'+esc(initialen(p.name))+'</span>'+
       '<div class="wer"><b>'+esc(p.name)+'</b><small>'+esc([p.position,p.firma].filter(Boolean).join(" · ")||"Position unbekannt")+'</small>'+
       '<small style="color:var(--ink-3)">'+esc([p.rolle?("Rolle: "+p.rolle):"",p.ort].filter(Boolean).join(" · "))+'</small></div>'+
-      '<div class="gesamt">'+(g.wert===null?'–':g.wert)+'<small>Gesamt</small></div></div>'+
-    '<div class="werte">'+
-      wertZeile("Thema",tw.thema)+wertZeile("Beruf",tw.beruf)+wertZeile("Netzwerk",tw.netzwerk)+
-      wertZeile("Passt zur Runde",tw.runde,tw.rundeGrund)+wertZeile("Region",tw.region)+
-      '<div class="wert"><div class="zeile"><span>Zusagen</span>'+(tw.historie===null?'<span class="unb">neu</span>':'<span>'+tw.historie+' %</span>')+'</div></div>'+
-    '</div>'+
+      '<div class="gesamt">'+(g.wert===null?'–':g.wert)+'<small>Passung</small></div></div>'+
+    '<div class="balken" style="height:6px;border-radius:3px;margin:0" title="Gesamtpassung, Einzelwerte im Profil"><i style="width:'+(g.wert||0)+'%"></i></div>'+
     (p.begruendung?'<p class="warum"><b>Warum interessant:</b> '+esc(p.begruendung)+'</p>':'<p class="warum hint">Noch keine Begründung hinterlegt.</p>')+
     '<div class="tags" style="align-items:center">'+(p.gefundenUeber?'<span class="chip akz">über '+esc(p.gefundenUeber)+'</span>':'')+
       ((p.quellen||[]).length?'<span class="hint">'+plural(p.quellen.length,"Quelle","Quellen")+'</span>':'<span class="chip warn">Keine Quelle</span>')+'</div>'+
@@ -740,7 +749,8 @@ function textFuer(p,e){
   var vorlage=e.einladungstext||TEXT_STANDARD;
   return vorlage.replace(/\{name\}/g,p.name.replace(/\s*\(.*?\)\s*/g,"").trim())
     .replace(/\{thema\}/g,e.thema||"").replace(/\{datum\}/g,deDatumLang(e.datum))
-    .replace(/\{spiel\}/g,e.spiel||"des BVB").replace(/\{grund\}/g,p.einladungsgrund||"")
+    .replace(/\{spiel\}|\{anlass\}/g,e.spiel||"unser nächster Netzwerkabend").replace(/\{ort\}/g,e.ort?", "+e.ort:"")
+    .replace(/\{grund\}/g,p.einladungsgrund||"")
     .replace(/\n{3,}/g,"\n\n").trim();
 }
 function einladungstexte(e){
@@ -829,23 +839,53 @@ function bilanz(p){
     kontakte:D.verbindungen.filter(function(v){ return v.a===p.id||v.b===p.id; }).length
   };
 }
+/* Themen im Netzwerk: feste Liste aus den Einstellungen plus alle Event-Themen.
+   Eine Person gehört zu einem Thema, wenn es in ihren Themen steht oder sie bei einem Event dazu dabei war. */
+function themenListe(){
+  var l=(D.themen&&D.themen.length?D.themen:THEMEN_STANDARD).slice();
+  D.events.forEach(function(e){ if(e.thema && !l.some(function(t){ return norm(t)===norm(e.thema); })) l.push(e.thema); });
+  return l;
+}
+function gehoertZu(p,thema){
+  var t=norm(thema);
+  if((p.tags||[]).some(function(x){ var n=norm(x); return n===t || n.indexOf(t)>=0; })) return true;
+  return D.einladungen.some(function(x){ if(x.personId!==p.id) return false; var e=ev(x.eventId); return e && norm(e.thema)===t; });
+}
+function personKarte(p){
+  var b=bilanz(p);
+  var marken=[b.wertvoll?'<span class="chip ok">wertvoll</span>':'', b.erneut?'<span class="chip akz">erneut einladen</span>':'', b.nichtErneut?'<span class="chip bad">nicht erneut</span>':''].join("");
+  return '<button class="karte" data-prof="'+esc(p.id)+'"><span class="avatar">'+esc(initialen(p.name))+'</span><span style="min-width:0"><b>'+esc(p.name)+'</b><small>'+esc([p.position,p.firma].filter(Boolean).join(" · "))+'</small>'+(marken?'<span class="tags" style="margin-top:4px">'+marken+'</span>':'')+'</span>'+
+    '<span class="rechts">'+b.einladungen+' / '+b.zusagen+' / '+b.teilnahmen+'<br><small>eingel. / zu / da</small></span></button>';
+}
 function zeichnePersonen(){
   var box=$("sicht-personen");
-  var q=norm(S.suche);
-  var ps=D.personen.filter(function(p){
-    return !q || [p.name,p.firma,p.rolle,p.branche,p.ort,(p.tags||[]).join(" ")].join(" ").toLowerCase().indexOf(q)>=0;
-  }).sort(function(a,b){ return a.name.localeCompare(b.name,"de"); });
-  var h='<h2 style="font-size:22px">Netzwerk</h2><p class="hint" style="margin:2px 0 12px">Alle Personen aus allen Events, mit Verlauf.</p>'+
-    '<div class="field" style="margin-bottom:12px"><input id="suche" type="search" placeholder="Name, Firma, Rolle, Thema" value="'+esc(S.suche)+'" aria-label="Suchen"></div>';
-  h+= ps.length ? '<div class="liste">'+ps.map(function(p){
-    var b=bilanz(p);
-    var marken=[b.wertvoll?'<span class="chip ok">wertvoll</span>':'', b.erneut?'<span class="chip akz">erneut einladen</span>':'', b.nichtErneut?'<span class="chip bad">nicht erneut</span>':''].join("");
-    return '<button class="karte" data-prof="'+esc(p.id)+'"><span class="avatar">'+esc(initialen(p.name))+'</span><span style="min-width:0"><b>'+esc(p.name)+'</b><small>'+esc([p.rolle,p.firma].filter(Boolean).join(" · "))+'</small>'+(marken?'<span class="tags" style="margin-top:4px">'+marken+'</span>':'')+'</span>'+
-      '<span class="rechts">'+b.einladungen+' / '+b.zusagen+' / '+b.teilnahmen+'<br><small>eingel. / zu / da</small></span></button>';
-  }).join("")+'</div>'
-    : '<div class="leer">'+(D.personen.length?'Niemand gefunden.':'Noch keine Personen. Sie kommen über die Recherche oder von Hand in einem Event dazu.')+'</div>';
+  var q=norm(S.suche), kat=S.kategorie||null;
+  var themen=themenListe();
+  var zahl_=function(t){ return D.personen.filter(function(p){ return gehoertZu(p,t); }).length; };
+  var sortiert=function(l){ return l.sort(function(a,b){ return a.name.localeCompare(b.name,"de"); }); };
+  var h='<h2 style="font-size:22px">Netzwerk</h2><p class="hint" style="margin:2px 0 12px">'+plural(D.personen.length,"Person","Personen")+' aus allen Events, nach Themen sortiert.</p>'+
+    '<div class="field" style="margin-bottom:10px"><input id="suche" type="search" placeholder="Name, Firma, Rolle, Thema" value="'+esc(S.suche)+'" aria-label="Suchen"></div>'+
+    '<div class="kats" id="kats"><button class="kat" data-kat="" aria-pressed="'+(!kat)+'">Alle <span class="mono">'+D.personen.length+'</span></button>'+
+      themen.map(function(t){ return '<button class="kat" data-kat="'+esc(t)+'" aria-pressed="'+(kat===t)+'">'+esc(t)+' <span class="mono">'+zahl_(t)+'</span></button>'; }).join("")+'</div>';
+  var treffer=function(p){ return !q || [p.name,p.firma,p.position,p.rolle,p.branche,p.ort,(p.tags||[]).join(" ")].join(" ").toLowerCase().indexOf(q)>=0; };
+  if(!D.personen.length){
+    h+='<div class="leer">Noch keine Personen. Sie kommen über die Recherche oder von Hand in einem Event dazu.</div>';
+  } else if(kat || q){
+    var ps=sortiert(D.personen.filter(function(p){ return treffer(p) && (!kat || gehoertZu(p,kat)); }));
+    h+='<div class="sec-label">'+esc(kat||"Suche")+' · '+ps.length+'</div>'+
+      (ps.length?'<div class="liste">'+ps.map(personKarte).join("")+'</div>':'<div class="leer">'+(kat?'Zu „'+esc(kat)+'“ ist noch niemand im Netzwerk.':'Niemand gefunden.')+'</div>');
+  } else {
+    // Ohne Auswahl: jedes Thema als aufklappbare Gruppe, so hat man einen roten Faden
+    themen.forEach(function(t){
+      var ps=sortiert(D.personen.filter(function(p){ return gehoertZu(p,t); })); if(!ps.length) return;
+      h+='<details class="gruppe" open><summary><span>'+esc(t)+'</span><span class="mono">'+ps.length+'</span></summary><div class="liste">'+ps.map(personKarte).join("")+'</div></details>';
+    });
+    var ohne=sortiert(D.personen.filter(function(p){ return !themen.some(function(t){ return gehoertZu(p,t); }); }));
+    if(ohne.length) h+='<details class="gruppe"><summary><span>Ohne Thema</span><span class="mono">'+ohne.length+'</span></summary><div class="liste">'+ohne.map(personKarte).join("")+'</div></details>';
+  }
   box.innerHTML=h;
   var s=$("suche"); s.oninput=function(){ S.suche=s.value; var pos=s.selectionStart; zeichnePersonen(); var n=$("suche"); n.focus(); try{ n.setSelectionRange(pos,pos); }catch(e){} };
+  alle(".kat",function(b){ b.onclick=function(){ S.kategorie=b.dataset.kat||null; zeichnePersonen(); }; },box);
   alle("[data-prof]",function(b){ b.onclick=function(){ profil(b.dataset.prof,null); }; },box);
 }
 
@@ -913,12 +953,13 @@ function profil(id,e){
 
 /* ---------------- Formulare ---------------- */
 function eventFormular(alt){
-  var e=alt||{ datum:ymd(new Date(Date.now()+5*86400000)), plaetze:14, quote:10, ort:"BVB-Loge, Signal Iduna Park Dortmund", region:"Dortmund + 100 km", ziel:"allgemeines Networking", rollen:[], einladungstext:TEXT_STANDARD };
+  var e=alt||{ datum:ymd(new Date(Date.now()+5*86400000)), plaetze:14, quote:10, ort:"", region:"NRW, Schwerpunkt Ruhrgebiet", ziel:"allgemeines Networking", rollen:[], einladungstext:TEXT_STANDARD };
   fenster(alt?"Event bearbeiten":"Neues Event",
     '<div class="schritte"><span id="sk1">1 Das Wichtigste</span><span id="sk2">2 Details</span></div>'+
     '<div id="s1" style="display:flex;flex-direction:column;gap:12px">'+
-      '<div class="field"><label for="f_name">Eventname</label><input id="f_name" value="'+esc(e.name||"")+'" placeholder="BVB-Abend Jagd" autocomplete="off"></div>'+
-      '<div class="field"><label for="f_spiel">Spiel</label><input id="f_spiel" value="'+esc(e.spiel||"")+'" placeholder="BVB gegen …" autocomplete="off"></div>'+
+      '<div class="field"><label for="f_name">Eventname</label><input id="f_name" value="'+esc(e.name||"")+'" placeholder="Netzwerkabend Jagd" autocomplete="off"></div>'+
+      '<div class="two"><div class="field"><label for="f_spiel">Anlass</label><input id="f_spiel" value="'+esc(e.spiel||"")+'" placeholder="BVB-Spiel, Golfturnier, Abendessen" autocomplete="off"></div>'+
+        '<div class="field"><label for="f_ort">Ort</label><input id="f_ort" value="'+esc(e.ort||"")+'" placeholder="BVB-Loge Dortmund"></div></div>'+
       '<div class="two"><div class="field"><label for="f_datum">Datum</label><input id="f_datum" type="date" class="mono" value="'+esc(e.datum||"")+'"></div>'+
         '<div class="field"><label for="f_zeit">Uhrzeit</label><input id="f_zeit" type="time" class="mono" value="'+esc(e.uhrzeit||"")+'"></div></div>'+
       '<div class="field"><label for="f_thema">Thema</label><input id="f_thema" value="'+esc(e.thema||"")+'" placeholder="Jagd" autocomplete="off"></div>'+
@@ -931,11 +972,10 @@ function eventFormular(alt){
         '<span class="hint erkl">Mit Komma getrennt. Daraus erkennt die App, welche Person noch fehlt.</span></div>'+
       '<div class="field"><label for="f_branchen">Gewünschte Branchen</label><input id="f_branchen" value="'+esc(e.branchen||"")+'" autocomplete="off"></div>'+
       '<div class="field"><label for="f_ziel">Ziel des Abends</label><select id="f_ziel">'+ZIELE.map(function(z){ return '<option'+(z===e.ziel?' selected':'')+'>'+esc(z)+'</option>'; }).join("")+'</select></div>'+
-      '<div class="two"><div class="field"><label for="f_ort">Ort</label><input id="f_ort" value="'+esc(e.ort||"")+'"></div>'+
-        '<div class="field"><label for="f_region">Suchregion</label><input id="f_region" value="'+esc(e.region||"")+'"></div></div>'+
+      '<div class="field"><label for="f_region">Suchregion</label><input id="f_region" value="'+esc(e.region||"")+'"></div>'+
       '<div class="field"><label for="f_beschr">Beschreibung</label><textarea id="f_beschr">'+esc(e.beschreibung||"")+'</textarea></div>'+
       '<div class="field"><label for="f_text">Vorlage Einladungstext</label><textarea id="f_text" style="min-height:180px">'+esc(e.einladungstext||TEXT_STANDARD)+'</textarea>'+
-        '<span class="hint erkl">Platzhalter: {name} {thema} {datum} {spiel} {grund}. {grund} ist der persönliche Satz aus der Recherche.</span></div>'+
+        '<span class="hint erkl">Platzhalter: {name} {thema} {datum} {anlass} {ort} {grund}. {grund} ist der persönliche Satz aus der Recherche.</span></div>'+
     '</div>'+
     '<p class="err" id="f_err" hidden></p>',
     '<button class="btn ghost" id="zurBtn" hidden>Zurück</button>'+
@@ -1096,8 +1136,8 @@ var MODELLE=[
   {id:"claude-opus-5-5", t:"Claude Opus 5.5 (gründlicher)", ein:4, aus:20},
   {id:"claude-sonnet-5-5", t:"Claude Sonnet 5.5 (günstiger)", ein:2, aus:10}
 ];
-function schluessel(){ return LS.get("logenrunde_key")||""; }
-function modell(){ var m=LS.get("logenrunde_modell"); return MODELLE.filter(function(x){ return x.id===m; })[0]||MODELLE[0]; }
+function schluessel(){ return LS.get("netzwerkboard_key")||""; }
+function modell(){ var m=LS.get("netzwerkboard_modell"); return MODELLE.filter(function(x){ return x.id===m; })[0]||MODELLE[0]; }
 var SUCHE_LAEUFT=null;
 
 var WERKZEUG={
@@ -1125,14 +1165,14 @@ var WERKZEUG={
 
 function systemText(){
   return [
-    "Du recherchierst Gäste für Business-Abende in der BVB-Loge (Signal Iduna Park, Dortmund) der Firma IFBA.",
+    "Du recherchierst Gäste für Business-Netzwerkabende der Firma IFBA, zum Beispiel in der BVB-Loge in Dortmund. Anlass, Ort und Region stehen im Auftrag.",
     "Ziel sind wertvolle Kontakte: Entscheider und Multiplikatoren, die öffentlich nachweisbar mit dem Thema des Abends verbunden sind und beruflich Gewicht haben (Inhaber, Geschäftsführer, Vorstand, leitende Position, Ämter in Verbänden oder Vereinen). Ein Ticket ist rund 2.000 Euro wert, also keine Zufallsfunde, keine reinen Privatpersonen, keine Profile ohne erkennbare Reichweite.",
     "Suche über die Websuche, auch gezielt mit site:linkedin.com/in, site:instagram.com, Firmenwebsites, Verbandsseiten und Lokalpresse.",
     "Regeln:",
     "1. Nur Fakten, die in den Suchergebnissen stehen. Nichts ergänzen oder vermuten. Was unbekannt ist, bleibt leer oder null.",
     "2. Jede URL exakt so übernehmen, wie sie in den Suchergebnissen stand. Keine URL selbst zusammensetzen.",
     "3. Keine Privatadressen, keine privaten Telefonnummern, keine Angaben zu Gesundheit, Religion, Politik, Familie oder Privatleben.",
-    "4. Region: Schwerpunkt Dortmund, Ruhrgebiet und übriges NRW. Angrenzende Regionen nur, wenn die Person sehr gut passt. Niemand aus Süddeutschland oder weiter weg.",
+    "4. Region: wie im Auftrag angegeben, im Zweifel Schwerpunkt Ruhrgebiet und übriges NRW. Angrenzende Regionen nur, wenn die Person sehr gut passt.",
     "5. Werte von 0 bis 100: thema = wie stark öffentlich belegt mit dem Thema verbunden (Funktionsträger oder Unternehmer im Thema hoch, belegtes Hobby mittel, kein Beleg null). beruf = Gewicht der Position und Größe des Unternehmens. netzwerk = belegte Reichweite (Ämter, Verbände, Follower-Zahlen falls sichtbar), ohne Beleg null. region = Ruhrgebiet 100, übriges NRW 80, angrenzend 50.",
     "6. Schreibe sachlich auf Deutsch, ohne Gedankenstriche.",
     "Am Ende rufst du das Werkzeug kandidaten_liefern genau einmal auf, mit allen Personen dieser Runde. Lieber weniger Personen als unbelegte."
@@ -1145,7 +1185,8 @@ function auftragText(e,anzahl,schonDa){
     "Ziel des Abends: "+(e.ziel||"allgemeines Networking"),
     (e.rollen||[]).length?"Gewünschte Rollen am Tisch (für das Feld rolle verwenden): "+e.rollen.join(", "):"",
     e.branchen?"Gewünschte Branchen: "+e.branchen:"",
-    "Region: "+(e.region||"Dortmund + 100 km"),
+    e.spiel?"Anlass: "+e.spiel:"", e.ort?"Ort: "+e.ort:"",
+    "Region: "+(e.region||"NRW, Schwerpunkt Ruhrgebiet"),
     "Finde "+anzahl+" neue Personen.",
     schonDa.length?"Diese Personen sind schon bekannt, nicht noch einmal liefern: "+schonDa.join("; "):""
   ].filter(Boolean).join("\n");
@@ -1207,8 +1248,8 @@ function sucheFenster(e){
     fenster("Kandidaten finden",
       '<p style="margin:0">Die Suche läuft gerade über Claude im Chat:</p>'+
       '<ol style="margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px">'+
-        '<li>In Claude Code eintippen: <b class="mono">/logenrunde '+esc(e.thema||"Thema")+' 30</b></li>'+
-        '<li>Claude legt eine Datei in <span class="mono">Downloads/logenrunde/recherche</span> ab.</li>'+
+        '<li>In Claude Code eintippen: <b class="mono">/netzwerkboard '+esc(e.thema||"Thema")+' 30</b></li>'+
+        '<li>Claude legt eine Datei in <span class="mono">Downloads/netzwerkboard/recherche</span> ab.</li>'+
         '<li>Hier auf <b>Datei importieren</b> tippen und die Datei wählen.</li></ol>'+
       '<p class="hint erkl" style="margin:0">Mit einem eigenen Schlüssel von Anthropic sucht die App später selbst. Den trägt man in den Einstellungen ein.</p>',
       '<button class="btn primary" id="zuImport">Datei importieren</button><button class="btn" id="zuEinst">Einstellungen</button>');
@@ -1217,7 +1258,7 @@ function sucheFenster(e){
   }
   var m=modell();
   fenster("Kandidaten finden",
-    '<p style="margin:0">Claude sucht im Netz nach Personen zum Thema <b>'+esc(e.thema)+'</b>, Region '+esc(e.region||"Dortmund + 100 km")+'.</p>'+
+    '<p style="margin:0">Claude sucht im Netz nach Personen zum Thema <b>'+esc(e.thema)+'</b>, Region '+esc(e.region||"NRW")+'.</p>'+
     '<div class="field"><label for="s_anz">Wie viele?</label><select id="s_anz"><option>10</option><option>20</option><option selected>30</option></select></div>'+
     (einlVon(e.id).some(function(x){ return x.status==="vorgeschlagen"; })
       ?'<label class="check"><input type="checkbox" id="s_alt"><span><b>Alte Vorschläge vorher entfernen</b><br>Sinnvoll, wenn du das Thema geändert hast. Ausgewählte bleiben.</span></label>':'')+
@@ -1275,6 +1316,11 @@ function einstellungen(){
       '<p class="hint erkl" style="margin:6px 0 0">Der Schlüssel bleibt nur in diesem Browser. Nicht auf fremden Geräten eintragen.</p>'+
       '<div class="knopfreihe" style="margin-top:8px"><button class="btn klein" id="k_save">Übernehmen</button>'+(schluessel()?'<button class="btn ghost klein" id="k_del" style="color:var(--bad)">Schlüssel entfernen</button>':'')+'</div></div>'+
     '<hr class="sep">'+
+    '<div><div class="sec-label" style="margin-top:0">Themen im Netzwerk</div>'+
+      '<div class="field"><input id="t_themen" value="'+esc((D.themen&&D.themen.length?D.themen:THEMEN_STANDARD).join(", "))+'" aria-label="Themen"></div>'+
+      '<p class="hint erkl" style="margin:6px 0 0">Mit Komma getrennt. Themen aus Events kommen automatisch dazu.</p>'+
+      '<div class="knopfreihe" style="margin-top:8px"><button class="btn klein" id="t_save">Themen übernehmen</button></div></div>'+
+    '<hr class="sep">'+
     '<div><div class="sec-label" style="margin-top:0">Gewichtung der Bewertung</div>'+
       '<div class="three">'+TEILE.map(function(t){ return '<div class="field"><label for="g_'+t.k+'">'+esc(t.t)+' %</label><input id="g_'+t.k+'" type="number" min="0" max="100" class="mono" value="'+esc(D.gewichte[t.k])+'"></div>'; }).join("")+'</div>'+
       '<p class="hint" style="margin:6px 0 0" id="gSumme">Summe: '+summe+' %'+(summe!==100?' · muss nicht 100 sein, die App rechnet anteilig':'')+'</p>'+
@@ -1294,24 +1340,25 @@ function einstellungen(){
     '<hr class="sep">'+
     '<div><div class="sec-label" style="margin-top:0">Fassung</div><p class="hint mono" style="margin:0">'+esc(VERSION)+'</p></div>');
   function knoepfe(){
-    alle("#themaBar button",function(b){ b.setAttribute("aria-pressed",String(b.dataset.t===thema())); b.onclick=function(){ LS.set("logenrunde_thema",b.dataset.t); themaAnwenden(); knoepfe(); }; });
-    alle("#hilfeBar button",function(b){ b.setAttribute("aria-pressed",String(b.dataset.h===hilfe())); b.onclick=function(){ LS.set("logenrunde_hilfe",b.dataset.h); hilfeAnwenden(); knoepfe(); }; });
+    alle("#themaBar button",function(b){ b.setAttribute("aria-pressed",String(b.dataset.t===thema())); b.onclick=function(){ LS.set("netzwerkboard_thema",b.dataset.t); themaAnwenden(); knoepfe(); }; });
+    alle("#hilfeBar button",function(b){ b.setAttribute("aria-pressed",String(b.dataset.h===hilfe())); b.onclick=function(){ LS.set("netzwerkboard_hilfe",b.dataset.h); hilfeAnwenden(); knoepfe(); }; });
   }
   knoepfe();
   $("k_save").onclick=function(){
-    var k=$("k_key").value.trim(); if(k) LS.set("logenrunde_key",k);
-    LS.set("logenrunde_modell",$("k_mod").value); einstellungen(); toast("Gespeichert.");
+    var k=$("k_key").value.trim(); if(k) LS.set("netzwerkboard_key",k);
+    LS.set("netzwerkboard_modell",$("k_mod").value); einstellungen(); toast("Gespeichert.");
   };
-  if($("k_del")) $("k_del").onclick=function(){ try{ localStorage.removeItem("logenrunde_key"); }catch(err){} einstellungen(); toast("Schlüssel entfernt."); };
+  if($("k_del")) $("k_del").onclick=function(){ try{ localStorage.removeItem("netzwerkboard_key"); }catch(err){} einstellungen(); toast("Schlüssel entfernt."); };
+  $("t_save").onclick=function(){ D.themen=liste($("t_themen").value); sichern(); einstellungen(); toast("Themen übernommen."); };
   $("gSpeichern").onclick=function(){ TEILE.forEach(function(t){ D.gewichte[t.k]=Math.max(0,Number($("g_"+t.k).value)||0); }); sichern(); einstellungen(); toast("Gewichte übernommen."); };
   $("gStandard").onclick=function(){ D.gewichte=JSON.parse(JSON.stringify(GEWICHTE_STANDARD)); sichern(); einstellungen(); };
-  $("expBtn").onclick=function(){ herunterladen("logenrunde-sicherung-"+ymd(new Date())+".json",JSON.stringify(D,null,2)); };
+  $("expBtn").onclick=function(){ herunterladen("netzwerkboard-sicherung-"+ymd(new Date())+".json",JSON.stringify(D,null,2)); };
   $("impBtn").onclick=function(){ $("impDatei").click(); };
   $("impDatei").onchange=function(){
     var f=this.files[0]; if(!f) return; var r=new FileReader();
     r.onload=function(){
       try{ var d=JSON.parse(r.result); if(!d.events||!d.personen) throw 0; D=d; speicher.sichern(D); D=speicher.laden(); fensterZu(); S.sicht="start"; zeichnen(); toast("Sicherung eingespielt."); }
-      catch(e){ toast("Das ist keine Sicherung aus der Logenrunde."); }
+      catch(e){ toast("Das ist keine Sicherung aus dem Netzwerkboard."); }
     }; r.readAsText(f);
   };
   $("bspBtn").onclick=beispielLaden;
@@ -1328,9 +1375,9 @@ function einstellungen(){
 function beispielLaden(){
   var heute=new Date();
   var vorher=ymd(new Date(heute.getTime()-35*86400000)), bald=ymd(new Date(heute.getTime()+5*86400000));
-  var e0={ id:uid(), name:"Beispiel: Mittelstand", spiel:"BVB gegen Beispiel-Gegner", datum:vorher, uhrzeit:"18:30", thema:"Mittelstand", plaetze:12, quote:10, rollen:[], ziel:"Unternehmer", ort:"BVB-Loge", region:"Dortmund + 100 km", einladungstext:TEXT_STANDARD, beispiel:true };
+  var e0={ id:uid(), name:"Beispiel: Mittelstand", spiel:"Golfturnier", datum:vorher, uhrzeit:"14:00", thema:"Unternehmer", plaetze:12, quote:10, rollen:[], ziel:"Unternehmer", ort:"Golfclub Beispielstadt", region:"NRW, Schwerpunkt Ruhrgebiet", einladungstext:TEXT_STANDARD, beispiel:true };
   var e1={ id:uid(), name:"Beispiel: Pflegekasse", spiel:"BVB gegen Beispiel-Gegner", datum:bald, uhrzeit:"18:30", thema:"Pflegekasse", plaetze:14, quote:10,
-    rollen:["Pflegeunternehmer","Krankenkasse","Klinikmanagement","Health-Tech","Wohnungswirtschaft","Bank"], ziel:"Kooperationen", ort:"BVB-Loge", region:"Dortmund + 100 km", einladungstext:TEXT_STANDARD, beispiel:true };
+    rollen:["Pflegeunternehmer","Krankenkasse","Klinikmanagement","Health-Tech","Wohnungswirtschaft","Bank"], ziel:"Kooperationen", ort:"BVB-Loge Dortmund", region:"NRW, Schwerpunkt Ruhrgebiet", einladungstext:TEXT_STANDARD, beispiel:true };
   function P(name,pos,firma,rolle,branche,ort,tags,w,begr,grund){
     return { id:uid(), name:name+" (Beispiel)", position:pos, firma:firma, rolle:rolle, branche:branche, ort:ort, tags:tags,
       werte:{thema:w[0],beruf:w[1],netzwerk:w[2],region:w[3]}, begruendung:begr, einladungsgrund:grund, beispiel:true,

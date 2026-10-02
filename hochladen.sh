@@ -1,10 +1,10 @@
 #!/bin/zsh
-# Logenrunde veröffentlichen: Fassung stempeln, hochladen, ins Repo sichern.
+# Netzwerkboard veröffentlichen: Fassung stempeln, hochladen, ins Repo sichern.
 # Aufruf:  ./hochladen.sh "Titel" "Punkt eins" "Punkt zwei"
 #          ./hochladen.sh ""          still, ohne Neuerungen in der App
 set -e
 cd "$(dirname "$0")"
-ENV_DATEI=~/.config/logenrunde/.env
+ENV_DATEI=~/.config/netzwerkboard/.env
 [ -f "$ENV_DATEI" ] && { set -a; . "$ENV_DATEI"; set +a; }
 
 STAND=$(date +%Y-%m-%d-%H%M)

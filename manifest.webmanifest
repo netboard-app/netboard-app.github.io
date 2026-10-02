@@ -1,6 +1,6 @@
 {
-  "name": "Logenrunde",
-  "short_name": "Logenrunde",
+  "name": "Netzwerkboard",
+  "short_name": "Netzwerkboard",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
