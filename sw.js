@@ -4,8 +4,8 @@ self.addEventListener("activate", function(e){ e.waitUntil(self.clients.claim())
 
 self.addEventListener("push", function(e){
   var d = {};
-  try { d = e.data ? e.data.json() : {}; } catch(err){ d = { titel:"Netzwerkboard", text: e.data ? e.data.text() : "" }; }
-  e.waitUntil(self.registration.showNotification(d.titel || "Netzwerkboard", {
+  try { d = e.data ? e.data.json() : {}; } catch(err){ d = { titel:"Netboard", text: e.data ? e.data.text() : "" }; }
+  e.waitUntil(self.registration.showNotification(d.titel || "Netboard", {
     body: d.text || "", icon: "icon-192.png", badge: "icon-192.png",
     tag: d.tag || undefined, renotify: !!d.tag,
     data: { ziel: d.ziel || "" }

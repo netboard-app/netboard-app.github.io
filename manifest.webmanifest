@@ -1,6 +1,6 @@
 {
-  "name": "Netzwerkboard",
-  "short_name": "Netzwerkboard",
+  "name": "Netboard",
+  "short_name": "Netboard",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

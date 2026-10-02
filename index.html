@@ -6,9 +6,9 @@
 <meta name="theme-color" content="#0B5FA5">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-title" content="Netzwerkboard">
+<meta name="apple-mobile-web-app-title" content="Netboard">
 <link rel="manifest" href="manifest.webmanifest">
-<title>Netzwerkboard</title>
+<title>Netboard</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=Public+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
@@ -195,7 +195,7 @@ hr.sep{border:0;border-top:1px solid var(--line-soft);margin:4px 0;width:100%}
 <body>
 <header class="kopf">
   <div class="kopf-in">
-    <button class="marke" id="markeBtn" title="Zur Startseite">Netzwerkboard</button>
+    <button class="marke" id="markeBtn" title="Zur Startseite">Netboard</button>
     <div class="spacer"></div>
     <button class="rund" id="einstBtn" aria-label="Einstellungen">
       <span class="avatar">IF</span>
@@ -309,9 +309,9 @@ function herunterladen(name,inhalt){
    Heute im Browser (localStorage), alles in einem Paket. Für mehrere Nutzer durch einen
    Supabase-Speicher mit denselben zwei Funktionen ersetzen, der Rest merkt davon nichts.
    Tabellen später: events, personen, einladungen, verbindungen. */
-var SCHLUESSEL="netzwerkboard_daten";
-// Daten aus der Zeit, als die App noch Logenrunde hieß, einmal übernehmen
-if(!LS.get(SCHLUESSEL) && LS.get("logenrunde_daten")) LS.set(SCHLUESSEL,LS.get("logenrunde_daten"));
+var SCHLUESSEL="netboard_daten";
+// Daten aus der Zeit, als die App noch Logenrunde oder Netzwerkboard hieß, einmal übernehmen
+["netzwerkboard","logenrunde"].forEach(function(alt){ if(!LS.get(SCHLUESSEL) && LS.get(alt+"_daten")) LS.set(SCHLUESSEL,LS.get(alt+"_daten")); });
 function leer(){ return { events:[], personen:[], einladungen:[], verbindungen:[], gewichte:JSON.parse(JSON.stringify(GEWICHTE_STANDARD)) }; }
 var speicher={
   laden:function(){
@@ -427,7 +427,7 @@ function paareDer(gruppe){
 }
 
 /* ---------------- Darstellung ---------------- */
-function thema(){ return LS.get("netzwerkboard_thema")==="dunkel"?"dunkel":"hell"; }
+function thema(){ return LS.get("netboard_thema")==="dunkel"?"dunkel":"hell"; }
 function themaAnwenden(){
   var t=thema();
   if(t==="dunkel") document.documentElement.setAttribute("data-theme","dunkel");
@@ -435,7 +435,7 @@ function themaAnwenden(){
   var m=document.querySelector('meta[name="theme-color"]');
   if(m) m.setAttribute("content", t==="dunkel" ? "#000000" : "#0B5FA5");
 }
-function hilfe(){ return LS.get("netzwerkboard_hilfe")==="aus"?"aus":"an"; }
+function hilfe(){ return LS.get("netboard_hilfe")==="aus"?"aus":"an"; }
 function hilfeAnwenden(){ document.body.classList.toggle("ohne-hilfe", hilfe()==="aus"); }
 
 /* ---------------- Fenster ---------------- */
@@ -507,7 +507,7 @@ function kapazitaet(e){
 function zeichneStart(){
   var box=$("sicht-start");
   var e=naechstesEvent();
-  var h='<div class="hallo"><h2>Netzwerkboard</h2><p>Die richtigen Gäste für jeden Netzwerkabend, mit Begründung.</p></div>';
+  var h='<div class="hallo"><h2>Netboard</h2><p>Die richtigen Gäste für jeden Netzwerkabend, mit Begründung.</p></div>';
   if(OHNE_SPEICHER) h+='<p class="warnbox" style="margin-bottom:12px">Vorschau ohne Speichern. Änderungen gehen beim Neuladen verloren.</p>';
   if(!D.events.length){
     h+='<div class="leer">Noch kein Event angelegt. Über <b>+ Event</b> unten legst du das erste an.'+
@@ -1136,8 +1136,8 @@ var MODELLE=[
   {id:"claude-opus-5-5", t:"Claude Opus 5.5 (gründlicher)", ein:4, aus:20},
   {id:"claude-sonnet-5-5", t:"Claude Sonnet 5.5 (günstiger)", ein:2, aus:10}
 ];
-function schluessel(){ return LS.get("netzwerkboard_key")||""; }
-function modell(){ var m=LS.get("netzwerkboard_modell"); return MODELLE.filter(function(x){ return x.id===m; })[0]||MODELLE[0]; }
+function schluessel(){ return LS.get("netboard_key")||""; }
+function modell(){ var m=LS.get("netboard_modell"); return MODELLE.filter(function(x){ return x.id===m; })[0]||MODELLE[0]; }
 var SUCHE_LAEUFT=null;
 
 var WERKZEUG={
@@ -1248,8 +1248,8 @@ function sucheFenster(e){
     fenster("Kandidaten finden",
       '<p style="margin:0">Die Suche läuft gerade über Claude im Chat:</p>'+
       '<ol style="margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px">'+
-        '<li>In Claude Code eintippen: <b class="mono">/netzwerkboard '+esc(e.thema||"Thema")+' 30</b></li>'+
-        '<li>Claude legt eine Datei in <span class="mono">Downloads/netzwerkboard/recherche</span> ab.</li>'+
+        '<li>In Claude Code eintippen: <b class="mono">/netboard '+esc(e.thema||"Thema")+' 30</b></li>'+
+        '<li>Claude legt eine Datei in <span class="mono">Downloads/netboard/recherche</span> ab.</li>'+
         '<li>Hier auf <b>Datei importieren</b> tippen und die Datei wählen.</li></ol>'+
       '<p class="hint erkl" style="margin:0">Mit einem eigenen Schlüssel von Anthropic sucht die App später selbst. Den trägt man in den Einstellungen ein.</p>',
       '<button class="btn primary" id="zuImport">Datei importieren</button><button class="btn" id="zuEinst">Einstellungen</button>');
@@ -1340,25 +1340,25 @@ function einstellungen(){
     '<hr class="sep">'+
     '<div><div class="sec-label" style="margin-top:0">Fassung</div><p class="hint mono" style="margin:0">'+esc(VERSION)+'</p></div>');
   function knoepfe(){
-    alle("#themaBar button",function(b){ b.setAttribute("aria-pressed",String(b.dataset.t===thema())); b.onclick=function(){ LS.set("netzwerkboard_thema",b.dataset.t); themaAnwenden(); knoepfe(); }; });
-    alle("#hilfeBar button",function(b){ b.setAttribute("aria-pressed",String(b.dataset.h===hilfe())); b.onclick=function(){ LS.set("netzwerkboard_hilfe",b.dataset.h); hilfeAnwenden(); knoepfe(); }; });
+    alle("#themaBar button",function(b){ b.setAttribute("aria-pressed",String(b.dataset.t===thema())); b.onclick=function(){ LS.set("netboard_thema",b.dataset.t); themaAnwenden(); knoepfe(); }; });
+    alle("#hilfeBar button",function(b){ b.setAttribute("aria-pressed",String(b.dataset.h===hilfe())); b.onclick=function(){ LS.set("netboard_hilfe",b.dataset.h); hilfeAnwenden(); knoepfe(); }; });
   }
   knoepfe();
   $("k_save").onclick=function(){
-    var k=$("k_key").value.trim(); if(k) LS.set("netzwerkboard_key",k);
-    LS.set("netzwerkboard_modell",$("k_mod").value); einstellungen(); toast("Gespeichert.");
+    var k=$("k_key").value.trim(); if(k) LS.set("netboard_key",k);
+    LS.set("netboard_modell",$("k_mod").value); einstellungen(); toast("Gespeichert.");
   };
-  if($("k_del")) $("k_del").onclick=function(){ try{ localStorage.removeItem("netzwerkboard_key"); }catch(err){} einstellungen(); toast("Schlüssel entfernt."); };
+  if($("k_del")) $("k_del").onclick=function(){ try{ localStorage.removeItem("netboard_key"); }catch(err){} einstellungen(); toast("Schlüssel entfernt."); };
   $("t_save").onclick=function(){ D.themen=liste($("t_themen").value); sichern(); einstellungen(); toast("Themen übernommen."); };
   $("gSpeichern").onclick=function(){ TEILE.forEach(function(t){ D.gewichte[t.k]=Math.max(0,Number($("g_"+t.k).value)||0); }); sichern(); einstellungen(); toast("Gewichte übernommen."); };
   $("gStandard").onclick=function(){ D.gewichte=JSON.parse(JSON.stringify(GEWICHTE_STANDARD)); sichern(); einstellungen(); };
-  $("expBtn").onclick=function(){ herunterladen("netzwerkboard-sicherung-"+ymd(new Date())+".json",JSON.stringify(D,null,2)); };
+  $("expBtn").onclick=function(){ herunterladen("netboard-sicherung-"+ymd(new Date())+".json",JSON.stringify(D,null,2)); };
   $("impBtn").onclick=function(){ $("impDatei").click(); };
   $("impDatei").onchange=function(){
     var f=this.files[0]; if(!f) return; var r=new FileReader();
     r.onload=function(){
       try{ var d=JSON.parse(r.result); if(!d.events||!d.personen) throw 0; D=d; speicher.sichern(D); D=speicher.laden(); fensterZu(); S.sicht="start"; zeichnen(); toast("Sicherung eingespielt."); }
-      catch(e){ toast("Das ist keine Sicherung aus dem Netzwerkboard."); }
+      catch(e){ toast("Das ist keine Sicherung aus dem Netboard."); }
     }; r.readAsText(f);
   };
   $("bspBtn").onclick=beispielLaden;
