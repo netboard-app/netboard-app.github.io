@@ -1,0 +1,445 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="{{AKZENT}}">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="{{NAME}}">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>{{NAME}}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=Public+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+/* Farben als Variablen. Der Dunkelmodus überschreibt nur diese Werte. */
+:root{
+  --paper:#F6F8FB; --surface:#FFFFFF; --surface-2:#F1F6FC;
+  --line:#D5E2F1; --line-soft:#E8EFF8;
+  --ink:#0E1B2A; --ink-2:#42566C; --ink-3:#7789A0;
+  --accent:{{AKZENT}}; --accent-soft:{{AKZENT_WEICH}}; --accent-ink:{{AKZENT_TIEF}};
+  --ok:#0F7355; --ok-soft:#DFF1EA;
+  --bad:#B3261E; --bad-soft:#FAE8E6;
+  --warn:#9C5A00; --warn-soft:#FAEFDF;
+  --shadow:0 1px 2px rgba(14,27,42,.05),0 10px 26px -14px rgba(14,27,42,.22);
+  --radius:10px;
+  --font-display:"Archivo","Helvetica Neue",Arial,sans-serif;
+  --font-body:"Public Sans","Helvetica Neue",Arial,sans-serif;
+  --font-mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+}
+/* Dunkel in echtem Schwarz, weiße Schrift. So will Eljakim es in seinen Apps. */
+:root[data-theme="dunkel"]{
+  --paper:#000000; --surface:#0A0A0B; --surface-2:#141417;
+  --line:#1E1E22; --line-soft:#151518;
+  --ink:#FFFFFF; --ink-2:#C8C8CE; --ink-3:#8B8B93;
+  --accent:{{AKZENT_DUNKEL}}; --accent-soft:{{AKZENT_DUNKEL_WEICH}}; --accent-ink:{{AKZENT_DUNKEL_TIEF}};
+  --ok:#4FAE86; --ok-soft:#0E241C;
+  --bad:#D97B72; --bad-soft:#2A1817;
+  --warn:#C69455; --warn-soft:#241D12;
+  --shadow:0 1px 2px rgba(0,0,0,.6),0 10px 26px -14px rgba(0,0,0,.9);
+}
+*{box-sizing:border-box}
+/* clip statt hidden, sonst kleben Kopfzeile und Leisten nicht mehr */
+html,body{max-width:100%;overflow-x:hidden;overflow-x:clip;overscroll-behavior-x:none}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--font-body);font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased}
+h1,h2,h3{font-family:var(--font-display);margin:0;letter-spacing:-.01em;text-wrap:balance}
+button,input,select,textarea{font:inherit;color:inherit}
+button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.mono{font-family:var(--font-mono);font-variant-numeric:tabular-nums}
+[hidden]{display:none!important}
+
+/* Kopfzeile */
+header.kopf{position:sticky;top:0;z-index:30;background:var(--surface);border-bottom:1px solid var(--line)}
+.kopf-in{max-width:940px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:10px}
+.marke{border:0;background:transparent;padding:0;cursor:pointer;font-family:var(--font-display);font-weight:800;font-size:19px;letter-spacing:-.03em;color:var(--accent)}
+.spacer{flex:1}
+.rund{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:4px 10px 4px 4px;cursor:pointer;min-height:40px}
+.avatar{width:30px;height:30px;border-radius:999px;display:grid;place-items:center;font-family:var(--font-display);font-weight:700;font-size:12px;background:var(--accent-soft);color:var(--accent-ink)}
+.ico{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:0 0 auto}
+
+/* Inhalt */
+main{max-width:940px;margin:0 auto;padding:16px 16px 96px}
+.hallo h2{font-size:24px}
+.hallo p{margin:4px 0 16px;color:var(--ink-2)}
+.sec-label{font-size:11px;text-transform:uppercase;letter-spacing:.09em;color:var(--ink-3);font-weight:600;margin:18px 0 8px}
+.liste{display:flex;flex-direction:column;gap:8px}
+.karte{display:flex;align-items:center;gap:12px;width:100%;text-align:left;cursor:pointer;
+  background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:12px 14px;min-height:56px}
+.karte:hover{border-color:var(--accent)}
+.karte b{display:block;font-size:15px}
+.karte small{display:block;color:var(--ink-3);font-size:12.5px}
+.karte .rechts{margin-left:auto;font-family:var(--font-mono);font-size:13px;color:var(--ink-2);font-variant-numeric:tabular-nums}
+.leer{border:1px dashed var(--line);border-radius:var(--radius);padding:18px;color:var(--ink-3);text-align:center}
+
+/* Knöpfe */
+.btn{border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:10px 14px;border-radius:8px;font-weight:600;font-size:14px;cursor:pointer;min-height:44px}
+.btn:hover{border-color:var(--accent)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn.ghost{border-color:transparent;background:transparent;color:var(--ink-2)}
+.btn.danger{color:var(--bad);border-color:var(--bad)}
+.modus{display:inline-flex;background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:3px;gap:2px}
+.modus button{border:0;background:transparent;border-radius:8px;padding:9px 16px;font-size:13.5px;font-weight:600;color:var(--ink-3);cursor:pointer}
+.modus button[aria-pressed="true"]{background:var(--surface);color:var(--accent-ink);box-shadow:0 1px 2px rgba(15,35,70,.12)}
+
+/* Felder */
+.field{display:flex;flex-direction:column;gap:5px}
+.field label{font-size:11.5px;text-transform:uppercase;letter-spacing:.07em;color:var(--ink-3);font-weight:600}
+.field input,.field select,.field textarea{border:1px solid var(--line);background:var(--surface-2);border-radius:8px;padding:10px 11px;width:100%;min-height:44px}
+.field input:focus,.field select:focus,.field textarea:focus{background:var(--surface)}
+.field textarea{min-height:90px;resize:vertical}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media (max-width:640px){ .two{grid-template-columns:1fr} }
+/* Unter 16 Punkt zoomt das iPhone beim Antippen ran und bleibt vergrößert */
+@media (max-width:900px),(pointer:coarse){ input,select,textarea{font-size:16px} }
+.check{display:flex;gap:10px;align-items:flex-start;font-size:12.5px;color:var(--ink-3);cursor:pointer;line-height:1.4;border:1px solid var(--line);border-radius:9px;padding:11px 12px}
+.check b{color:var(--ink);font-size:14px;font-weight:600}
+.check input{margin-top:3px;flex:0 0 auto;width:18px;height:18px}
+.hint{font-size:12.5px;color:var(--ink-3)}
+.err{font-size:13px;color:var(--bad);font-weight:600}
+.warnbox{border:1px solid var(--warn);background:var(--warn-soft);border-radius:9px;padding:10px 12px;font-size:13px}
+.okbox{border:1px solid var(--ok);background:var(--ok-soft);border-radius:9px;padding:10px 12px;font-size:13px}
+/* Erklärtexte lassen sich in den Einstellungen ausblenden */
+body.ohne-hilfe .erkl{display:none}
+.kv{display:grid;grid-template-columns:96px 1fr;gap:6px 12px;font-size:14px;margin:0}
+.kv dt{color:var(--ink-3);font-size:12px;text-transform:uppercase;letter-spacing:.06em;padding-top:2px}
+.kv dd{margin:0;overflow-wrap:anywhere}
+hr.sep{border:0;border-top:1px solid var(--line-soft);margin:4px 0;width:100%}
+.schritte{display:flex;gap:6px}
+.schritte span{flex:1;font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-3);border-top:3px solid var(--line);padding-top:6px}
+.schritte span[aria-current="true"]{color:var(--accent);border-color:var(--accent)}
+
+/* Untere Leiste: links und rechts gleich breit, dadurch sitzt die Mitte immer mittig */
+.untenleiste{position:fixed;left:0;right:0;bottom:0;z-index:28;display:flex;align-items:center;justify-content:center;gap:8px;
+  background:var(--surface);border-top:1px solid var(--line);
+  padding:6px max(10px,env(safe-area-inset-left)) calc(6px + env(safe-area-inset-bottom)) max(10px,env(safe-area-inset-right))}
+.untenleiste>*{max-width:200px}
+.ul-knopf{flex:1 1 0;border:0;background:transparent;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 2px;border-radius:9px;font-size:11px;font-weight:600;color:var(--ink-3);min-height:44px}
+.ul-knopf[aria-selected="true"]{color:var(--accent)}
+.ul-haupt{flex:0 0 auto;border:0;background:var(--accent);color:#fff;border-radius:11px;font-size:15px;font-weight:700;cursor:pointer;padding:0 22px;height:46px;min-width:136px}
+
+/* Fenster: von rechts, auf dem Handy genau Bildschirmgröße */
+.scrim{position:fixed;inset:0;background:rgba(10,25,45,.44);z-index:40;border:0;padding:0}
+.panel{position:fixed;top:0;right:0;bottom:0;width:min(440px,100%);z-index:50;background:var(--surface);border-left:1px solid var(--line);display:flex;flex-direction:column;box-shadow:var(--shadow)}
+.panel-head{display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid var(--line)}
+.panel-head h3{font-size:17px;flex:1}
+.panel-body{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:14px;overscroll-behavior:contain}
+.panel-foot{padding:12px 16px;border-top:1px solid var(--line);display:flex;gap:8px;flex-wrap:wrap}
+.x{border:0;background:transparent;font-size:22px;line-height:1;color:var(--ink-3);cursor:pointer;min-width:44px;min-height:44px}
+.bestaetigen{width:100%;display:flex;flex-direction:column;gap:8px}
+.bestaetigen .reihe{display:flex;gap:8px}
+@media (max-width:700px){
+  .panel{width:100%;border-left:0;height:100vh;height:100dvh;bottom:auto;overflow:hidden;padding-bottom:env(safe-area-inset-bottom)}
+  .panel-body{touch-action:pan-y;overflow-x:hidden;padding:14px}
+  .panel-body>*{min-width:0;max-width:100%}
+}
+@media (min-width:701px) and (prefers-reduced-motion:no-preference){
+  .panel{animation:rein .18s ease-out}
+  @keyframes rein{from{transform:translateX(18px);opacity:.4}to{transform:none;opacity:1}}
+}
+
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(76px + env(safe-area-inset-bottom));z-index:70;background:var(--ink);color:var(--paper);padding:11px 16px;border-radius:9px;font-size:14px;box-shadow:var(--shadow);max-width:min(520px,92vw)}
+.fassung{position:fixed;left:12px;right:12px;bottom:calc(76px + env(safe-area-inset-bottom));z-index:60;display:flex;align-items:center;gap:8px;
+  background:var(--surface);border:1px solid var(--accent);border-radius:var(--radius);padding:10px 12px;box-shadow:var(--shadow)}
+.fassung span{flex:1;font-size:13.5px;font-weight:600}
+</style>
+</head>
+<body>
+<header class="kopf">
+  <div class="kopf-in">
+    <button class="marke" id="markeBtn" title="Zur Startseite">{{NAME}}</button>
+    <div class="spacer"></div>
+    <button class="rund" id="einstBtn" aria-label="Einstellungen">
+      <span class="avatar" id="initialen">?</span>
+      <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+    </button>
+  </div>
+</header>
+
+<main>
+  <section id="sicht-start"></section>
+  <section id="sicht-liste" hidden></section>
+</main>
+
+<nav class="untenleiste">
+  <button class="ul-knopf" data-sicht="start" aria-label="Start">
+    <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/></svg><span>Start</span>
+  </button>
+  <button class="ul-haupt" id="neuBtn">+ Eintrag</button>
+  <button class="ul-knopf" data-sicht="liste" aria-label="Alle">
+    <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 6h13M8 12h13M8 18h13"/><path d="M3 6h.01M3 12h.01M3 18h.01"/></svg><span>Alle</span>
+  </button>
+</nav>
+<div id="fenster"></div>
+
+<script>
+(function(){
+"use strict";
+
+var VERSION = "{{STAND}}";
+var S = { sicht:"start", eintraege:[], ich:{ name:"{{NUTZER}}" }, letzteSicht:null };
+
+/* ---------------- Helfer ---------------- */
+function $(id){ return document.getElementById(id); }
+function esc(s){ return String(s==null?"":s).replace(/[&<>"']/g,function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]; }); }
+function pad(n){ return n<10?"0"+n:""+n; }
+function uid(){ return "x"+Date.now().toString(36)+Math.random().toString(36).slice(2,7); }
+function ymd(d){ return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate()); }
+function deDatum(s){ var t=String(s||"").split("-"); return t.length===3 ? t[2]+"."+t[1]+"."+t[0] : ""; }
+function initialen(n){ return String(n||"?").split(/\s+/).map(function(w){ return w.charAt(0); }).join("").slice(0,2).toUpperCase(); }
+var LS={
+  get:function(k){ try{ return localStorage.getItem(k); }catch(e){ return null; } },
+  set:function(k,v){ try{ localStorage.setItem(k,v); }catch(e){} }
+};
+function toast(t){
+  var el=document.createElement("div"); el.className="toast"; el.textContent=t;
+  document.body.appendChild(el); setTimeout(function(){ el.remove(); },2600);
+}
+
+/* ---------------- Datenspeicher ----------------
+   Heute im Browser (localStorage). Für mehrere Nutzer durch einen Supabase-Speicher mit
+   denselben drei Funktionen ersetzen, der Rest der App merkt davon nichts. */
+function lokalSpeicher(){
+  var SCHLUESSEL="{{KURZ}}_eintraege";
+  function lesen(){ try{ return JSON.parse(LS.get(SCHLUESSEL)||"null"); }catch(e){ return null; } }
+  var daten=lesen();
+  if(!daten){
+    // Beispielinhalt, damit die Vorlage nicht leer startet. Beim echten Bau entfernen.
+    var h=new Date();
+    daten=[
+      { id:uid(), titel:"Erster Beispieleintrag", datum:ymd(h), notiz:"Antippen zum Öffnen.", erledigt:false },
+      { id:uid(), titel:"Zweiter Beispieleintrag", datum:ymd(new Date(h.getTime()+86400000)), notiz:"", erledigt:false }
+    ];
+  }
+  var cb=null;
+  function sichern(){ LS.set(SCHLUESSEL,JSON.stringify(daten)); if(cb) cb(daten.slice()); }
+  return {
+    beobachten:function(f){ cb=f; f(daten.slice()); },
+    speichern:function(e){ daten=daten.filter(function(x){ return x.id!==e.id; }).concat([e]); sichern(); return Promise.resolve(e); },
+    loeschen:function(id){ daten=daten.filter(function(x){ return x.id!==id; }); sichern(); return Promise.resolve(); }
+  };
+}
+var speicher=lokalSpeicher();
+
+/* ---------------- Darstellung ---------------- */
+function thema(){ return LS.get("{{KURZ}}_thema")==="dunkel"?"dunkel":"hell"; }
+function themaAnwenden(){
+  var t=thema();
+  if(t==="dunkel") document.documentElement.setAttribute("data-theme","dunkel");
+  else document.documentElement.removeAttribute("data-theme");
+  var m=document.querySelector('meta[name="theme-color"]');
+  if(m) m.setAttribute("content", t==="dunkel" ? "#000000" : "{{AKZENT}}");
+}
+function hilfe(){ return LS.get("{{KURZ}}_hilfe")==="aus"?"aus":"an"; }
+function hilfeAnwenden(){ document.body.classList.toggle("ohne-hilfe", hilfe()==="aus"); }
+
+/* ---------------- Fenster ----------------
+   Die Seite dahinter wird festgehalten. overflow:hidden allein reicht auf dem iPhone nicht. */
+var seiteFest=null;
+function seiteFesthalten(){
+  if(seiteFest!==null) return;
+  seiteFest=window.scrollY||0;
+  var b=document.body.style;
+  b.position="fixed"; b.top=(-seiteFest)+"px"; b.left="0"; b.right="0"; b.width="100%";
+}
+function seiteFreigeben(){
+  if(seiteFest===null) return;
+  var y=seiteFest; seiteFest=null;
+  var b=document.body.style;
+  b.position=""; b.top=""; b.left=""; b.right=""; b.width="";
+  window.scrollTo(0,y);
+}
+function fenster(titel,inhalt,fuss){
+  seiteFesthalten();
+  $("fenster").innerHTML=
+    '<button class="scrim" id="scrim" aria-label="Schließen"></button>'+
+    '<aside class="panel" role="dialog" aria-modal="true" aria-label="'+esc(titel)+'">'+
+      '<div class="panel-head"><h3>'+esc(titel)+'</h3><button class="x" id="fensterZu" aria-label="Schließen">✕</button></div>'+
+      '<div class="panel-body">'+inhalt+'</div>'+
+      (fuss?'<div class="panel-foot">'+fuss+'</div>':'')+
+    '</aside>';
+  $("scrim").onclick=fensterZu;
+  $("fensterZu").onclick=fensterZu;
+}
+function fensterZu(){ $("fenster").innerHTML=""; seiteFreigeben(); }
+
+/* ---------------- Ansichten ---------------- */
+function zeichnen(){
+  $("sicht-start").hidden = S.sicht!=="start";
+  $("sicht-liste").hidden = S.sicht!=="liste";
+  Array.prototype.forEach.call(document.querySelectorAll(".ul-knopf"),function(b){
+    b.setAttribute("aria-selected",String(b.dataset.sicht===S.sicht));
+  });
+  // Beim Wechsel oben anfangen, nicht bei jedem Neuzeichnen
+  if(S.letzteSicht!==S.sicht){ S.letzteSicht=S.sicht; window.scrollTo(0,0); }
+  if(S.sicht==="start") zeichneStart(); else zeichneListe();
+}
+
+function karte(e){
+  return '<button class="karte" data-id="'+esc(e.id)+'">'+
+    '<span><b>'+esc(e.titel)+'</b><small>'+esc(e.erledigt?"erledigt":(e.notiz||"ohne Notiz"))+'</small></span>'+
+    '<span class="rechts">'+esc(deDatum(e.datum))+'</span></button>';
+}
+function kartenVerdrahten(box){
+  Array.prototype.forEach.call(box.querySelectorAll(".karte"),function(b){
+    b.onclick=function(){ oeffnen(b.dataset.id); };
+  });
+}
+
+function zeichneStart(){
+  var heute=ymd(new Date());
+  var offen=S.eintraege.filter(function(e){ return !e.erledigt; })
+    .sort(function(a,b){ return a.datum<b.datum?-1:1; });
+  var box=$("sicht-start");
+  box.innerHTML='<div class="hallo"><h2>Hallo '+esc(S.ich.name)+'</h2>'+
+      '<p>'+(offen.length?'Das steht als Nächstes an.':'Gerade ist nichts offen.')+'</p></div>'+
+    (offen.length
+      ? '<div class="liste">'+offen.slice(0,5).map(karte).join("")+'</div>'
+      : '<div class="leer">Über <b>+ Eintrag</b> unten legst du den ersten an.</div>')+
+    (offen.some(function(e){ return e.datum<heute; })
+      ? '<p class="warnbox" style="margin-top:12px">Ein Eintrag ist überfällig.</p>' : '');
+  kartenVerdrahten(box);
+}
+
+function zeichneListe(){
+  var alle=S.eintraege.slice().sort(function(a,b){ return a.datum<b.datum?-1:1; });
+  var box=$("sicht-liste");
+  box.innerHTML='<h2 style="font-size:20px;margin-bottom:12px">Alle Einträge</h2>'+
+    (alle.length ? '<div class="liste">'+alle.map(karte).join("")+'</div>'
+                 : '<div class="leer">Noch nichts eingetragen.</div>');
+  kartenVerdrahten(box);
+}
+
+/* ---------------- Eintrag ansehen ---------------- */
+function oeffnen(id){
+  var e=S.eintraege.filter(function(x){ return x.id===id; })[0]; if(!e) return;
+  fenster(e.titel,
+    '<dl class="kv"><dt>Datum</dt><dd class="mono">'+esc(deDatum(e.datum))+'</dd>'+
+      (e.notiz?'<dt>Notiz</dt><dd>'+esc(e.notiz)+'</dd>':'')+
+      '<dt>Stand</dt><dd>'+(e.erledigt?'erledigt':'offen')+'</dd></dl>',
+    '<button class="btn" id="bearbBtn">Bearbeiten</button>'+
+    '<button class="btn primary" id="erlBtn">'+(e.erledigt?'Wieder öffnen':'Erledigt')+'</button>');
+  $("bearbBtn").onclick=function(){ formular(e); };
+  $("erlBtn").onclick=function(){
+    e.erledigt=!e.erledigt;
+    speicher.speichern(e).then(function(){ fensterZu(); toast(e.erledigt?"Erledigt.":"Wieder offen."); });
+  };
+}
+
+/* ---------------- Formular in zwei Schritten ----------------
+   Schritt 1: was man zum Handeln braucht. Schritt 2: Details. Löschen nur hier. */
+function formular(alt){
+  var e=alt||{ datum:ymd(new Date()) };
+  fenster(alt?"Eintrag bearbeiten":"Neuer Eintrag",
+    '<div class="schritte"><span id="sk1">1 Das Wichtigste</span><span id="sk2">2 Details</span></div>'+
+    '<div id="s1" style="display:flex;flex-direction:column;gap:12px">'+
+      '<div class="field"><label for="f_titel">Titel</label><input id="f_titel" value="'+esc(e.titel||"")+'" autocomplete="off"></div>'+
+      '<div class="field"><label for="f_datum">Datum</label><input id="f_datum" type="date" class="mono" value="'+esc(e.datum||"")+'"></div>'+
+    '</div>'+
+    '<div id="s2" hidden style="display:flex;flex-direction:column;gap:12px">'+
+      '<div class="field"><label for="f_notiz">Notiz</label><textarea id="f_notiz">'+esc(e.notiz||"")+'</textarea>'+
+        '<span class="hint erkl">Kurz halten. Was hier steht, sehen alle, die den Eintrag öffnen.</span></div>'+
+      '<label class="check"><input type="checkbox" id="f_erl"'+(e.erledigt?" checked":"")+'>'+
+        '<span><b>Schon erledigt</b><span class="erkl"><br>Erledigte Einträge verschwinden von der Startseite.</span></span></label>'+
+    '</div>'+
+    '<p class="err" id="f_err" hidden></p>',
+    '<button class="btn ghost" id="zurBtn" hidden>Zurück</button>'+
+    '<button class="btn primary" id="weiterBtn">Weiter</button>'+
+    '<button class="btn primary" id="speichernBtn" hidden>'+(alt?"Speichern":"Eintragen")+'</button>'+
+    (alt?'<div class="spacer"></div><button class="btn ghost" id="loeschBtn" style="color:var(--bad)">Löschen</button>':''));
+
+  function schritt(n){
+    $("s1").hidden=(n!==1); $("s2").hidden=(n!==2);
+    $("weiterBtn").hidden=(n!==1); $("speichernBtn").hidden=(n!==2); $("zurBtn").hidden=(n!==2);
+    $("sk1").setAttribute("aria-current",String(n===1)); $("sk2").setAttribute("aria-current",String(n===2));
+  }
+  function fehler(t,feld){ var f=$("f_err"); f.hidden=false; f.textContent=t; if(feld) $(feld).focus(); return false; }
+  function s1Ok(){
+    $("f_err").hidden=true;
+    if(!$("f_titel").value.trim()) return fehler("Gib dem Eintrag einen Titel.","f_titel");
+    if(!$("f_datum").value) return fehler("Wähl ein Datum.","f_datum");
+    return true;
+  }
+  schritt(1);
+  $("weiterBtn").onclick=function(){ if(s1Ok()) schritt(2); };
+  $("zurBtn").onclick=function(){ schritt(1); };
+  $("speichernBtn").onclick=function(){
+    if(!s1Ok()){ schritt(1); return; }
+    var neu={ id:e.id||uid(), titel:$("f_titel").value.trim(), datum:$("f_datum").value,
+              notiz:$("f_notiz").value.trim(), erledigt:$("f_erl").checked };
+    speicher.speichern(neu).then(function(){ fensterZu(); toast(alt?"Gespeichert.":"Eingetragen."); });
+  };
+  if($("loeschBtn")) $("loeschBtn").onclick=function(){
+    // Rückfrage direkt an der Stelle, kein Browser-confirm
+    var f=document.querySelector(".panel-foot");
+    f.innerHTML='<div class="bestaetigen"><p style="margin:0"><b>'+esc(alt.titel)+'</b> endgültig löschen?</p>'+
+      '<div class="reihe"><button class="btn danger" id="jaBtn">Löschen</button><button class="btn" id="neinBtn">Abbrechen</button></div></div>';
+    $("neinBtn").onclick=function(){ formular(alt); };
+    $("jaBtn").onclick=function(){ speicher.loeschen(alt.id).then(function(){ fensterZu(); toast("Gelöscht."); }); };
+  };
+  setTimeout(function(){ if(!alt) $("f_titel").focus(); },60);
+}
+
+/* ---------------- Einstellungen ---------------- */
+function einstellungen(){
+  fenster("Einstellungen",
+    '<div><div class="sec-label" style="margin-top:0">Darstellung</div>'+
+      '<div class="modus" id="themaBar"><button data-t="hell">Hell</button><button data-t="dunkel">Dunkel</button></div></div>'+
+    '<hr class="sep">'+
+    '<div><div class="sec-label" style="margin-top:0">Erklärungen</div>'+
+      '<div class="modus" id="hilfeBar"><button data-h="an">An</button><button data-h="aus">Aus</button></div>'+
+      '<p class="hint erkl" style="margin:6px 0 0">Die kleinen grauen Erklärtexte. Wer sich auskennt, schaltet sie aus. Warnungen bleiben.</p></div>'+
+    '<hr class="sep">'+
+    '<div><div class="sec-label" style="margin-top:0">Fassung</div><p class="hint mono" style="margin:0">'+esc(VERSION)+'</p></div>');
+  function knoepfe(){
+    Array.prototype.forEach.call(document.querySelectorAll("#themaBar button"),function(b){
+      b.setAttribute("aria-pressed",String(b.dataset.t===thema()));
+      b.onclick=function(){ LS.set("{{KURZ}}_thema",b.dataset.t); themaAnwenden(); knoepfe(); };
+    });
+    Array.prototype.forEach.call(document.querySelectorAll("#hilfeBar button"),function(b){
+      b.setAttribute("aria-pressed",String(b.dataset.h===hilfe()));
+      b.onclick=function(){ LS.set("{{KURZ}}_hilfe",b.dataset.h); hilfeAnwenden(); knoepfe(); };
+    });
+  }
+  knoepfe();
+}
+
+/* ---------------- Neue Fassung ----------------
+   hochladen.sh schreibt version.json. Ist der Stand dort neuer, erscheint unten ein Hinweis. */
+function fassungPruefen(){
+  fetch("version.json?t="+Date.now(),{cache:"no-store"}).then(function(r){ return r.ok?r.json():null; })
+  .then(function(d){
+    if(!d||!d.stand||d.stand===VERSION||$("fassung")) return;
+    var b=document.createElement("div"); b.className="fassung"; b.id="fassung";
+    b.innerHTML='<span>Eine neue Fassung ist da.</span><button class="btn primary" id="ladenBtn">Jetzt laden</button><button class="btn ghost" id="spaeterBtn">Später</button>';
+    document.body.appendChild(b);
+    $("ladenBtn").onclick=function(){
+      this.disabled=true; b.querySelector("span").textContent="Lade neu …";
+      location.replace(location.pathname+"?v="+Date.now());
+    };
+    $("spaeterBtn").onclick=function(){ b.remove(); };
+  }).catch(function(){});
+}
+
+/* ---------------- Start ---------------- */
+function start(){
+  themaAnwenden(); hilfeAnwenden();
+  $("initialen").textContent=initialen(S.ich.name);
+  $("markeBtn").onclick=function(){ fensterZu(); S.sicht="start"; zeichnen(); };
+  $("einstBtn").onclick=einstellungen;
+  $("neuBtn").onclick=function(){ formular(null); };
+  Array.prototype.forEach.call(document.querySelectorAll(".ul-knopf"),function(b){
+    b.onclick=function(){ S.sicht=b.dataset.sicht; zeichnen(); };
+  });
+  speicher.beobachten(function(liste){ S.eintraege=liste; zeichnen(); });
+  if("serviceWorker" in navigator && location.protocol==="https:") navigator.serviceWorker.register("sw.js").catch(function(){});
+  fassungPruefen();
+  setInterval(fassungPruefen,600000);
+  document.addEventListener("visibilitychange",function(){ if(!document.hidden) fassungPruefen(); });
+}
+start();
+})();
+</script>
+</body>
+</html>
