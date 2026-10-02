@@ -14,9 +14,14 @@ Vorschau im Chat: Server `logenrunde` in `~/Downloads/.claude/launch.json` zeigt
   Unbekannte Werte zaehlen nicht mit. Zusagequote erst ab 3 eigenen bzw. 8 Rollen-Einladungen.
 - Matching `paar()`: gemeinsame Themen, ergaenzende Rollen, Branche, Ort, fruehere Verbindungen. Jede Verbindung mit Gruenden.
 - "Welche Person fehlt": gewuenschte Rollen im Event gegen Rollen in der Runde.
-- Recherche macht Claude ausserhalb der App und liefert JSON: `{"personen":[{name, position, firma, branche, ort, website, rolle, tags[], profile[{art,url}], werte{thema,beruf,netzwerk,region}, begruendung, einladungsgrund, quellen[{text,url}]}]}`.
+- Suche: Knopf "Kandidaten finden" ruft die Claude-API direkt aus dem Browser (web_search_20260209 + Werkzeug kandidaten_liefern), Runden zu je 10, pause_turn wird fortgesetzt. Schluessel in localStorage `logenrunde_key`, Modell `logenrunde_modell` (Standard claude-opus-5-5). Links, die nicht in den Suchergebnissen vorkamen, sind `geprueft:false` und erscheinen als "unbestaetigt".
+- Vor Einsatz bei IFBA: API-Aufruf in eine Supabase Edge Function verlegen, Schluessel raus aus dem Browser.
+- Alternativ Import als JSON: `{"personen":[{name, position, firma, branche, ort, website, rolle, tags[], profile[{art,url}], werte{thema,beruf,netzwerk,region}, begruendung, einladungsgrund, quellen[{text,url}]}]}`.
 - Die App verschickt nichts. Einladungstexte werden kopiert.
 
 ## Regeln
 - Keine Aussage ohne Quelle, unbekannt bleibt leer.
 - Kein automatisches LinkedIn-Auslesen. Google-Suche und oeffentliche Quellen, LinkedIn nur zum Pruefen einzelner Profile.
+
+## Bekannte Punkte
+- 02.10.2026: Erreichbarkeit der API aus dem Browser mit falschem Schluessel getestet (401 kommt sauber an). Ein echter Lauf mit gueltigem Schluessel steht noch aus, `fallbacks:"default"` und die Typ-Arrays im Werkzeug-Schema sind damit noch ungeprueft.

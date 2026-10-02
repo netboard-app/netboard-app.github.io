@@ -569,6 +569,15 @@ function wertZeile(t,v,titel){
     (v===null||v===undefined?'<span class="unb">unbekannt</span>':'<span>'+v+'</span>')+'</div>'+
     '<div class="balken"><i style="width:'+(v||0)+'%"></i></div></div>';
 }
+/* Links zum Profil, damit ein Mensch kurz drüberschauen kann. Unbestätigt heißt: kam nicht in den Suchergebnissen vor. */
+function profilLinks(p){
+  var ls=(p.profile||[]).filter(function(l){ return l.url; });
+  if(!ls.length) return "";
+  return '<div class="knopfreihe">'+ls.slice(0,3).map(function(l){
+    return '<a class="btn klein" style="text-decoration:none;display:inline-flex;align-items:center" href="'+esc(l.url)+'" target="_blank" rel="noopener">'+esc(l.art||"Profil")+' öffnen</a>'+
+      (l.geprueft===false?'<span class="chip warn" title="Link stand nicht in den Suchergebnissen">unbestätigt</span>':'');
+  }).join("")+'</div>';
+}
 function kandKarte(p,e,x){
   var tw=teilwerte(p,e), g=gesamt(tw);
   var knoepfe;
@@ -579,14 +588,16 @@ function kandKarte(p,e,x){
     '<div class="kand-kopf"><span class="avatar" style="width:40px;height:40px;font-size:14px">'+esc(initialen(p.name))+'</span>'+
       '<div class="wer"><b>'+esc(p.name)+'</b><small>'+esc([p.position,p.firma].filter(Boolean).join(" · ")||"Position unbekannt")+'</small>'+
       '<small style="color:var(--ink-3)">'+esc([p.rolle?("Rolle: "+p.rolle):"",p.ort].filter(Boolean).join(" · "))+'</small></div>'+
-      '<div class="gesamt">'+(g.wert===null?'–':g.wert)+'<small>'+g.bekannt+' von 6 bekannt</small></div></div>'+
+      '<div class="gesamt">'+(g.wert===null?'–':g.wert)+'<small>Gesamt</small></div></div>'+
     '<div class="werte">'+
       wertZeile("Thema",tw.thema)+wertZeile("Beruf",tw.beruf)+wertZeile("Netzwerk",tw.netzwerk)+
       wertZeile("Passt zur Runde",tw.runde,tw.rundeGrund)+wertZeile("Region",tw.region)+
-      '<div class="wert"><div class="zeile"><span>Zusagen</span>'+(tw.historie===null?'<span class="unb">zu wenig Daten</span>':'<span>'+tw.historie+' %</span>')+'</div></div>'+
+      '<div class="wert"><div class="zeile"><span>Zusagen</span>'+(tw.historie===null?'<span class="unb">neu</span>':'<span>'+tw.historie+' %</span>')+'</div></div>'+
     '</div>'+
     (p.begruendung?'<p class="warum"><b>Warum interessant:</b> '+esc(p.begruendung)+'</p>':'<p class="warum hint">Noch keine Begründung hinterlegt.</p>')+
-    '<p class="hint" style="margin:0">'+((p.quellen||[]).length?plural(p.quellen.length,"Quelle","Quellen")+' hinterlegt':'<span style="color:var(--warn)">Keine Quelle hinterlegt</span>')+'</p>'+
+    '<div class="tags" style="align-items:center">'+(p.gefundenUeber?'<span class="chip akz">über '+esc(p.gefundenUeber)+'</span>':'')+
+      ((p.quellen||[]).length?'<span class="hint">'+plural(p.quellen.length,"Quelle","Quellen")+'</span>':'<span class="chip warn">Keine Quelle</span>')+'</div>'+
+    profilLinks(p)+
     '<div class="knopfreihe" style="align-items:center">'+knoepfe+'</div></div>';
 }
 
@@ -599,10 +610,11 @@ function tabKandidaten(e){
   var reihe=sicht.map(function(x){ var p=pers(x.personId); return p?{p:p,x:x,g:gesamt(teilwerte(p,e)).wert}:null; })
     .filter(Boolean).sort(function(a,b){ return (b.g===null?-1:b.g)-(a.g===null?-1:a.g); });
   var h='<div class="knopfreihe" style="margin-bottom:12px">'+
-      '<button class="btn primary" id="importBtn">Recherche importieren</button>'+
+      '<button class="btn primary" id="sucheBtn">Kandidaten finden</button>'+
       '<button class="btn" id="personNeu">+ Person von Hand</button>'+
+      '<button class="btn" id="importBtn">Datei importieren</button>'+
       '<button class="btn" id="ausNetzBtn">Aus dem Netzwerk</button></div>'+
-    '<p class="hint erkl" style="margin:0 0 12px">Die Recherche macht Claude im Hintergrund und liefert eine Datei. Die Punkte für Thema, Beruf, Netzwerk und Region kommen von dort, jeweils mit Quelle. „Passt zur Runde“ und „Zusagen“ rechnet die App selbst.</p>'+
+    '<p class="hint erkl" style="margin:0 0 12px">Claude sucht im Netz nach passenden Personen. Thema, Beruf, Netzwerk und Region kommen aus der Suche, jeweils mit Quelle. „Passt zur Runde“ und „Zusagen“ rechnet die App selbst.</p>'+
     '<div class="modus" id="filter" style="margin-bottom:12px">'+
       '<button data-f="vorschlaege">Vorschläge '+grp.vorschlaege.length+'</button>'+
       '<button data-f="gewaehlt">In der Runde '+grp.gewaehlt.length+'</button>'+
@@ -612,6 +624,7 @@ function tabKandidaten(e){
   var box=$("tabInhalt"); box.innerHTML=h;
   alle("#filter button",function(b){ b.setAttribute("aria-pressed",String(b.dataset.f===S.filter)); b.onclick=function(){ S.filter=b.dataset.f; zeichneEvent(); }; },box);
   $("importBtn").onclick=function(){ importFenster(e); };
+  $("sucheBtn").onclick=function(){ sucheFenster(e); };
   $("personNeu").onclick=function(){ personFormular(null,e); };
   $("ausNetzBtn").onclick=function(){ ausNetzwerk(e); };
   alle("[data-wahl]",function(b){ b.onclick=function(){ statusSetzen(einl(e.id,b.dataset.wahl),"ausgewaehlt"); sichern(); toast("Ausgewählt. Steht jetzt in der Runde."); }; },box);
@@ -850,7 +863,8 @@ function profil(id,e){
     '<dt>Branche</dt><dd>'+esc(p.branche||"unbekannt")+'</dd>'+
     '<dt>Ort</dt><dd>'+esc(p.ort||"unbekannt")+'</dd>'+
     (p.website?'<dt>Website</dt><dd><a href="'+esc(p.website)+'" target="_blank" rel="noopener">'+esc(p.website.replace(/^https?:\/\//,""))+'</a></dd>':'')+
-    ((p.profile||[]).length?'<dt>Profile</dt><dd>'+p.profile.map(function(l){ return '<a href="'+esc(l.url)+'" target="_blank" rel="noopener">'+esc(l.art||"Profil")+'</a>'; }).join(" · ")+'</dd>':'')+
+    ((p.profile||[]).length?'<dt>Profile</dt><dd>'+p.profile.map(function(l){ return '<a href="'+esc(l.url)+'" target="_blank" rel="noopener">'+esc(l.art||"Profil")+'</a>'+(l.geprueft===false?' <span class="chip warn">unbestätigt</span>':''); }).join(" · ")+'</dd>':'')+
+    (p.gefundenUeber?'<dt>Gefunden</dt><dd>über '+esc(p.gefundenUeber)+'</dd>':'')+
     ((p.tags||[]).length?'<dt>Themen</dt><dd><span class="tags">'+p.tags.map(function(t){ return '<span class="chip">'+esc(t)+'</span>'; }).join("")+'</span></dd>':'')+
     (x?'<dt>Status</dt><dd>'+chip(x.status)+'</dd>':'')+
   '</dl>';
@@ -863,7 +877,7 @@ function profil(id,e){
   }
   h+='<div><div class="sec-label" style="margin-top:0">Warum interessant</div><p style="margin:0">'+(p.begruendung?esc(p.begruendung):'<span class="hint">Noch keine Begründung.</span>')+'</p></div>';
   h+='<div><div class="sec-label" style="margin-top:0">Quellen</div>'+((p.quellen||[]).length?'<div class="liste" style="gap:6px">'+p.quellen.map(function(q){
-      return '<div class="quelle">'+esc(q.text||"")+(q.url?' <a href="'+esc(q.url)+'" target="_blank" rel="noopener">öffnen</a>':'')+'</div>'; }).join("")+'</div>'
+      return '<div class="quelle">'+esc(q.text||"")+(q.url?' <a href="'+esc(q.url)+'" target="_blank" rel="noopener">öffnen</a>':'')+(q.geprueft===false?' <span class="chip warn">unbestätigt</span>':'')+'</div>'; }).join("")+'</div>'
       :'<p class="warnbox">Keine Quelle. Aussagen über diese Person sind nicht belegt.</p>')+'</div>';
   if(e){
     var g2=runde(e.id,p.id);
@@ -1044,29 +1058,218 @@ function importFenster(e){
   };
   $("iLos").onclick=function(){
     var roh; try{ roh=JSON.parse($("i_text").value); }catch(err){ var f=$("i_err"); f.hidden=false; f.textContent="Das ist keine gültige Recherche-Datei. Bitte die Datei unverändert einfügen."; return; }
-    var liste_=Array.isArray(roh)?roh:(roh.personen||[]);
-    var neu=0, akt=0;
-    liste_.forEach(function(r){
-      if(!r||!r.name) return;
-      var vorh=D.personen.filter(function(p){ return norm(p.name)===norm(r.name) && norm(p.firma)===norm(r.firma); })[0];
-      var p=vorh||{ id:uid(), angelegt:new Date().toISOString(), herkunft:"Recherche "+(e.thema||"") };
-      ["name","position","firma","branche","ort","website","rolle","begruendung","einladungsgrund"].forEach(function(k){ if(r[k]!==undefined&&r[k]!==null&&r[k]!=="") p[k]=String(r[k]); });
-      if(Array.isArray(r.tags)) p.tags=r.tags.map(String);
-      if(Array.isArray(r.profile)) p.profile=r.profile.filter(function(l){ return l&&l.url; });
-      if(Array.isArray(r.quellen)) p.quellen=r.quellen.filter(function(q){ return q&&(q.text||q.url); });
-      var w=r.werte||{}; p.werte={ thema:zahl(w.thema), beruf:zahl(w.beruf), netzwerk:zahl(w.netzwerk), region:zahl(w.region) };
-      if(!vorh){ D.personen.push(p); neu++; } else akt++;
-      if(!einl(e.id,p.id)) zurEvent(e.id,p.id,"vorgeschlagen");
-    });
-    S.filter="vorschlaege"; speicher.sichern(D); fensterZu(); zeichnen();
-    toast(neu+" neu, "+akt+" aktualisiert.");
+    var r=uebernehmen(Array.isArray(roh)?roh:(roh.personen||[]),e,null,"Datei "+(e.thema||""));
+    S.filter="vorschlaege"; fensterZu(); zeichnen();
+    toast(r.neu+" neu, "+r.akt+" aktualisiert.");
   };
+}
+
+/* Übernimmt Personen aus Suche oder Datei. Doppelte (Name und Firma gleich) werden aktualisiert.
+   urls: Menge aller Adressen aus den Suchergebnissen. Links, die dort nicht vorkamen, gelten als unbestätigt. */
+function normUrl(u){
+  try{ var x=new URL(u); return (x.hostname.replace(/^(www|[a-z]{2})\./,"")+x.pathname.replace(/\/+$/,"")).toLowerCase(); }
+  catch(err){ return String(u||"").toLowerCase(); }
+}
+function uebernehmen(liste_,e,urls,herkunft){
+  var neu=0, akt=0;
+  function pruef(u){ return urls ? urls.has(normUrl(u)) : undefined; }
+  liste_.forEach(function(r){
+    if(!r||!r.name) return;
+    var vorh=D.personen.filter(function(p){ return norm(p.name)===norm(r.name) && norm(p.firma)===norm(r.firma); })[0];
+    var p=vorh||{ id:uid(), angelegt:new Date().toISOString(), herkunft:herkunft };
+    ["name","position","firma","branche","ort","website","rolle","begruendung","einladungsgrund","gefundenUeber"].forEach(function(k){ if(r[k]!==undefined&&r[k]!==null&&r[k]!=="") p[k]=String(r[k]); });
+    if(Array.isArray(r.tags)) p.tags=r.tags.map(String);
+    if(Array.isArray(r.profile)) p.profile=r.profile.filter(function(l){ return l&&l.url; }).map(function(l){ return {art:l.art||"Profil",url:l.url,geprueft:pruef(l.url)}; });
+    if(Array.isArray(r.quellen)) p.quellen=r.quellen.filter(function(q){ return q&&(q.text||q.url); }).map(function(q){ return {text:q.text||"",url:q.url||"",geprueft:q.url?pruef(q.url):undefined}; });
+    var w=r.werte||{}; p.werte={ thema:zahl(w.thema), beruf:zahl(w.beruf), netzwerk:zahl(w.netzwerk), region:zahl(w.region) };
+    if(!vorh){ D.personen.push(p); neu++; } else akt++;
+    if(!einl(e.id,p.id)) zurEvent(e.id,p.id,"vorgeschlagen");
+  });
+  speicher.sichern(D);
+  return { neu:neu, akt:akt };
+}
+
+/* ---------------- Suche über Claude ----------------
+   Die App fragt Claude mit Websuche, in Runden zu je 10 Personen. Der Schlüssel liegt nur in diesem Browser.
+   Für den Einsatz bei IFBA gehört der Aufruf auf einen Server (Supabase-Funktion), damit der Schlüssel nicht im Browser steht. */
+var MODELLE=[
+  {id:"claude-opus-5-5", t:"Claude Opus 5.5 (gründlicher)", ein:4, aus:20},
+  {id:"claude-sonnet-5-5", t:"Claude Sonnet 5.5 (günstiger)", ein:2, aus:10}
+];
+function schluessel(){ return LS.get("logenrunde_key")||""; }
+function modell(){ var m=LS.get("logenrunde_modell"); return MODELLE.filter(function(x){ return x.id===m; })[0]||MODELLE[0]; }
+var SUCHE_LAEUFT=null;
+
+var WERKZEUG={
+  name:"kandidaten_liefern",
+  description:"Liefert die gefundenen Kandidaten an die App. Genau einmal am Ende aufrufen, mit allen Personen dieser Runde.",
+  input_schema:{ type:"object", additionalProperties:false, required:["kandidaten"], properties:{ kandidaten:{ type:"array", items:{
+    type:"object", additionalProperties:false,
+    required:["name","position","firma","branche","ort","rolle","tags","profile","gefundenUeber","werte","begruendung","einladungsgrund","quellen"],
+    properties:{
+      name:{type:"string"}, position:{type:"string"}, firma:{type:"string"}, branche:{type:"string"}, ort:{type:"string"},
+      website:{type:"string", description:"Firmenwebsite, nur wenn in den Suchergebnissen gesehen"},
+      rolle:{type:"string", description:"Rolle am Tisch, möglichst aus der vorgegebenen Liste"},
+      tags:{type:"array", items:{type:"string"}, description:"2 bis 5 Themen"},
+      profile:{type:"array", items:{type:"object", additionalProperties:false, required:["art","url"], properties:{
+        art:{type:"string", description:"LinkedIn, Instagram, Facebook, XING, Website"}, url:{type:"string", description:"Exakt wie in den Suchergebnissen"} }}},
+      gefundenUeber:{type:"string", enum:["LinkedIn","Instagram","Facebook","XING","Website","Presse","Verband","Sonstiges"]},
+      werte:{type:"object", additionalProperties:false, required:["thema","beruf","netzwerk","region"], properties:{
+        thema:{type:["integer","null"]}, beruf:{type:["integer","null"]}, netzwerk:{type:["integer","null"]}, region:{type:["integer","null"]} }},
+      begruendung:{type:"string", description:"Zwei Sätze: warum interessant für diesen Abend, nur belegte Fakten"},
+      einladungsgrund:{type:"string", description:"Ein persönlicher Satz für die Einladung in Sie-Form, sachlich"},
+      quellen:{type:"array", items:{type:"object", additionalProperties:false, required:["text","url"], properties:{
+        text:{type:"string", description:"Was diese Quelle belegt"}, url:{type:"string"} }}}
+    } } } } }
+};
+
+function systemText(){
+  return [
+    "Du recherchierst Gäste für Business-Abende in der BVB-Loge (Signal Iduna Park, Dortmund) der Firma IFBA.",
+    "Ziel sind wertvolle Kontakte: Entscheider und Multiplikatoren, die öffentlich nachweisbar mit dem Thema des Abends verbunden sind und beruflich Gewicht haben (Inhaber, Geschäftsführer, Vorstand, leitende Position, Ämter in Verbänden oder Vereinen). Ein Ticket ist rund 2.000 Euro wert, also keine Zufallsfunde, keine reinen Privatpersonen, keine Profile ohne erkennbare Reichweite.",
+    "Suche über die Websuche, auch gezielt mit site:linkedin.com/in, site:instagram.com, Firmenwebsites, Verbandsseiten und Lokalpresse.",
+    "Regeln:",
+    "1. Nur Fakten, die in den Suchergebnissen stehen. Nichts ergänzen oder vermuten. Was unbekannt ist, bleibt leer oder null.",
+    "2. Jede URL exakt so übernehmen, wie sie in den Suchergebnissen stand. Keine URL selbst zusammensetzen.",
+    "3. Keine Privatadressen, keine privaten Telefonnummern, keine Angaben zu Gesundheit, Religion, Politik, Familie oder Privatleben.",
+    "4. Region: Schwerpunkt Dortmund, Ruhrgebiet und übriges NRW. Angrenzende Regionen nur, wenn die Person sehr gut passt. Niemand aus Süddeutschland oder weiter weg.",
+    "5. Werte von 0 bis 100: thema = wie stark öffentlich belegt mit dem Thema verbunden (Funktionsträger oder Unternehmer im Thema hoch, belegtes Hobby mittel, kein Beleg null). beruf = Gewicht der Position und Größe des Unternehmens. netzwerk = belegte Reichweite (Ämter, Verbände, Follower-Zahlen falls sichtbar), ohne Beleg null. region = Ruhrgebiet 100, übriges NRW 80, angrenzend 50.",
+    "6. Schreibe sachlich auf Deutsch, ohne Gedankenstriche.",
+    "Am Ende rufst du das Werkzeug kandidaten_liefern genau einmal auf, mit allen Personen dieser Runde. Lieber weniger Personen als unbelegte."
+  ].join("\n");
+}
+function auftragText(e,anzahl,schonDa){
+  return [
+    "Thema des Abends: "+(e.thema||""),
+    e.beschreibung?"Beschreibung: "+e.beschreibung:"",
+    "Ziel des Abends: "+(e.ziel||"allgemeines Networking"),
+    (e.rollen||[]).length?"Gewünschte Rollen am Tisch (für das Feld rolle verwenden): "+e.rollen.join(", "):"",
+    e.branchen?"Gewünschte Branchen: "+e.branchen:"",
+    "Region: "+(e.region||"Dortmund + 100 km"),
+    "Finde "+anzahl+" neue Personen.",
+    schonDa.length?"Diese Personen sind schon bekannt, nicht noch einmal liefern: "+schonDa.join("; "):""
+  ].filter(Boolean).join("\n");
+}
+function fehlerText(status,d){
+  var m=(d&&d.error&&d.error.message)||"";
+  if(status===401) return "Der Schlüssel ist ungültig. In den Einstellungen prüfen.";
+  if(status===403) return "Der Schlüssel darf das nicht. In der Claude-Konsole die Rechte prüfen.";
+  if(status===429) return "Zu viele Anfragen auf einmal. In einer Minute erneut versuchen.";
+  if(/credit|balance/i.test(m)) return "Das Guthaben bei Anthropic ist aufgebraucht. In der Claude-Konsole aufladen.";
+  if(status>=500) return "Claude ist gerade überlastet. Gleich noch einmal versuchen.";
+  return "Fehler "+status+(m?": "+m:"");
+}
+async function anfrage(body,signal){
+  var r=await fetch("https://api.anthropic.com/v1/messages",{ method:"POST", signal:signal,
+    headers:{ "content-type":"application/json", "x-api-key":schluessel(), "anthropic-version":"2023-06-01",
+      "anthropic-beta":"server-side-fallback-2026-07-01", "anthropic-dangerous-direct-browser-access":"true" },
+    body:JSON.stringify(body) });
+  var d=null; try{ d=await r.json(); }catch(err){}
+  if(!r.ok) throw new Error(fehlerText(r.status,d));
+  return d;
+}
+/* Eine Runde: Claude sucht, bis das Werkzeug aufgerufen wird. pause_turn heißt: Server-Suche pausiert, einfach fortsetzen. */
+async function suchRunde(e,anzahl,schonDa,signal,meldung,kosten){
+  var m=modell();
+  var nachrichten=[{ role:"user", content:auftragText(e,anzahl,schonDa) }];
+  var urls=new Set(), nachgehakt=false;
+  for(var i=0;i<6;i++){
+    var d=await anfrage({ model:m.id, max_tokens:16000, thinking:{type:"adaptive"}, output_config:{effort:"medium"}, fallbacks:"default",
+      system:systemText(), tool_choice:{type:"auto"},
+      tools:[{ type:"web_search_20260209", name:"web_search", max_uses:10,
+        user_location:{ type:"approximate", city:"Dortmund", region:"Nordrhein-Westfalen", country:"DE", timezone:"Europe/Berlin" } }, WERKZEUG],
+      messages:nachrichten }, signal);
+    var u=d.usage||{};
+    kosten.ein+=(u.input_tokens||0)+(u.cache_read_input_tokens||0)+(u.cache_creation_input_tokens||0);
+    kosten.aus+=(u.output_tokens||0);
+    kosten.suchen+=((u.server_tool_use||{}).web_search_requests||0);
+    (d.content||[]).forEach(function(b){
+      if(b.type==="web_search_tool_result" && Array.isArray(b.content)) b.content.forEach(function(x){ if(x.url) urls.add(normUrl(x.url)); });
+      if(b.type==="text" && Array.isArray(b.citations)) b.citations.forEach(function(c){ if(c.url) urls.add(normUrl(c.url)); });
+    });
+    meldung(kosten.suchen+" Suchen bisher");
+    if(d.stop_reason==="refusal") throw new Error("Claude hat diese Suche abgelehnt. Thema oder Beschreibung anders formulieren.");
+    var t=(d.content||[]).filter(function(b){ return b.type==="tool_use" && b.name==="kandidaten_liefern"; })[0];
+    if(t) return { kandidaten:(t.input&&t.input.kandidaten)||[], urls:urls };
+    nachrichten.push({ role:"assistant", content:d.content });
+    if(d.stop_reason==="pause_turn") continue;
+    if(nachgehakt) break;
+    nachgehakt=true;
+    nachrichten.push({ role:"user", content:"Bitte liefere jetzt alle belegten Personen über das Werkzeug kandidaten_liefern." });
+  }
+  throw new Error("Claude hat keine Liste geliefert. Noch einmal versuchen.");
+}
+function dollar(k){ var m=modell(); return (k.ein/1e6*m.ein + k.aus/1e6*m.aus + k.suchen*0.01); }
+
+function sucheFenster(e){
+  if(SUCHE_LAEUFT){ toast("Es läuft schon eine Suche."); return; }
+  if(!schluessel()){
+    fenster("Kandidaten finden",
+      '<p class="warnbox">Für die Suche braucht die App einen Schlüssel von Anthropic. Den trägst du einmal in den Einstellungen ein.</p>'+
+      '<p class="hint" style="margin:0">Der Schlüssel bleibt nur in diesem Browser.</p>',
+      '<button class="btn primary" id="zuEinst">Zu den Einstellungen</button>');
+    $("zuEinst").onclick=einstellungen; return;
+  }
+  var m=modell();
+  fenster("Kandidaten finden",
+    '<p style="margin:0">Claude sucht im Netz nach Personen zum Thema <b>'+esc(e.thema)+'</b>, Region '+esc(e.region||"Dortmund + 100 km")+'.</p>'+
+    '<div class="field"><label for="s_anz">Wie viele?</label><select id="s_anz"><option>10</option><option>20</option><option selected>30</option></select></div>'+
+    (einlVon(e.id).some(function(x){ return x.status==="vorgeschlagen"; })
+      ?'<label class="check"><input type="checkbox" id="s_alt"><span><b>Alte Vorschläge vorher entfernen</b><br>Sinnvoll, wenn du das Thema geändert hast. Ausgewählte bleiben.</span></label>':'')+
+    '<p class="hint erkl" style="margin:0">Läuft in Runden zu je 10 Personen, pro Runde etwa ein bis drei Minuten. Modell: '+esc(m.t)+'. Grobe Schätzung: 0,50 bis 1,50 US-Dollar pro 10 Personen.</p>'+
+    '<div id="s_status" class="infobox" hidden></div>',
+    '<button class="btn primary" id="s_los">Suche starten</button>');
+  $("s_los").onclick=function(){
+    var anz=Number($("s_anz").value);
+    if($("s_alt") && $("s_alt").checked){
+      var weg=einlVon(e.id).filter(function(x){ return x.status==="vorgeschlagen"; }).map(function(x){ return x.id; });
+      D.einladungen=D.einladungen.filter(function(x){ return weg.indexOf(x.id)<0; }); speicher.sichern(D); zeichnen();
+    }
+    sucheStarten(e,anz);
+  };
+}
+async function sucheStarten(e,anzahl){
+  var ctrl=new AbortController(); SUCHE_LAEUFT=ctrl;
+  var kosten={ein:0,aus:0,suchen:0}, gefunden=0, zeilen=[];
+  function status(t){ var b=$("s_status"); if(!b) return; b.hidden=false; b.innerHTML=zeilen.concat(t?['<span class="hint">'+esc(t)+'</span>']:[]).join("<br>"); }
+  var fuss=document.querySelector(".panel-foot");
+  if(fuss) fuss.innerHTML='<button class="btn danger" id="s_stop">Suche abbrechen</button>';
+  if($("s_stop")) $("s_stop").onclick=function(){ ctrl.abort(); };
+  var runden=Math.ceil(anzahl/10);
+  try{
+    for(var r=1;r<=runden;r++){
+      var n=Math.min(10,anzahl-(r-1)*10);
+      status("Runde "+r+" von "+runden+": Claude sucht …");
+      var schonDa=einlVon(e.id).map(function(x){ var p=pers(x.personId); return p?p.name+(p.firma?" ("+p.firma+")":""):null; }).filter(Boolean);
+      var erg=await suchRunde(e,n,schonDa,ctrl.signal,function(t){ status("Runde "+r+" von "+runden+": "+t); },kosten);
+      var u=uebernehmen(erg.kandidaten,e,erg.urls,"Suche "+(e.thema||"")+" "+ymd(new Date()));
+      gefunden+=u.neu;
+      zeilen.push("Runde "+r+": "+erg.kandidaten.length+" gefunden, "+u.neu+" neu");
+      S.filter="vorschlaege"; zeichnen();
+    }
+    zeilen.push("<b>Fertig: "+gefunden+" neue Kandidaten.</b> Kosten etwa "+dollar(kosten).toFixed(2).replace(".",",")+" US-Dollar, "+kosten.suchen+" Suchen.");
+    status(""); toast(gefunden+" neue Kandidaten.");
+  }catch(err){
+    zeilen.push('<span style="color:var(--bad);font-weight:600">'+esc(err.name==="AbortError"?"Abgebrochen.":err.message)+'</span>');
+    if(kosten.suchen||kosten.aus) zeilen.push("Bis dahin etwa "+dollar(kosten).toFixed(2).replace(".",",")+" US-Dollar.");
+    status(""); if(!$("s_status")) toast(err.name==="AbortError"?"Suche abgebrochen.":err.message);
+  }finally{
+    SUCHE_LAEUFT=null;
+    var f=document.querySelector(".panel-foot"); if(f && $("s_stop")) f.innerHTML='<button class="btn primary" id="s_fertig">Ergebnisse ansehen</button>';
+    if($("s_fertig")) $("s_fertig").onclick=fensterZu;
+  }
 }
 
 /* ---------------- Einstellungen ---------------- */
 function einstellungen(){
   var summe=TEILE.reduce(function(s,t){ return s+(Number(D.gewichte[t.k])||0); },0);
   fenster("Einstellungen",
+    '<div><div class="sec-label" style="margin-top:0">Suche über Claude</div>'+
+      '<div class="field"><label for="k_key">Schlüssel von Anthropic</label><input id="k_key" type="password" autocomplete="off" placeholder="'+(schluessel()?'gespeichert, endet auf '+esc(schluessel().slice(-4)):'sk-ant-…')+'"></div>'+
+      '<div class="field" style="margin-top:8px"><label for="k_mod">Modell</label><select id="k_mod">'+MODELLE.map(function(x){ return '<option value="'+x.id+'"'+(x.id===modell().id?' selected':'')+'>'+esc(x.t)+'</option>'; }).join("")+'</select></div>'+
+      '<p class="hint erkl" style="margin:6px 0 0">Der Schlüssel bleibt nur in diesem Browser. Nicht auf fremden Geräten eintragen.</p>'+
+      '<div class="knopfreihe" style="margin-top:8px"><button class="btn klein" id="k_save">Übernehmen</button>'+(schluessel()?'<button class="btn ghost klein" id="k_del" style="color:var(--bad)">Schlüssel entfernen</button>':'')+'</div></div>'+
+    '<hr class="sep">'+
     '<div><div class="sec-label" style="margin-top:0">Gewichtung der Bewertung</div>'+
       '<div class="three">'+TEILE.map(function(t){ return '<div class="field"><label for="g_'+t.k+'">'+esc(t.t)+' %</label><input id="g_'+t.k+'" type="number" min="0" max="100" class="mono" value="'+esc(D.gewichte[t.k])+'"></div>'; }).join("")+'</div>'+
       '<p class="hint" style="margin:6px 0 0" id="gSumme">Summe: '+summe+' %'+(summe!==100?' · muss nicht 100 sein, die App rechnet anteilig':'')+'</p>'+
@@ -1090,6 +1293,11 @@ function einstellungen(){
     alle("#hilfeBar button",function(b){ b.setAttribute("aria-pressed",String(b.dataset.h===hilfe())); b.onclick=function(){ LS.set("logenrunde_hilfe",b.dataset.h); hilfeAnwenden(); knoepfe(); }; });
   }
   knoepfe();
+  $("k_save").onclick=function(){
+    var k=$("k_key").value.trim(); if(k) LS.set("logenrunde_key",k);
+    LS.set("logenrunde_modell",$("k_mod").value); einstellungen(); toast("Gespeichert.");
+  };
+  if($("k_del")) $("k_del").onclick=function(){ try{ localStorage.removeItem("logenrunde_key"); }catch(err){} einstellungen(); toast("Schlüssel entfernt."); };
   $("gSpeichern").onclick=function(){ TEILE.forEach(function(t){ D.gewichte[t.k]=Math.max(0,Number($("g_"+t.k).value)||0); }); sichern(); einstellungen(); toast("Gewichte übernommen."); };
   $("gStandard").onclick=function(){ D.gewichte=JSON.parse(JSON.stringify(GEWICHTE_STANDARD)); sichern(); einstellungen(); };
   $("expBtn").onclick=function(){ herunterladen("logenrunde-sicherung-"+ymd(new Date())+".json",JSON.stringify(D,null,2)); };
