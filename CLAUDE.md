@@ -32,3 +32,6 @@ Laeuft ueber Claude im Chat mit dem Skill `/netboard <Thema> <Anzahl>` (`~/.clau
 ## GitHub
 Repo: https://github.com/Eljas-Webstar/Netboard (oeffentlich). Live: https://eljas-webstar.github.io/Netboard/
 Hochladen: `git push` (gh-CLI unter ~/bin/gh, angemeldet als Eljas-Webstar). Keine echten Personendaten ins Repo, die Recherche-Dateien liegen ausserhalb in `~/Downloads/netboard/recherche/`.
+
+## Anmeldung
+Sichtschutz im Browser: Benutzername und Passwort werden als SHA-256 von `benutzername-klein:passwort` mit `ZUGANG` in index.html verglichen, gemerkt in localStorage `netboard_zugang`. Kein echter Schutz, weil der Code oeffentlich ist. Echte Anmeldung kommt mit Supabase. Zugangsdaten stehen nicht im Repo.
