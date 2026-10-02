@@ -848,7 +848,7 @@ function themenListe(){
 }
 function gehoertZu(p,thema){
   var t=norm(thema);
-  if((p.tags||[]).some(function(x){ var n=norm(x); return n===t || n.indexOf(t)>=0; })) return true;
+  if((p.tags||[]).concat([p.rolle,p.branche]).some(function(x){ var n=norm(x); return n && (n===t || n.indexOf(t)>=0); })) return true;
   return D.einladungen.some(function(x){ if(x.personId!==p.id) return false; var e=ev(x.eventId); return e && norm(e.thema)===t; });
 }
 function personKarte(p){
