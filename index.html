@@ -101,6 +101,8 @@ body.ohne-hilfe .erkl{display:none}
 .kv{display:grid;grid-template-columns:96px 1fr;gap:6px 12px;font-size:14px;margin:0}
 .kv dt{color:var(--ink-3);font-size:12px;text-transform:uppercase;letter-spacing:.06em;padding-top:2px}
 .kv dd{margin:0;overflow-wrap:anywhere}
+.eckdaten{grid-template-columns:72px 1fr;gap:4px 12px}
+.eckdaten dd{font-weight:600}
 hr.sep{border:0;border-top:1px solid var(--line-soft);margin:4px 0;width:100%}
 .schritte{display:flex;gap:6px}
 .schritte span{flex:1;font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-3);border-top:3px solid var(--line);padding-top:6px}
@@ -496,6 +498,13 @@ function zeichnen(){
 }
 function eventOeffnen(id,tab){ S.sicht="event"; S.eventId=id; if(tab) S.tab=tab; fensterZu(); zeichnen(); }
 
+/* Eckdaten eines Events: zuerst wo und worum, dann wann */
+function eventInfo(e){
+  var zeilen=[["Anlass",e.spiel],["Ort",e.ort],["Thema",e.thema],
+    ["Datum",deDatumLang(e.datum)+(e.uhrzeit?", "+e.uhrzeit+" Uhr":"")],["Plätze",e.plaetze?String(e.plaetze):""]]
+    .filter(function(z){ return z[1]; });
+  return '<dl class="kv eckdaten">'+zeilen.map(function(z){ return '<dt>'+esc(z[0])+'</dt><dd>'+esc(z[1])+'</dd>'; }).join("")+'</dl>';
+}
 function zaehlen(e){
   var xs=einlVon(e.id), z={};
   STATUS.forEach(function(s){ z[s.k]=0; });
@@ -533,8 +542,7 @@ function zeichneStart(){
   if(e){
     var k=kapazitaet(e);
     h+='<div class="sec-label">Nächstes Event</div><div class="box" style="display:flex;flex-direction:column;gap:12px">'+
-      '<div><h3 style="font-size:20px">'+esc(e.name)+'</h3>'+
-      '<p class="hint" style="margin:2px 0 0">'+esc(deDatumLang(e.datum))+(e.uhrzeit?' · '+esc(e.uhrzeit)+' Uhr':'')+' · Thema: <b style="color:var(--ink)">'+esc(e.thema||"offen")+'</b></p></div>'+
+      '<div style="display:flex;flex-direction:column;gap:10px"><h3 style="font-size:20px">'+esc(e.name)+'</h3>'+eventInfo(e)+'</div>'+
       '<div class="zahlen">'+
         '<div class="zahl"><b>'+k.zu+'</b><span>zugesagt von '+esc(e.plaetze||0)+'</span></div>'+
         '<div class="zahl"><b>'+k.offen+'</b><span>eingeladen, offen</span></div>'+
@@ -555,7 +563,7 @@ function zeichneStart(){
   if(rest.length){
     h+='<div class="sec-label">'+(e?'Weitere Events':'Events')+'</div><div class="liste">'+rest.map(function(x){
       var k=kapazitaet(x);
-      return '<button class="karte" data-ev="'+esc(x.id)+'"><span><b>'+esc(x.name)+'</b><small>'+esc(x.thema||"")+(x.datum<heute?' · vorbei':'')+'</small></span>'+
+      return '<button class="karte" data-ev="'+esc(x.id)+'"><span><b>'+esc(x.name)+'</b><small>'+esc([x.ort,x.thema].filter(Boolean).join(" · "))+(x.datum<heute?' · vorbei':'')+'</small></span>'+
         '<span class="rechts">'+esc(deDatum(x.datum))+'<br><small>'+k.zu+' / '+esc(x.plaetze||0)+'</small></span></button>';
     }).join("")+'</div>';
   }
@@ -574,8 +582,8 @@ function zeichneEvent(){
   var e=ev(S.eventId), box=$("sicht-event");
   var k=kapazitaet(e);
   var h='<div style="display:flex;gap:10px;align-items:flex-start;margin-bottom:12px">'+
-      '<div style="flex:1;min-width:0"><h2 style="font-size:22px">'+esc(e.name)+'</h2>'+
-      '<p class="hint" style="margin:2px 0 0">'+esc(deDatumLang(e.datum))+(e.uhrzeit?' · '+esc(e.uhrzeit)+' Uhr':'')+' · Thema: <b style="color:var(--ink)">'+esc(e.thema||"offen")+'</b> · '+k.zu+' von '+esc(e.plaetze||0)+' zugesagt</p></div>'+
+      '<div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:10px"><h2 style="font-size:22px">'+esc(e.name)+'</h2>'+eventInfo(e)+
+      '<p class="hint" style="margin:0">'+k.zu+' von '+esc(e.plaetze||0)+' zugesagt</p></div>'+
       '<button class="btn klein" id="evBearb">Bearbeiten</button></div>'+
     '<div class="modus" id="tabs" style="margin-bottom:14px">'+
       '<button data-tab="kandidaten">Kandidaten</button><button data-tab="runde">Runde</button><button data-tab="danach">Nach dem Spiel</button></div>'+
@@ -1392,7 +1400,7 @@ function beispielLaden(){
   var heute=new Date();
   var vorher=ymd(new Date(heute.getTime()-35*86400000)), bald=ymd(new Date(heute.getTime()+5*86400000));
   var e0={ id:uid(), name:"Beispiel: Mittelstand", spiel:"Golfturnier", datum:vorher, uhrzeit:"14:00", thema:"Unternehmer", plaetze:12, quote:10, rollen:[], ziel:"Unternehmer", ort:"Golfclub Beispielstadt", region:"NRW, Schwerpunkt Ruhrgebiet", einladungstext:TEXT_STANDARD, beispiel:true };
-  var e1={ id:uid(), name:"Beispiel: Pflegekasse", spiel:"BVB gegen Beispiel-Gegner", datum:bald, uhrzeit:"18:30", thema:"Pflegekasse", plaetze:14, quote:10,
+  var e1={ id:uid(), name:"Beispiel: Pflegekasse", spiel:"BVB-Heimspiel", datum:bald, uhrzeit:"18:30", thema:"Pflegekasse", plaetze:14, quote:10,
     rollen:["Pflegeunternehmer","Krankenkasse","Klinikmanagement","Health-Tech","Wohnungswirtschaft","Bank"], ziel:"Kooperationen", ort:"BVB-Loge Dortmund", region:"NRW, Schwerpunkt Ruhrgebiet", einladungstext:TEXT_STANDARD, beispiel:true };
   function P(name,pos,firma,rolle,branche,ort,tags,w,begr,grund){
     return { id:uid(), name:name+" (Beispiel)", position:pos, firma:firma, rolle:rolle, branche:branche, ort:ort, tags:tags,
