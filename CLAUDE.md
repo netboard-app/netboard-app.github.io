@@ -23,5 +23,8 @@ Vorschau im Chat: Server `logenrunde` in `~/Downloads/.claude/launch.json` zeigt
 - Keine Aussage ohne Quelle, unbekannt bleibt leer.
 - Kein automatisches LinkedIn-Auslesen. Google-Suche und oeffentliche Quellen, LinkedIn nur zum Pruefen einzelner Profile.
 
+## Recherche heute
+Laeuft ueber Claude im Chat mit dem Skill `/logenrunde <Thema> <Anzahl>` (`~/.claude/skills/logenrunde/SKILL.md`). Ergebnis als JSON in `~/Downloads/logenrunde/recherche/`, in der App "Datei importieren". Der App-Knopf zeigt ohne Schluessel genau diese Anleitung. Eigene API erst, wenn IFBA zahlt.
+
 ## Bekannte Punkte
 - 02.10.2026: Erreichbarkeit der API aus dem Browser mit falschem Schluessel getestet (401 kommt sauber an). Ein echter Lauf mit gueltigem Schluessel steht noch aus, `fallbacks:"default"` und die Typ-Arrays im Werkzeug-Schema sind damit noch ungeprueft.

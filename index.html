@@ -1205,9 +1205,14 @@ function sucheFenster(e){
   if(SUCHE_LAEUFT){ toast("Es läuft schon eine Suche."); return; }
   if(!schluessel()){
     fenster("Kandidaten finden",
-      '<p class="warnbox">Für die Suche braucht die App einen Schlüssel von Anthropic. Den trägst du einmal in den Einstellungen ein.</p>'+
-      '<p class="hint" style="margin:0">Der Schlüssel bleibt nur in diesem Browser.</p>',
-      '<button class="btn primary" id="zuEinst">Zu den Einstellungen</button>');
+      '<p style="margin:0">Die Suche läuft gerade über Claude im Chat:</p>'+
+      '<ol style="margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px">'+
+        '<li>In Claude Code eintippen: <b class="mono">/logenrunde '+esc(e.thema||"Thema")+' 30</b></li>'+
+        '<li>Claude legt eine Datei in <span class="mono">Downloads/logenrunde/recherche</span> ab.</li>'+
+        '<li>Hier auf <b>Datei importieren</b> tippen und die Datei wählen.</li></ol>'+
+      '<p class="hint erkl" style="margin:0">Mit einem eigenen Schlüssel von Anthropic sucht die App später selbst. Den trägt man in den Einstellungen ein.</p>',
+      '<button class="btn primary" id="zuImport">Datei importieren</button><button class="btn" id="zuEinst">Einstellungen</button>');
+    $("zuImport").onclick=function(){ importFenster(e); };
     $("zuEinst").onclick=einstellungen; return;
   }
   var m=modell();
