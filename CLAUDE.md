@@ -28,3 +28,7 @@ Laeuft ueber Claude im Chat mit dem Skill `/netboard <Thema> <Anzahl>` (`~/.clau
 
 ## Bekannte Punkte
 - 02.10.2026: Erreichbarkeit der API aus dem Browser mit falschem Schluessel getestet (401 kommt sauber an). Ein echter Lauf mit gueltigem Schluessel steht noch aus, `fallbacks:"default"` und die Typ-Arrays im Werkzeug-Schema sind damit noch ungeprueft.
+
+## GitHub
+Repo: https://github.com/Eljas-Webstar/Netboard (oeffentlich). Live: https://eljas-webstar.github.io/Netboard/
+Hochladen: `git push` (gh-CLI unter ~/bin/gh, angemeldet als Eljas-Webstar). Keine echten Personendaten ins Repo, die Recherche-Dateien liegen ausserhalb in `~/Downloads/netboard/recherche/`.
