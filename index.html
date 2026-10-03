@@ -634,12 +634,12 @@ function kwZeile(k){
   if(art==="Telefon") wert='<a href="'+esc(telLink(k.wert))+'" class="mono">'+esc(k.wert)+'</a>';
   else if(art==="E-Mail") wert='<a href="mailto:'+esc(k.wert)+'">'+esc(k.wert)+'</a>';
   else wert='<a href="'+esc(k.wert)+'" target="_blank" rel="noopener">öffnen</a>';
-  return '<div class="kw"><span class="kw-art">'+esc(art)+typ+'</span><span class="kw-wert">'+wert+'</span>'+
+  return '<div class="kw"><span class="kw-art">'+esc(art)+typ+(k.quelle?'<br><a href="'+esc(k.quelle)+'" target="_blank" rel="noopener">Quelle</a>':'')+'</span><span class="kw-wert">'+wert+'</span>'+
     ((art==="Telefon"||art==="E-Mail")?'<button class="btn ghost klein" data-kopie-kw="'+esc(k.wert)+'">Kopieren</button>':'')+'</div>';
 }
 function kontaktwegeHtml(p){
   var l=(p.kontaktwege||[]).filter(function(k){ return k.wert; });
-  if(!l.length) return '<p class="warnbox">Noch kein Kontaktweg gefunden. Ohne Telefon oder E-Mail ist die Person schwer einzuladen.</p>';
+  if(!l.length) return '<p class="warnbox">Noch keine Kontaktdaten. Entweder wurde nichts gefunden, oder die Recherche-Datei ist älter: dann die Datei im Event noch einmal importieren. Selbst eintragen geht unter Bearbeiten.</p>';
   return '<div class="kws">'+l.map(kwZeile).join("")+'</div>'+
     (l.some(function(k){ return k.art==="E-Mail"; })?'<p class="hint erkl" style="margin:6px 0 0">E-Mail nur nach einem ersten Kontakt. Werbemails an Fremde sind auch zwischen Firmen unzulässig. Erst anrufen.</p>':'');
 }
@@ -1222,7 +1222,7 @@ function profil(id,e){
   if(p.beispiel) h+='<p class="infobox">Ausgedachte Beispielperson zum Ausprobieren. Keine echte Person.</p>';
   var wk=wichtigkeit(p), kam=p.kamUeber?pers(p.kamUeber):null, emp=empfohlenVon(p);
   h+='<div class="tags" style="align-items:center">'+(wichtigChip(p)||'<span class="chip">Normal</span>')+'<span class="hint">'+esc(wk.hand?"von Hand gesetzt":"automatisch: "+wk.grund)+'</span></div>';
-  h+='<div><div class="sec-label" style="margin-top:0">So erreichst du '+esc(p.name.split(" ")[0]==="Dr."?p.name:p.name.split(" ")[0])+'</div>'+kontaktwegeHtml(p)+'</div>';
+  h+='<div class="box" style="box-shadow:none;display:flex;flex-direction:column;gap:8px"><div class="sec-label" style="margin:0">Kontaktdaten</div>'+kontaktwegeHtml(p)+'</div>';
   h+='<dl class="kv">'+
     (kam?'<dt>Kam über</dt><dd><a href="#" data-zu="'+esc(kam.id)+'">'+esc(kam.name)+'</a></dd>':'')+
     (emp.length?'<dt>Hat gebracht</dt><dd>'+emp.map(function(q){ return '<a href="#" data-zu="'+esc(q.id)+'">'+esc(q.name)+'</a>'; }).join(", ")+'</dd>':'')+
@@ -1243,7 +1243,9 @@ function profil(id,e){
       '<p class="hint" style="margin:8px 0 0">Runde: '+esc(tw.rundeGrund)+'<br>Zusagen: '+esc(tw.historieText)+'<br>Unbekannte Werte zählen nicht mit, die übrigen werden nach Gewicht verrechnet.</p></div>';
   }
   h+='<div><div class="sec-label" style="margin-top:0">Warum interessant</div><p style="margin:0">'+(p.begruendung?esc(p.begruendung):'<span class="hint">Noch keine Begründung.</span>')+'</p></div>';
-  h+='<div><div class="sec-label" style="margin-top:0">Quellen</div>'+((p.quellen||[]).length?'<div class="liste" style="gap:6px">'+p.quellen.map(function(q){
+  var kwQ=[]; (p.kontaktwege||[]).forEach(function(k){ if(k.quelle && !kwQ.some(function(q){ return q.url===k.quelle; })) kwQ.push({url:k.quelle,text:"Kontaktdaten ("+k.art+")"}); else if(k.quelle){ var q=kwQ.filter(function(q){ return q.url===k.quelle; })[0]; if(q.text.indexOf(k.art)<0) q.text=q.text.replace(")",", "+k.art+")"); } });
+  var alleQ=(p.quellen||[]).concat(kwQ.filter(function(q){ return !(p.quellen||[]).some(function(x){ return x.url===q.url; }); }));
+  h+='<div><div class="sec-label" style="margin-top:0">Quellen</div>'+(alleQ.length?'<div class="liste" style="gap:6px">'+alleQ.map(function(q){
       return '<div class="quelle">'+esc(q.text||"")+(q.url?' <a href="'+esc(q.url)+'" target="_blank" rel="noopener">öffnen</a>':'')+(q.geprueft===false?' <span class="chip warn">unbestätigt</span>':'')+'</div>'; }).join("")+'</div>'
       :'<p class="warnbox">Keine Quelle. Aussagen über diese Person sind nicht belegt.</p>')+'</div>';
   if(e){
