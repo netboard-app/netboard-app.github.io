@@ -1,6 +1,6 @@
 # Netboard
 
-Gaestefinder fuer die BVB-Loge von IFBA. Pro Spiel ein Thema, ca. 14 Plaetze, ca. 10 % Zusagequote, also ca. 140 Kandidaten.
+Gaestefinder fuer Netzwerkabende. Pro Abend ein Thema, ca. 14 Plaetze, ca. 10 % Zusagequote, also ca. 140 Kandidaten.
 Inhaber des Projekts: Eljakim. Vault-Notiz: `Business/IFBA - BVB-Loge Gaestefinder.md`.
 
 ## Start
@@ -14,8 +14,7 @@ Vorschau im Chat: Server `netboard` in `~/Downloads/.claude/launch.json` zeigt a
   Unbekannte Werte zaehlen nicht mit. Zusagequote erst ab 3 eigenen bzw. 8 Rollen-Einladungen.
 - Matching `paar()`: gemeinsame Themen, ergaenzende Rollen, Branche, Ort, fruehere Verbindungen. Jede Verbindung mit Gruenden.
 - "Welche Person fehlt": gewuenschte Rollen im Event gegen Rollen in der Runde.
-- Suche: Knopf "Kandidaten finden" ruft die Claude-API direkt aus dem Browser (web_search_20260209 + Werkzeug kandidaten_liefern), Runden zu je 10, pause_turn wird fortgesetzt. Schluessel in localStorage `netboard_key`, Modell `netboard_modell` (Standard claude-opus-5-5). Links, die nicht in den Suchergebnissen vorkamen, sind `geprueft:false` und erscheinen als "unbestaetigt".
-- Vor Einsatz bei IFBA: API-Aufruf in eine Supabase Edge Function verlegen, Schluessel raus aus dem Browser.
+- Suche laeuft nur ueber den Chat-Skill. Die API-Suche im Browser wurde am 03.10.2026 entfernt (Schluessel im Browser unsicher, nie genutzt). Kommt als Supabase-Funktion zurueck, wenn ein Kunde zahlt. Alter Stand: Git-Tag `vor-entschlacken`.
 - Alternativ Import als JSON: `{"personen":[{name, position, firma, branche, ort, website, rolle, tags[], profile[{art,url}], werte{thema,beruf,netzwerk,region}, begruendung, einladungsgrund, quellen[{text,url}]}]}`.
 - Die App verschickt nichts. Einladungstexte werden kopiert.
 
@@ -24,10 +23,7 @@ Vorschau im Chat: Server `netboard` in `~/Downloads/.claude/launch.json` zeigt a
 - Kein automatisches LinkedIn-Auslesen. Google-Suche und oeffentliche Quellen, LinkedIn nur zum Pruefen einzelner Profile.
 
 ## Recherche heute
-Laeuft ueber Claude im Chat mit dem Skill `/netboard <Thema> <Anzahl>` (`~/.claude/skills/netboard/SKILL.md`). Ergebnis als JSON in `~/Downloads/netboard/recherche/`, in der App "Datei importieren". Der App-Knopf zeigt ohne Schluessel genau diese Anleitung. Eigene API erst, wenn IFBA zahlt.
-
-## Bekannte Punkte
-- 02.10.2026: Erreichbarkeit der API aus dem Browser mit falschem Schluessel getestet (401 kommt sauber an). Ein echter Lauf mit gueltigem Schluessel steht noch aus, `fallbacks:"default"` und die Typ-Arrays im Werkzeug-Schema sind damit noch ungeprueft.
+Laeuft ueber Claude im Chat mit dem Skill `/netboard <Thema> <Anzahl>` (`~/.claude/skills/netboard/SKILL.md`). Ergebnis als JSON in `~/Downloads/netboard/recherche/`, in der App "Datei importieren". Der App-Knopf zeigt den fertigen Auftrag zum Kopieren. Eigene API erst, wenn IFBA zahlt.
 
 ## GitHub
 Repo: https://github.com/netboard-app/netboard-app.github.io (oeffentlich, Organisation netboard-app). Live: https://netboard-app.github.io/
@@ -37,9 +33,15 @@ Hochladen: `git push` (gh-CLI unter ~/bin/gh, angemeldet als Eljas-Webstar). Kei
 Sichtschutz im Browser: Benutzername und Passwort werden als SHA-256 von `benutzername-klein:passwort` mit `ZUGANG` in index.html verglichen, gemerkt in localStorage `netboard_zugang`. Kein echter Schutz, weil der Code oeffentlich ist. Echte Anmeldung kommt mit Supabase. Zugangsdaten stehen nicht im Repo.
 
 ## Netzwerk-Funktionen (03.10.2026)
-- Netzwerk hat vier Bereiche: Kontakte (Themen, Sortierung Wichtigkeit/Letzter Kontakt/Name), Wer hilft? (`helferSuchen`, Wortsuche mit Liste `VERWANDT` und `FUELLWOERTER`), Kennenlernen (`netzKennen`, Paare mit gemeinsamem Thema oder Branche, nie gleiche Firma, Knopf Vorstellen), Tueroeffner (`netzTuer`, Feld `kamUeber`).
+- Netzwerk hat drei Bereiche: Kontakte (Themen nur aus Events, Sortierung Wichtigkeit/Letzter Kontakt/Name), Wer hilft? (`helferSuchen`, Wortsuche mit Liste `VERWANDT` und `FUELLWOERTER`), Kennenlernen (`netzKennen`). Tueroeffner-Tab entfernt, `kamUeber` steht nur noch im Profil.
 - Wichtigkeit: `autoWichtigkeit` aus beruf/netzwerk, wertvoll, Geschaeftskontakt, Teilnahmen, Empfehlungen; von Hand ueberschreibbar (`p.wichtigkeit` 1 bis 3).
 - Kontaktpflege: `p.kontakte` [{datum, art, notiz}] plus Events als Kontakt. Startseite "Lange nicht gemeldet": sehr wichtig nach 60, wichtig nach 120 Tagen, nur wer schon Kontakt hatte.
 - Steckbrief am Profil: zuletzt, woher, worueber reden, gemeinsame Kontakte.
 - Wer hilft? ist Wortsuche ohne KI. Wenn Treffer fehlen, zuerst `VERWANDT` erweitern. Allgemeine Silben wie "bau" oder "genossenschaft" vermeiden, sie treffen Falsches (Baumwerk, Jagdgenossenschaften).
 - Kontaktwege (03.10.2026): `p.kontaktwege` [{art: Telefon|E-Mail|Kontaktformular|Nachricht, wert, typ, quelle}]. Karte zeigt "erreichbar" oder "kein Kontaktweg" und den ersten Weg, Filter "Nur erreichbare" im Kandidaten-Tab, Block "So erreichst du …" im Profil und Steckbrief. Telefon als tel:-Link plus Kopieren. Hinweis: E-Mail erst nach erstem Kontakt (UWG).
+
+## Entschlackt (03.10.2026)
+- App ist neutral: keine Firmen-, Loge- oder Themenbezuege in Beispiel, Platzhaltern, Texten. Nicht wieder einbauen, der Code ist oeffentlich.
+- Event: "Wen suchen wir?" (Typen) ist gleichzeitig Rollen am Tisch (`e.rollen = e.typen`). Branchen stecken in Stichworten.
+- Einladung: zwei Vorlagen, `e.einladungstext` (lang, E-Mail) und `e.kurztext` (Direktnachricht). Umschalter `S.textArt`.
+- Runde: "Liste fuer die Einladerin" (`einladerListe`) als PDF (Druckfenster) oder CSV (Semikolon, BOM, fuer Excel).
