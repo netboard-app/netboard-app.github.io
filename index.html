@@ -599,7 +599,7 @@ function zeichneEvent(){
       '<p class="hint" style="margin:0">'+k.zu+' von '+esc(e.plaetze||0)+' zugesagt</p></div>'+
       '<button class="btn klein" id="evBearb">Bearbeiten</button></div>'+
     '<div class="modus" id="tabs" style="margin-bottom:14px">'+
-      '<button data-tab="kandidaten">Kandidaten</button><button data-tab="runde">Runde</button><button data-tab="danach">Nach dem Spiel</button></div>'+
+      '<button data-tab="kandidaten">Kandidaten</button><button data-tab="runde">Runde</button><button data-tab="danach">Nach dem Abend</button></div>'+
     '<div id="tabInhalt"></div>';
   box.innerHTML=h;
   $("evBearb").onclick=function(){ eventFormular(e); };
@@ -851,10 +851,10 @@ function einladungstexte(e){
   }; });
 }
 
-/* ---------------- Nach dem Spiel ---------------- */
+/* ---------------- Nach dem Abend ---------------- */
 function tabDanach(e){
   var xs=einlVon(e.id).filter(function(x){ return ["zugesagt","erschienen","nicht_erschienen"].indexOf(x.status)>=0; });
-  var h='<p class="hint erkl" style="margin:0 0 12px">Nach dem Spiel festhalten, wer da war und was entstanden ist. Daraus lernt die App für die nächsten Events.</p>';
+  var h='<p class="hint erkl" style="margin:0 0 12px">Nach dem Abend festhalten, wer da war und was entstanden ist. Daraus lernt die App für die nächsten Events.</p>';
   if(!xs.length){ $("tabInhalt").innerHTML=h+'<div class="leer">Noch keine Zusagen. Hier erscheinen später alle, die zugesagt haben.</div>'; return; }
   h+='<div class="liste">'+xs.map(function(x){
     var p=pers(x.personId); if(!p) return ""; x.ergebnis=x.ergebnis||{};
