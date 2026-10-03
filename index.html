@@ -282,7 +282,7 @@ var MARKER = [
   {k:"geschaeft", t:"Geschäftlicher Kontakt entstanden"}
 ];
 var TEXT_STANDARD = "Guten Tag {name},\n\nam {datum} laden wir eine kleine Runde von Unternehmern ein. Anlass: {anlass}{ort}. Thema des Abends: {thema}.\n\n{grund}\n\nWir würden uns freuen, Sie als unseren Gast zu begrüßen. Hätten Sie Interesse?";
-var THEMEN_STANDARD = ["Unternehmer","Immobilien","Finanzen","Gesundheit","Sport","Handwerk"];
+var TEXT_KURZ = "Guten Tag {name}, am {datum} laden wir eine kleine Runde von Unternehmern zum Thema {thema} ein. {grund} Hätten Sie Interesse? Dann schicke ich Ihnen gern die Einzelheiten.";
 
 /* ---------------- Helfer ---------------- */
 function $(id){ return document.getElementById(id); }
@@ -321,8 +321,8 @@ function kopieren(text){
   if(navigator.clipboard && window.isSecureContext){ navigator.clipboard.writeText(text).catch(alt); } else alt();
   toast("Text kopiert.");
 }
-function herunterladen(name,inhalt){
-  var b=new Blob([inhalt],{type:"application/json"}); var a=document.createElement("a");
+function herunterladen(name,inhalt,typ){
+  var b=new Blob([inhalt],{type:typ||"application/json"}); var a=document.createElement("a");
   a.href=URL.createObjectURL(b); a.download=name; document.body.appendChild(a); a.click();
   setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); },500);
 }
@@ -332,8 +332,6 @@ function herunterladen(name,inhalt){
    Supabase-Speicher mit denselben zwei Funktionen ersetzen, der Rest merkt davon nichts.
    Tabellen später: events, personen, einladungen, verbindungen. */
 var SCHLUESSEL="netboard_daten";
-// Daten aus der Zeit, als die App noch Logenrunde oder Netzwerkboard hieß, einmal übernehmen
-["netzwerkboard","logenrunde"].forEach(function(alt){ if(!LS.get(SCHLUESSEL) && LS.get(alt+"_daten")) LS.set(SCHLUESSEL,LS.get(alt+"_daten")); });
 function leer(){ return { events:[], personen:[], einladungen:[], verbindungen:[], gewichte:JSON.parse(JSON.stringify(GEWICHTE_STANDARD)) }; }
 var speicher={
   laden:function(){
@@ -565,8 +563,6 @@ function zeichneStart(){
       '<div class="two">'+
         '<button class="btn primary" data-geh="kandidaten">Kandidaten finden</button>'+
         '<button class="btn" data-geh="runde">Gästeliste analysieren</button>'+
-        '<button class="btn" data-geh="fehlt">Fehlende Person finden</button>'+
-        '<button class="btn" data-geh="texte">Einladungen verwalten</button>'+
       '</div></div>';
   }
   var heute=ymd(new Date());
@@ -584,9 +580,7 @@ function zeichneStart(){
   alle("[data-ev]",function(b){ b.onclick=function(){ eventOeffnen(b.dataset.ev,"kandidaten"); }; },box);
   alle("[data-geh]",function(b){ b.onclick=function(){
     var g=b.dataset.geh;
-    if(g==="texte"){ eventOeffnen(e.id,"runde"); einladungstexte(e); }
-    else if(g==="fehlt"){ eventOeffnen(e.id,"runde"); setTimeout(function(){ var a=$("fehltAnker"); if(a) a.scrollIntoView({block:"start"}); },50); }
-    else eventOeffnen(e.id,g);
+    eventOeffnen(e.id,g);
   }; },box);
 }
 
@@ -745,7 +739,7 @@ function tabRunde(e){
       '<div class="zahl"><b>'+k.zu+'</b><span>zugesagt von '+esc(e.plaetze||0)+'</span></div>'+
       '<div class="zahl"><b>'+(k.z.abgesagt+k.z.keine_antwort)+'</b><span>abgesagt oder still</span></div></div>'+
     (k.noch>0?'<p class="infobox" style="margin-bottom:12px">Bei '+Math.round(k.q*100)+' % Zusagequote ('+esc(k.quelle)+') brauchst du noch etwa <b class="mono">'+k.noch+'</b> Einladungen.</p>':'')+
-    '<div class="knopfreihe" style="margin-bottom:6px"><button class="btn primary" id="texteBtn">Einladungstexte</button></div>'+
+    '<div class="knopfreihe" style="margin-bottom:6px"><button class="btn primary" id="texteBtn">Einladungstexte</button><button class="btn" id="listeBtn">Liste für die Einladerin</button></div>'+
     '<p class="hint erkl" style="margin:0 0 6px">Die App verschickt nichts. Text kopieren, selbst senden, dann Status setzen.</p>';
   if(!xs.length) h+='<div class="leer">Noch niemand in der Runde. Wähle unter <b>Kandidaten</b> Personen aus.</div>';
   reihenfolge.forEach(function(st){
@@ -761,6 +755,7 @@ function tabRunde(e){
   h+='<div class="sec-label">Wie gut ist die Runde?</div>'+analyse(e);
   var box=$("tabInhalt"); box.innerHTML=h;
   $("texteBtn").onclick=function(){ einladungstexte(e); };
+  $("listeBtn").onclick=function(){ einladerListe(e); };
   alle("[data-prof]",function(b){ b.onclick=function(){ profil(b.dataset.prof,e); }; },box);
   alle("select[data-st]",function(s){ s.onchange=function(){
     var x=D.einladungen.filter(function(y){ return y.id===s.dataset.st; })[0];
@@ -804,7 +799,7 @@ function analyse(e){
   var wunsch=e.rollen||[];
   var pool=einlVon(e.id).filter(function(x){ return x.status==="vorgeschlagen"; }).map(function(x){ return pers(x.personId); }).filter(Boolean);
   var fehlend=wunsch.filter(function(r){ return !g.some(function(p){ return norm(p.rolle)===norm(r); }); });
-  if(!wunsch.length) h+='<p class="hint" style="margin:0">Leg im Event fest, welche Rollen du am Tisch haben willst. Dann zeigt die App hier, welche noch fehlen.</p>';
+  if(!wunsch.length) h+='<p class="hint" style="margin:0">Wähl im Event unter Bearbeiten bei „Wen suchen wir?“ die Typen aus. Dann zeigt die App hier, welche noch fehlen.</p>';
   else if(!fehlend.length) h+='<p class="okbox">Alle gewünschten Rollen sind besetzt: '+esc(wunsch.join(", "))+'.</p>';
   fehlend.forEach(function(r){
     var kand=pool.filter(function(p){ return norm(p.rolle)===norm(r); })
@@ -823,32 +818,83 @@ function analyse(e){
 }
 
 /* ---------------- Einladungstexte ---------------- */
-function textFuer(p,e){
-  var vorlage=e.einladungstext||TEXT_STANDARD;
+function textFuer(p,e,kurz){
+  var vorlage=kurz?(e.kurztext||TEXT_KURZ):(e.einladungstext||TEXT_STANDARD);
   return vorlage.replace(/\{name\}/g,p.name.replace(/\s*\(.*?\)\s*/g,"").trim())
     .replace(/\{thema\}/g,e.thema||"").replace(/\{datum\}/g,deDatumLang(e.datum))
     .replace(/\{spiel\}|\{anlass\}/g,e.spiel||"unser nächster Netzwerkabend").replace(/\{ort\}/g,e.ort?", "+e.ort:"")
     .replace(/\{grund\}/g,p.einladungsgrund||"")
-    .replace(/\n{3,}/g,"\n\n").trim();
+    .replace(/ {2,}/g," ").replace(/\n{3,}/g,"\n\n").trim();
+}
+function textArtLeiste(){
+  return '<div class="modus" id="textArt"><button data-ta="lang" aria-pressed="'+(S.textArt!=="kurz")+'">Lang, für E-Mail</button><button data-ta="kurz" aria-pressed="'+(S.textArt==="kurz")+'">Kurz, für Direktnachricht</button></div>';
+}
+function textArtVerdrahten(neu){ alle("#textArt button",function(b){ b.onclick=function(){ S.textArt=b.dataset.ta; neu(); }; }); }
+function ersterWeg(p){
+  var k=(p.kontaktwege||[]).filter(function(k){ return k.wert; })[0];
+  return k?'<span class="hint">'+esc(k.art+(k.typ?" · "+k.typ:"")+": ")+(k.art==="Telefon"?'<a href="'+esc(telLink(k.wert))+'" class="mono">'+esc(k.wert)+'</a>':k.art==="E-Mail"?'<a href="mailto:'+esc(k.wert)+'">'+esc(k.wert)+'</a>':'<a href="'+esc(k.wert)+'" target="_blank" rel="noopener">öffnen</a>')+'</span>'
+    :'<span class="chip warn">kein Kontaktweg</span>';
 }
 function einladungstexte(e){
+  var kurz=S.textArt==="kurz";
   var xs=einlVon(e.id).filter(function(x){ return x.status==="ausgewaehlt"; });
   fenster("Einladungstexte",
-    '<p class="hint" style="margin:0">Alle Ausgewählten, die noch nicht eingeladen sind. Kopieren, selbst verschicken, dann auf „Eingeladen“ tippen. Die Vorlage änderst du im Event unter Bearbeiten.</p>'+
+    '<p class="hint" style="margin:0">Alle Ausgewählten, die noch nicht eingeladen sind. Kopieren, selbst verschicken, dann auf „Eingeladen“ tippen. Die Vorlagen änderst du im Event unter Bearbeiten.</p>'+textArtLeiste()+
     (xs.length?xs.map(function(x){
       var p=pers(x.personId); if(!p) return "";
-      return '<div style="display:flex;flex-direction:column;gap:8px" data-block="'+esc(x.id)+'"><b>'+esc(p.name)+'</b>'+
+      return '<div style="display:flex;flex-direction:column;gap:8px" data-block="'+esc(x.id)+'"><b>'+esc(p.name)+'</b>'+ersterWeg(p)+
         ((p.profile||[]).length?'<span class="hint">'+p.profile.map(function(l){ return '<a href="'+esc(l.url)+'" target="_blank" rel="noopener">'+esc(l.art||"Profil")+'</a>'; }).join(" · ")+'</span>':'')+
-        '<div class="textkarte">'+esc(textFuer(p,e))+'</div>'+
+        '<div class="textkarte">'+esc(textFuer(p,e,kurz))+'</div>'+
         '<div class="knopfreihe"><button class="btn klein" data-kopie="'+esc(p.id)+'">Text kopieren</button><button class="btn primary klein" data-eingeladen="'+esc(x.id)+'">Eingeladen</button></div><hr class="sep"></div>';
     }).join(""):'<div class="leer">Niemand ausgewählt, der noch eingeladen werden muss.</div>'));
-  alle("[data-kopie]",function(b){ b.onclick=function(){ kopieren(textFuer(pers(b.dataset.kopie),e)); }; });
+  textArtVerdrahten(function(){ einladungstexte(e); });
+  alle("[data-kopie]",function(b){ b.onclick=function(){ kopieren(textFuer(pers(b.dataset.kopie),e,kurz)); }; });
   alle("[data-eingeladen]",function(b){ b.onclick=function(){
     var x=D.einladungen.filter(function(y){ return y.id===b.dataset.eingeladen; })[0];
     statusSetzen(x,"eingeladen"); speicher.sichern(D); zeichnen();
     var blk=document.querySelector('[data-block="'+x.id+'"]'); if(blk) blk.remove();
     toast("Als eingeladen markiert.");
   }; });
+}
+
+/* Liste für die Einladerin: alle Ausgewählten und Eingeladenen mit Kontaktweg und Text, als PDF oder Tabelle */
+function listePersonen(e){
+  return einlVon(e.id).filter(function(x){ return ["ausgewaehlt","eingeladen","keine_antwort"].indexOf(x.status)>=0; })
+    .map(function(x){ return {x:x,p:pers(x.personId)}; }).filter(function(r){ return r.p; })
+    .sort(function(a,b){ return (gesamt(teilwerte(b.p,e)).wert||0)-(gesamt(teilwerte(a.p,e)).wert||0); });
+}
+function wegeVon(p,art){ return (p.kontaktwege||[]).filter(function(k){ return k.wert && k.art===art; }).map(function(k){ return k.wert+(k.typ?" ("+k.typ+")":""); }).join(", "); }
+function profilVon(p,art){ return (p.profile||[]).filter(function(l){ return norm(l.art)===norm(art); }).map(function(l){ return l.url; }).join(" "); }
+function einladerListe(e){
+  var kurz=S.textArt==="kurz", l=listePersonen(e);
+  fenster("Liste für die Einladerin",
+    '<p class="hint" style="margin:0">'+plural(l.length,"Person","Personen")+': ausgewählt, eingeladen oder ohne Antwort. Mit Kontaktweg, Profil-Links und Einladungstext. Sortiert nach Bewertung.</p>'+textArtLeiste()+
+    '<p class="hint erkl" style="margin:0">PDF: Im Druckfenster „Als PDF sichern“ wählen. Tabelle: öffnet in Excel oder Numbers.</p>',
+    '<button class="btn primary" id="lPdf">Als PDF</button><button class="btn" id="lCsv">Als Tabelle</button>');
+  textArtVerdrahten(function(){ einladerListe(e); });
+  $("lCsv").onclick=function(){
+    var z=[["Name","Position","Firma","Status","Telefon","E-Mail","Kontaktformular","LinkedIn","Instagram","Facebook","Einladungstext"]];
+    l.forEach(function(r){ var p=r.p; z.push([p.name,p.position||"",p.firma||"",statusInfo(r.x.status).t,wegeVon(p,"Telefon"),wegeVon(p,"E-Mail"),wegeVon(p,"Kontaktformular"),profilVon(p,"LinkedIn"),profilVon(p,"Instagram"),profilVon(p,"Facebook"),textFuer(p,e,kurz)]); });
+    var csv="\ufeff"+z.map(function(r){ return r.map(function(v){ return '"'+String(v).replace(/"/g,'""')+'"'; }).join(";"); }).join("\r\n");
+    herunterladen("einladungsliste-"+ymd(new Date())+".csv",csv,"text/csv");
+  };
+  $("lPdf").onclick=function(){
+    var html='<!doctype html><html lang="de"><head><meta charset="utf-8"><title>'+esc(e.name)+' · Einladungsliste</title><style>'+
+      'body{font:14px/1.45 -apple-system,system-ui,sans-serif;color:#141413;margin:24px}h1{font-size:20px;margin:0 0 4px}.k{color:#555;margin:0 0 18px}'+
+      '.p{border-top:1px solid #ccc;padding:12px 0;break-inside:avoid}.p b{font-size:15px}.m{color:#555}.t{white-space:pre-wrap;background:#f4f3ef;padding:8px 10px;margin-top:6px;border-radius:6px}'+
+      'a{color:#0B5FA5;word-break:break-all}.box{display:inline-block;width:12px;height:12px;border:1px solid #555;margin-right:6px;vertical-align:-1px}</style></head><body>'+
+      '<h1>'+esc(e.name)+'</h1><p class="k">'+esc([e.spiel,e.ort,deDatumLang(e.datum)+(e.uhrzeit?", "+e.uhrzeit+" Uhr":""),e.thema].filter(Boolean).join(" · "))+' · '+plural(l.length,"Person","Personen")+'</p>'+
+      l.map(function(r){ var p=r.p;
+        var wege=(p.kontaktwege||[]).filter(function(k){ return k.wert; }).map(function(k){ return esc(k.art+(k.typ?" ("+k.typ+")":"")+": ")+(/^https?:/.test(k.wert)?'<a href="'+esc(k.wert)+'">'+esc(k.wert)+'</a>':esc(k.wert)); });
+        var prof=(p.profile||[]).map(function(x){ return esc(x.art||"Profil")+': <a href="'+esc(x.url)+'">'+esc(x.url)+'</a>'; });
+        return '<div class="p"><span class="box"></span><b>'+esc(p.name)+'</b> <span class="m">'+esc([p.position,p.firma].filter(Boolean).join(" · "))+' · '+esc(statusInfo(r.x.status).t)+'</span>'+
+          '<div>'+(wege.length?wege.join("<br>"):'<i>kein Kontaktweg</i>')+'</div>'+(prof.length?'<div>'+prof.join("<br>")+'</div>':'')+
+          '<div class="t">'+esc(textFuer(p,e,kurz))+'</div></div>';
+      }).join("")+'</body></html>';
+    var w=window.open("","_blank");
+    if(w){ w.document.open(); w.document.write(html); w.document.close(); setTimeout(function(){ try{ w.focus(); w.print(); }catch(err){} },400); }
+    else herunterladen("einladungsliste-"+ymd(new Date())+".html",html,"text/html");
+  };
 }
 
 /* ---------------- Nach dem Abend ---------------- */
@@ -917,10 +963,10 @@ function bilanz(p){
     kontakte:D.verbindungen.filter(function(v){ return v.a===p.id||v.b===p.id; }).length
   };
 }
-/* Themen im Netzwerk: feste Liste aus den Einstellungen plus alle Event-Themen.
+/* Themen im Netzwerk: alle Event-Themen.
    Eine Person gehört zu einem Thema, wenn es in ihren Themen steht oder sie bei einem Event dazu dabei war. */
 function themenListe(){
-  var l=(D.themen&&D.themen.length?D.themen:THEMEN_STANDARD).slice();
+  var l=[];
   D.events.forEach(function(e){ if(e.thema && !l.some(function(t){ return norm(t)===norm(e.thema); })) l.push(e.thema); });
   return l;
 }
@@ -1011,11 +1057,11 @@ function sortieren(l){
 function zeichnePersonen(){
   var box=$("sicht-personen"), t=S.netzTab||"kontakte";
   box.innerHTML='<h2 style="font-size:22px">Netzwerk</h2><p class="hint" style="margin:2px 0 12px">'+plural(D.personen.length,"Person","Personen")+' aus allen Events und Recherchen.</p>'+
-    '<div class="modus" id="netzTabs" style="margin-bottom:14px"><button data-nt="kontakte">Kontakte</button><button data-nt="hilfe">Wer hilft?</button><button data-nt="kennen">Kennenlernen</button><button data-nt="tuer">Türöffner</button></div>'+
+    '<div class="modus" id="netzTabs" style="margin-bottom:14px"><button data-nt="kontakte">Kontakte</button><button data-nt="hilfe">Wer hilft?</button><button data-nt="kennen">Kennenlernen</button></div>'+
     '<div id="netzInhalt"></div>';
   alle("#netzTabs button",function(b){ b.setAttribute("aria-pressed",String(b.dataset.nt===t)); b.onclick=function(){ S.netzTab=b.dataset.nt; zeichnePersonen(); }; },box);
   if(!D.personen.length){ $("netzInhalt").innerHTML='<div class="leer">Noch keine Personen. Sie kommen über die Recherche oder von Hand in einem Event dazu.</div>'; return; }
-  if(t==="hilfe") netzHilfe(); else if(t==="kennen") netzKennen(); else if(t==="tuer") netzTuer(); else netzKontakte();
+  if(t==="hilfe") netzHilfe(); else if(t==="kennen") netzKennen(); else netzKontakte();
 }
 function profilVerdrahten(box){ alle("[data-prof]",function(b){ b.onclick=function(){ profil(b.dataset.prof,null); }; },box); }
 
@@ -1181,19 +1227,6 @@ function vorstellen(a,b){
 }
 
 /* "Türöffner": wer bringt die meisten neuen Leute mit (Feld „Kam über“ bei der Person) */
-function netzTuer(){
-  var box=$("netzInhalt");
-  var l=D.personen.map(function(p){ return {p:p,emp:empfohlenVon(p)}; }).filter(function(x){ return x.emp.length; })
-    .sort(function(a,b){ return b.emp.length-a.emp.length; });
-  box.innerHTML='<p class="hint erkl" style="margin:0 0 10px">Wer dir neue Kontakte bringt. Eingetragen wird das bei der neuen Person unter Bearbeiten, Feld „Kam über“.</p>'+
-    (l.length?'<div class="liste">'+l.map(function(x){
-      var geschaeft=x.emp.filter(function(q){ return D.verbindungen.some(function(v){ return v.art==="geschaeft"&&(v.a===q.id||v.b===q.id); }); }).length;
-      return '<button class="karte" data-prof="'+esc(x.p.id)+'"><span class="avatar">'+esc(initialen(x.p.name))+'</span><span style="min-width:0"><b>'+esc(x.p.name)+'</b><small>hat gebracht: '+esc(x.emp.map(function(q){ return q.name; }).join(", "))+'</small>'+
-        (geschaeft?'<small style="color:var(--ok)">'+plural(geschaeft,"davon mit Geschäftskontakt","davon mit Geschäftskontakt")+'</small>':'')+'</span><span class="rechts mono">'+x.emp.length+'</span></button>';
-    }).join("")+'</div>':'<div class="leer">Noch keine Empfehlungen eingetragen.</div>');
-  profilVerdrahten(box);
-}
-
 /* Steckbrief: alles Wichtige vor einem Treffen auf einer Seite */
 function steckbrief(p,e){
   var b=bilanz(p), w=wichtigkeit(p), k=kontaktListe(p);
@@ -1250,13 +1283,13 @@ function profil(id,e){
     (x?'<dt>Status</dt><dd>'+chip(x.status)+'</dd>':'')+
   '</dl>';
   if(e){
-    h+='<div><div class="sec-label" style="margin-top:0">Bewertung für dieses Event</div><div class="werte" style="grid-template-columns:1fr 1fr">'+
+    h+='<details class="gruppe" style="margin:0"><summary><span>Bewertung im Detail</span><span class="mono">Gesamt '+(g.wert===null?'–':g.wert)+'</span></summary><div class="werte" style="grid-template-columns:1fr 1fr">'+
       wertZeile("Thema · "+D.gewichte.thema+" %",tw.thema)+wertZeile("Beruf · "+D.gewichte.beruf+" %",tw.beruf)+
       wertZeile("Netzwerk · "+D.gewichte.netzwerk+" %",tw.netzwerk)+wertZeile("Runde · "+D.gewichte.runde+" %",tw.runde)+
       wertZeile("Region · "+D.gewichte.region+" %",tw.region)+wertZeile("Zusagen · "+D.gewichte.historie+" %",tw.historie)+
       wertZeile("Nutzen für uns · "+D.gewichte.nutzen+" %",tw.nutzen)+'</div>'+
       (p.nutzenGrund?'<p class="hint" style="margin:8px 0 0">Nutzen für uns: '+esc(p.nutzenGrund)+'</p>':'')+
-      '<p class="hint" style="margin:8px 0 0">Runde: '+esc(tw.rundeGrund)+'<br>Zusagen: '+esc(tw.historieText)+'<br>Unbekannte Werte zählen nicht mit, die übrigen werden nach Gewicht verrechnet.</p></div>';
+      '<p class="hint" style="margin:8px 0 0">Runde: '+esc(tw.rundeGrund)+'<br>Zusagen: '+esc(tw.historieText)+'<br>Unbekannte Werte zählen nicht mit, die übrigen werden nach Gewicht verrechnet.</p></details>';
   }
   h+='<div><div class="sec-label" style="margin-top:0">Warum interessant</div><p style="margin:0">'+(p.begruendung?esc(p.begruendung):'<span class="hint">Noch keine Begründung.</span>')+'</p></div>';
   var kwQ=[]; (p.kontaktwege||[]).forEach(function(k){ if(k.quelle && !kwQ.some(function(q){ return q.url===k.quelle; })) kwQ.push({url:k.quelle,text:"Kontaktdaten ("+k.art+")"}); else if(k.quelle){ var q=kwQ.filter(function(q){ return q.url===k.quelle; })[0]; if(q.text.indexOf(k.art)<0) q.text=q.text.replace(")",", "+k.art+")"); } });
@@ -1296,11 +1329,13 @@ function profil(id,e){
   $("pKontakt").onclick=function(){ kontaktEintragen(p,function(){ profil(id,e); }); };
   alle("[data-zu]",function(a){ a.onclick=function(ev_){ ev_.preventDefault(); profil(a.dataset.zu,e); }; });
   if($("pWahl")) $("pWahl").onclick=function(){ statusSetzen(x,"ausgewaehlt"); speicher.sichern(D); zeichnen(); profil(id,e); toast("Ausgewählt."); };
-  if($("pText")) $("pText").onclick=function(){
-    fenster("Einladungstext",'<p class="hint" style="margin:0">Für '+esc(p.name)+'. Die App verschickt nichts.</p><div class="textkarte">'+esc(textFuer(p,e))+'</div>',
+  if($("pText")) $("pText").onclick=function zeigeText(){
+    var kurz=S.textArt==="kurz";
+    fenster("Einladungstext",'<p class="hint" style="margin:0">Für '+esc(p.name)+'. Die App verschickt nichts.</p>'+textArtLeiste()+'<div class="textkarte">'+esc(textFuer(p,e,kurz))+'</div>',
       '<button class="btn" id="zurProf">Zurück</button><button class="btn primary" id="kop">Text kopieren</button>');
+    textArtVerdrahten(zeigeText);
     $("zurProf").onclick=function(){ profil(id,e); };
-    $("kop").onclick=function(){ kopieren(textFuer(p,e)); };
+    $("kop").onclick=function(){ kopieren(textFuer(p,e,kurz)); };
   };
 }
 
@@ -1350,7 +1385,7 @@ function eventFormular(alt){
         '<div class="field"><label for="f_zeit">Uhrzeit</label><input id="f_zeit" type="time" class="mono" value="'+esc(e.uhrzeit||"")+'"></div></div>'+
       '<div class="field"><label for="f_thema">Thema</label><input id="f_thema" value="'+esc(e.thema||"")+'" placeholder="z. B. Immobilien" autocomplete="off"></div>'+
       '<div class="field"><label>Wen suchen wir? Antippen, mehrere möglich</label><div class="kats" id="typChips" style="flex-wrap:wrap"></div>'+
-        '<span class="hint erkl">Die Recherche sucht gezielt nach diesen Typen. Eigene Einträge gehen über das Feld am Ende.</span></div>'+
+        '<span class="hint erkl">Die Recherche sucht gezielt nach diesen Typen. Daraus erkennt die App auch, wer in der Runde noch fehlt.</span></div>'+
       '<div class="two"><div class="field"><label for="f_plaetze">Plätze</label><input id="f_plaetze" type="number" min="1" class="mono" value="'+esc(e.plaetze||"")+'"></div>'+
         '<div class="field"><label for="f_quote">Erwartete Zusagequote %</label><input id="f_quote" type="number" min="1" max="100" class="mono" value="'+esc(e.quote||10)+'">'+
         '<span class="hint erkl">Erfahrungswert. Sobald genug eigene Daten da sind, rechnet die App mit denen.</span></div></div>'+
@@ -1358,17 +1393,16 @@ function eventFormular(alt){
     '<div id="s2" hidden style="display:flex;flex-direction:column;gap:12px">'+
       '<div class="field"><label>Zielgruppe: Positionen</label><div class="kats" id="posChips" style="flex-wrap:wrap"></div></div>'+
       '<div class="field"><label for="f_ma">Firmengröße mindestens</label><select id="f_ma">'+MINDEST_MA.map(function(m){ return '<option'+((e.mindestMA||"egal")===m?' selected':'')+'>'+m+'</option>'; }).join("")+'</select></div>'+
-      '<div class="field"><label for="f_stich">Weitere Stichworte</label><input id="f_stich" value="'+esc((e.stichworte||[]).join(", "))+'" placeholder="z. B. Neubau, Gewerbe, Finanzierung" autocomplete="off">'+
+      '<div class="field"><label for="f_stich">Stichworte und Branchen</label><input id="f_stich" value="'+esc((e.stichworte||[]).join(", "))+'" placeholder="z. B. Neubau, Gewerbe, Finanzierung" autocomplete="off">'+
         '<span class="hint erkl">Mit Komma getrennt. Begriffe, nach denen zusätzlich gesucht wird.</span></div>'+
       '<div class="field"><label>Nicht gewünscht</label><div class="kats" id="ohneChips" style="flex-wrap:wrap"></div></div>'+
-      '<div class="field"><label for="f_rollen">Gewünschte Rollen am Tisch</label><input id="f_rollen" value="'+esc((e.rollen||[]).join(", "))+'" placeholder="Projektentwickler, Bank, Architekt, Makler" autocomplete="off">'+
-        '<span class="hint erkl">Mit Komma getrennt. Daraus erkennt die App, welche Person noch fehlt.</span></div>'+
-      '<div class="field"><label for="f_branchen">Gewünschte Branchen</label><input id="f_branchen" value="'+esc(e.branchen||"")+'" autocomplete="off"></div>'+
       '<div class="field"><label for="f_ziel">Ziel des Abends</label><select id="f_ziel">'+ZIELE.map(function(z){ return '<option'+(z===e.ziel?' selected':'')+'>'+esc(z)+'</option>'; }).join("")+'</select></div>'+
       '<div class="field"><label for="f_region">Suchregion</label><input id="f_region" value="'+esc(e.region||"")+'"></div>'+
       '<div class="field"><label for="f_beschr">Beschreibung</label><textarea id="f_beschr">'+esc(e.beschreibung||"")+'</textarea></div>'+
       '<div class="field"><label for="f_text">Vorlage Einladungstext</label><textarea id="f_text" style="min-height:180px">'+esc(e.einladungstext||TEXT_STANDARD)+'</textarea>'+
         '<span class="hint erkl">Platzhalter: {name} {thema} {datum} {anlass} {ort} {grund}. {grund} ist der persönliche Satz aus der Recherche.</span></div>'+
+      '<div class="field"><label for="f_kurz">Vorlage Kurztext für Direktnachrichten</label><textarea id="f_kurz" style="min-height:110px">'+esc(e.kurztext||TEXT_KURZ)+'</textarea>'+
+        '<span class="hint erkl">Für LinkedIn, Instagram und Facebook. Gleiche Platzhalter.</span></div>'+
     '</div>'+
     '<p class="err" id="f_err" hidden></p>',
     '<button class="btn ghost" id="zurBtn" hidden>Zurück</button>'+
@@ -1389,7 +1423,10 @@ function eventFormular(alt){
     if(!(Number($("f_plaetze").value)>0)) return fehler("Wie viele Plätze hat die Runde?","f_plaetze");
     return true;
   }
-  var typen=(e.typen||[]).slice(), positionen=(e.positionen||[]).slice(), ohne=(e.ohne||[]).slice();
+  var typen=(e.typen||[]).slice(); (e.rollen||[]).forEach(function(r){ if(typen.indexOf(r)<0) typen.push(r); });
+  var stichAlt=liste(e.branchen||"").filter(function(b){ return (e.stichworte||[]).indexOf(b)<0; });
+  if(stichAlt.length) $("f_stich").value=(e.stichworte||[]).concat(stichAlt).join(", ");
+  var positionen=(e.positionen||[]).slice(), ohne=(e.ohne||[]).slice();
   function typenZeichnen(){ chipWahl("typChips",typVorschlaege($("f_thema").value),typen,true); }
   typenZeichnen(); $("f_thema").oninput=typenZeichnen;
   chipWahl("posChips",POSITIONEN,positionen,false);
@@ -1402,10 +1439,10 @@ function eventFormular(alt){
     var neu=alt||{ id:uid() };
     neu.name=$("f_name").value.trim(); neu.spiel=$("f_spiel").value.trim(); neu.datum=$("f_datum").value; neu.uhrzeit=$("f_zeit").value;
     neu.thema=$("f_thema").value.trim(); neu.plaetze=Number($("f_plaetze").value); neu.quote=Number($("f_quote").value)||10;
-    neu.rollen=liste($("f_rollen").value); neu.branchen=$("f_branchen").value.trim(); neu.ziel=$("f_ziel").value;
+    neu.ziel=$("f_ziel").value; delete neu.branchen;
     neu.ort=$("f_ort").value.trim(); neu.region=$("f_region").value.trim(); neu.beschreibung=$("f_beschr").value.trim();
-    neu.einladungstext=$("f_text").value.trim()||TEXT_STANDARD;
-    neu.typen=typen.slice(); neu.positionen=positionen.slice(); neu.ohne=ohne.slice();
+    neu.einladungstext=$("f_text").value.trim()||TEXT_STANDARD; neu.kurztext=$("f_kurz").value.trim()||TEXT_KURZ;
+    neu.typen=typen.slice(); neu.rollen=typen.slice(); neu.positionen=positionen.slice(); neu.ohne=ohne.slice();
     neu.stichworte=liste($("f_stich").value); neu.mindestMA=$("f_ma").value;
     if(!alt) D.events.push(neu);
     speicher.sichern(D); fensterZu(); eventOeffnen(neu.id,"kandidaten"); toast(alt?"Gespeichert.":"Event angelegt.");
@@ -1552,124 +1589,6 @@ function uebernehmen(liste_,e,urls,herkunft){
   return { neu:neu, akt:akt };
 }
 
-/* ---------------- Suche über Claude ----------------
-   Die App fragt Claude mit Websuche, in Runden zu je 10 Personen. Der Schlüssel liegt nur in diesem Browser.
-   Für den echten Einsatz gehört der Aufruf auf einen Server (Supabase-Funktion), damit der Schlüssel nicht im Browser steht. */
-var MODELLE=[
-  {id:"claude-opus-5-5", t:"Claude Opus 5.5 (gründlicher)", ein:4, aus:20},
-  {id:"claude-sonnet-5-5", t:"Claude Sonnet 5.5 (günstiger)", ein:2, aus:10}
-];
-function schluessel(){ return LS.get("netboard_key")||""; }
-function modell(){ var m=LS.get("netboard_modell"); return MODELLE.filter(function(x){ return x.id===m; })[0]||MODELLE[0]; }
-var SUCHE_LAEUFT=null;
-
-var WERKZEUG={
-  name:"kandidaten_liefern",
-  description:"Liefert die gefundenen Kandidaten an die App. Genau einmal am Ende aufrufen, mit allen Personen dieser Runde.",
-  input_schema:{ type:"object", additionalProperties:false, required:["kandidaten"], properties:{ kandidaten:{ type:"array", items:{
-    type:"object", additionalProperties:false,
-    required:["name","position","firma","branche","ort","rolle","tags","profile","gefundenUeber","werte","begruendung","einladungsgrund","quellen"],
-    properties:{
-      name:{type:"string"}, position:{type:"string"}, firma:{type:"string"}, branche:{type:"string"}, ort:{type:"string"},
-      website:{type:"string", description:"Firmenwebsite, nur wenn in den Suchergebnissen gesehen"},
-      rolle:{type:"string", description:"Rolle am Tisch, möglichst aus der vorgegebenen Liste"},
-      tags:{type:"array", items:{type:"string"}, description:"2 bis 5 Themen"},
-      profile:{type:"array", items:{type:"object", additionalProperties:false, required:["art","url"], properties:{
-        art:{type:"string", description:"LinkedIn, Instagram, Facebook, XING, Website"}, url:{type:"string", description:"Exakt wie in den Suchergebnissen"} }}},
-      gefundenUeber:{type:"string", enum:["LinkedIn","Instagram","Facebook","XING","Website","Presse","Verband","Sonstiges"]},
-      werte:{type:"object", additionalProperties:false, required:["thema","beruf","netzwerk","region"], properties:{
-        thema:{type:["integer","null"]}, beruf:{type:["integer","null"]}, netzwerk:{type:["integer","null"]}, region:{type:["integer","null"]} }},
-      begruendung:{type:"string", description:"Zwei Sätze: warum interessant für diesen Abend, nur belegte Fakten"},
-      einladungsgrund:{type:"string", description:"Ein persönlicher Satz für die Einladung in Sie-Form, sachlich"},
-      quellen:{type:"array", items:{type:"object", additionalProperties:false, required:["text","url"], properties:{
-        text:{type:"string", description:"Was diese Quelle belegt"}, url:{type:"string"} }}}
-    } } } } }
-};
-
-function systemText(){
-  return [
-    "Du recherchierst Gäste für Business-Netzwerkabende. Anlass, Ort und Region stehen im Auftrag.",
-    "Ziel sind wertvolle Kontakte: Entscheider und Multiplikatoren, die öffentlich nachweisbar mit dem Thema des Abends verbunden sind und beruflich Gewicht haben (Inhaber, Geschäftsführer, Vorstand, leitende Position, Ämter in Verbänden oder Vereinen). Ein Ticket ist rund 2.000 Euro wert, also keine Zufallsfunde, keine reinen Privatpersonen, keine Profile ohne erkennbare Reichweite.",
-    "Suche über die Websuche, auch gezielt mit site:linkedin.com/in, site:instagram.com, Firmenwebsites, Verbandsseiten und Lokalpresse.",
-    "Regeln:",
-    "1. Nur Fakten, die in den Suchergebnissen stehen. Nichts ergänzen oder vermuten. Was unbekannt ist, bleibt leer oder null.",
-    "2. Jede URL exakt so übernehmen, wie sie in den Suchergebnissen stand. Keine URL selbst zusammensetzen.",
-    "3. Keine Privatadressen, keine privaten Telefonnummern, keine Angaben zu Gesundheit, Religion, Politik, Familie oder Privatleben.",
-    "4. Region: wie im Auftrag angegeben, im Zweifel Schwerpunkt Ruhrgebiet und übriges NRW. Angrenzende Regionen nur, wenn die Person sehr gut passt.",
-    "5. Werte von 0 bis 100: thema = wie stark öffentlich belegt mit dem Thema verbunden (Funktionsträger oder Unternehmer im Thema hoch, belegtes Hobby mittel, kein Beleg null). beruf = Gewicht der Position und Größe des Unternehmens. netzwerk = belegte Reichweite (Ämter, Verbände, Follower-Zahlen falls sichtbar), ohne Beleg null. region = Ruhrgebiet 100, übriges NRW 80, angrenzend 50.",
-    "6. Schreibe sachlich auf Deutsch, ohne Gedankenstriche.",
-    "Am Ende rufst du das Werkzeug kandidaten_liefern genau einmal auf, mit allen Personen dieser Runde. Lieber weniger Personen als unbelegte."
-  ].join("\n");
-}
-function auftragText(e,anzahl,schonDa){
-  return [
-    "Thema des Abends: "+(e.thema||""),
-    e.beschreibung?"Beschreibung: "+e.beschreibung:"",
-    "Ziel des Abends: "+(e.ziel||"allgemeines Networking"),
-    (e.rollen||[]).length?"Gewünschte Rollen am Tisch (für das Feld rolle verwenden): "+e.rollen.join(", "):"",
-    e.branchen?"Gewünschte Branchen: "+e.branchen:"",
-    e.spiel?"Anlass: "+e.spiel:"", e.ort?"Ort: "+e.ort:"",
-    (e.typen||[]).length?"Gesuchte Personentypen: "+e.typen.join(", "):"",
-    (e.stichworte||[]).length?"Weitere Stichworte: "+e.stichworte.join(", "):"",
-    (e.positionen||[]).length?"Nur Positionen: "+e.positionen.join(", "):"",
-    (e.mindestMA&&e.mindestMA!=="egal")?"Firmen "+e.mindestMA:"",
-    (e.ohne||[]).length?"Nicht gewünscht: "+e.ohne.join(", "):"",
-    "Region: "+(e.region||"NRW, Schwerpunkt Ruhrgebiet"),
-    "Finde "+anzahl+" neue Personen.",
-    schonDa.length?"Diese Personen sind schon bekannt, nicht noch einmal liefern: "+schonDa.join("; "):""
-  ].filter(Boolean).join("\n");
-}
-function fehlerText(status,d){
-  var m=(d&&d.error&&d.error.message)||"";
-  if(status===401) return "Der Schlüssel ist ungültig. In den Einstellungen prüfen.";
-  if(status===403) return "Der Schlüssel darf das nicht. In der Claude-Konsole die Rechte prüfen.";
-  if(status===429) return "Zu viele Anfragen auf einmal. In einer Minute erneut versuchen.";
-  if(/credit|balance/i.test(m)) return "Das Guthaben bei Anthropic ist aufgebraucht. In der Claude-Konsole aufladen.";
-  if(status>=500) return "Claude ist gerade überlastet. Gleich noch einmal versuchen.";
-  return "Fehler "+status+(m?": "+m:"");
-}
-async function anfrage(body,signal){
-  var r=await fetch("https://api.anthropic.com/v1/messages",{ method:"POST", signal:signal,
-    headers:{ "content-type":"application/json", "x-api-key":schluessel(), "anthropic-version":"2023-06-01",
-      "anthropic-beta":"server-side-fallback-2026-07-01", "anthropic-dangerous-direct-browser-access":"true" },
-    body:JSON.stringify(body) });
-  var d=null; try{ d=await r.json(); }catch(err){}
-  if(!r.ok) throw new Error(fehlerText(r.status,d));
-  return d;
-}
-/* Eine Runde: Claude sucht, bis das Werkzeug aufgerufen wird. pause_turn heißt: Server-Suche pausiert, einfach fortsetzen. */
-async function suchRunde(e,anzahl,schonDa,signal,meldung,kosten){
-  var m=modell();
-  var nachrichten=[{ role:"user", content:auftragText(e,anzahl,schonDa) }];
-  var urls=new Set(), nachgehakt=false;
-  for(var i=0;i<6;i++){
-    var d=await anfrage({ model:m.id, max_tokens:16000, thinking:{type:"adaptive"}, output_config:{effort:"medium"}, fallbacks:"default",
-      system:systemText(), tool_choice:{type:"auto"},
-      tools:[{ type:"web_search_20260209", name:"web_search", max_uses:10,
-        user_location:{ type:"approximate", country:"DE", timezone:"Europe/Berlin" } }, WERKZEUG],
-      messages:nachrichten }, signal);
-    var u=d.usage||{};
-    kosten.ein+=(u.input_tokens||0)+(u.cache_read_input_tokens||0)+(u.cache_creation_input_tokens||0);
-    kosten.aus+=(u.output_tokens||0);
-    kosten.suchen+=((u.server_tool_use||{}).web_search_requests||0);
-    (d.content||[]).forEach(function(b){
-      if(b.type==="web_search_tool_result" && Array.isArray(b.content)) b.content.forEach(function(x){ if(x.url) urls.add(normUrl(x.url)); });
-      if(b.type==="text" && Array.isArray(b.citations)) b.citations.forEach(function(c){ if(c.url) urls.add(normUrl(c.url)); });
-    });
-    meldung(kosten.suchen+" Suchen bisher");
-    if(d.stop_reason==="refusal") throw new Error("Claude hat diese Suche abgelehnt. Thema oder Beschreibung anders formulieren.");
-    var t=(d.content||[]).filter(function(b){ return b.type==="tool_use" && b.name==="kandidaten_liefern"; })[0];
-    if(t) return { kandidaten:(t.input&&t.input.kandidaten)||[], urls:urls };
-    nachrichten.push({ role:"assistant", content:d.content });
-    if(d.stop_reason==="pause_turn") continue;
-    if(nachgehakt) break;
-    nachgehakt=true;
-    nachrichten.push({ role:"user", content:"Bitte liefere jetzt alle belegten Personen über das Werkzeug kandidaten_liefern." });
-  }
-  throw new Error("Claude hat keine Liste geliefert. Noch einmal versuchen.");
-}
-function dollar(k){ var m=modell(); return (k.ein/1e6*m.ein + k.aus/1e6*m.aus + k.suchen*0.01); }
-
 /* Fertiger Befehl für Claude mit allen Angaben aus dem Event */
 function auftragBefehl(e,anzahl){
   return ["/netboard "+(e.thema||"Thema")+" "+anzahl,
@@ -1678,13 +1597,10 @@ function auftragBefehl(e,anzahl){
     ((e.positionen||[]).length||(e.mindestMA&&e.mindestMA!=="egal"))?"Zielgruppe: "+[(e.positionen||[]).join(", "),(e.mindestMA&&e.mindestMA!=="egal")?"Firmen "+e.mindestMA:""].filter(Boolean).join("; "):"",
     (e.ohne||[]).length?"Ohne: "+e.ohne.join(", "):"",
     "Region: "+(e.region||"NRW, Schwerpunkt Ruhrgebiet"),
-    e.ziel?"Ziel: "+e.ziel:"",
-    (e.rollen||[]).length?"Rollen am Tisch: "+e.rollen.join(", "):""
+    e.ziel?"Ziel: "+e.ziel:""
   ].filter(Boolean).join("\n");
 }
 function sucheFenster(e){
-  if(SUCHE_LAEUFT){ toast("Es läuft schon eine Suche."); return; }
-  if(!schluessel()){
     fenster("Kandidaten finden",
       '<p style="margin:0">Die Suche läuft gerade über Claude im Chat:</p>'+
       '<div class="field"><label for="a_anz">Wie viele?</label><select id="a_anz"><option>10</option><option selected>20</option><option>30</option></select></div>'+
@@ -1694,80 +1610,18 @@ function sucheFenster(e){
         '<li>Auftrag kopieren und in Claude Code einfügen.</li>'+
         '<li>Claude legt eine Datei in <span class="mono">Downloads/netboard/recherche</span> ab.</li>'+
         '<li>Hier auf <b>Datei importieren</b> tippen und die Datei wählen.</li></ol>'+
-      '<p class="hint erkl" style="margin:0">Mit einem eigenen Schlüssel von Anthropic sucht die App später selbst. Den trägt man in den Einstellungen ein.</p>',
-      '<button class="btn primary" id="zuImport">Datei importieren</button><button class="btn" id="zuEinst">Einstellungen</button>');
+      '',
+      '<button class="btn primary" id="zuImport">Datei importieren</button>');
     $("zuImport").onclick=function(){ importFenster(e); };
-    $("zuEinst").onclick=einstellungen;
     var befehl=function(){ $("a_befehl").textContent=auftragBefehl(e,$("a_anz").value); };
     befehl(); $("a_anz").onchange=befehl;
     $("a_kopie").onclick=function(){ kopieren(auftragBefehl(e,$("a_anz").value)); };
-    return;
-  }
-  var m=modell();
-  fenster("Kandidaten finden",
-    '<p style="margin:0">Claude sucht im Netz nach Personen zum Thema <b>'+esc(e.thema)+'</b>, Region '+esc(e.region||"NRW")+'.</p>'+
-    '<div class="field"><label for="s_anz">Wie viele?</label><select id="s_anz"><option>10</option><option>20</option><option selected>30</option></select></div>'+
-    (einlVon(e.id).some(function(x){ return x.status==="vorgeschlagen"; })
-      ?'<label class="check"><input type="checkbox" id="s_alt"><span><b>Alte Vorschläge vorher entfernen</b><br>Sinnvoll, wenn du das Thema geändert hast. Ausgewählte bleiben.</span></label>':'')+
-    '<p class="hint erkl" style="margin:0">Läuft in Runden zu je 10 Personen, pro Runde etwa ein bis drei Minuten. Modell: '+esc(m.t)+'. Grobe Schätzung: 0,50 bis 1,50 US-Dollar pro 10 Personen.</p>'+
-    '<div id="s_status" class="infobox" hidden></div>',
-    '<button class="btn primary" id="s_los">Suche starten</button>');
-  $("s_los").onclick=function(){
-    var anz=Number($("s_anz").value);
-    if($("s_alt") && $("s_alt").checked){
-      var weg=einlVon(e.id).filter(function(x){ return x.status==="vorgeschlagen"; }).map(function(x){ return x.id; });
-      D.einladungen=D.einladungen.filter(function(x){ return weg.indexOf(x.id)<0; }); speicher.sichern(D); zeichnen();
-    }
-    sucheStarten(e,anz);
-  };
-}
-async function sucheStarten(e,anzahl){
-  var ctrl=new AbortController(); SUCHE_LAEUFT=ctrl;
-  var kosten={ein:0,aus:0,suchen:0}, gefunden=0, zeilen=[];
-  function status(t){ var b=$("s_status"); if(!b) return; b.hidden=false; b.innerHTML=zeilen.concat(t?['<span class="hint">'+esc(t)+'</span>']:[]).join("<br>"); }
-  var fuss=document.querySelector(".panel-foot");
-  if(fuss) fuss.innerHTML='<button class="btn danger" id="s_stop">Suche abbrechen</button>';
-  if($("s_stop")) $("s_stop").onclick=function(){ ctrl.abort(); };
-  var runden=Math.ceil(anzahl/10);
-  try{
-    for(var r=1;r<=runden;r++){
-      var n=Math.min(10,anzahl-(r-1)*10);
-      status("Runde "+r+" von "+runden+": Claude sucht …");
-      var schonDa=einlVon(e.id).map(function(x){ var p=pers(x.personId); return p?p.name+(p.firma?" ("+p.firma+")":""):null; }).filter(Boolean);
-      var erg=await suchRunde(e,n,schonDa,ctrl.signal,function(t){ status("Runde "+r+" von "+runden+": "+t); },kosten);
-      var u=uebernehmen(erg.kandidaten,e,erg.urls,"Suche "+(e.thema||"")+" "+ymd(new Date()));
-      gefunden+=u.neu;
-      zeilen.push("Runde "+r+": "+erg.kandidaten.length+" gefunden, "+u.neu+" neu");
-      S.filter="vorschlaege"; zeichnen();
-    }
-    zeilen.push("<b>Fertig: "+gefunden+" neue Kandidaten.</b> Kosten etwa "+dollar(kosten).toFixed(2).replace(".",",")+" US-Dollar, "+kosten.suchen+" Suchen.");
-    status(""); toast(gefunden+" neue Kandidaten.");
-  }catch(err){
-    zeilen.push('<span style="color:var(--bad);font-weight:600">'+esc(err.name==="AbortError"?"Abgebrochen.":err.message)+'</span>');
-    if(kosten.suchen||kosten.aus) zeilen.push("Bis dahin etwa "+dollar(kosten).toFixed(2).replace(".",",")+" US-Dollar.");
-    status(""); if(!$("s_status")) toast(err.name==="AbortError"?"Suche abgebrochen.":err.message);
-  }finally{
-    SUCHE_LAEUFT=null;
-    var f=document.querySelector(".panel-foot"); if(f && $("s_stop")) f.innerHTML='<button class="btn primary" id="s_fertig">Ergebnisse ansehen</button>';
-    if($("s_fertig")) $("s_fertig").onclick=fensterZu;
-  }
 }
 
 /* ---------------- Einstellungen ---------------- */
 function einstellungen(){
   var summe=TEILE.reduce(function(s,t){ return s+(Number(D.gewichte[t.k])||0); },0);
   fenster("Einstellungen",
-    '<div><div class="sec-label" style="margin-top:0">Suche über Claude</div>'+
-      '<div class="field"><label for="k_key">Schlüssel von Anthropic</label><input id="k_key" type="password" autocomplete="off" placeholder="'+(schluessel()?'gespeichert, endet auf '+esc(schluessel().slice(-4)):'sk-ant-…')+'"></div>'+
-      '<div class="field" style="margin-top:8px"><label for="k_mod">Modell</label><select id="k_mod">'+MODELLE.map(function(x){ return '<option value="'+x.id+'"'+(x.id===modell().id?' selected':'')+'>'+esc(x.t)+'</option>'; }).join("")+'</select></div>'+
-      '<p class="hint erkl" style="margin:6px 0 0">Der Schlüssel bleibt nur in diesem Browser. Nicht auf fremden Geräten eintragen.</p>'+
-      '<div class="knopfreihe" style="margin-top:8px"><button class="btn klein" id="k_save">Übernehmen</button>'+(schluessel()?'<button class="btn ghost klein" id="k_del" style="color:var(--bad)">Schlüssel entfernen</button>':'')+'</div></div>'+
-    '<hr class="sep">'+
-    '<div><div class="sec-label" style="margin-top:0">Themen im Netzwerk</div>'+
-      '<div class="field"><input id="t_themen" value="'+esc((D.themen&&D.themen.length?D.themen:THEMEN_STANDARD).join(", "))+'" aria-label="Themen"></div>'+
-      '<p class="hint erkl" style="margin:6px 0 0">Mit Komma getrennt. Themen aus Events kommen automatisch dazu.</p>'+
-      '<div class="knopfreihe" style="margin-top:8px"><button class="btn klein" id="t_save">Themen übernehmen</button></div></div>'+
-    '<hr class="sep">'+
     '<div><div class="sec-label" style="margin-top:0">Gewichtung der Bewertung</div>'+
       '<div class="three">'+TEILE.map(function(t){ return '<div class="field"><label for="g_'+t.k+'">'+esc(t.t)+' %</label><input id="g_'+t.k+'" type="number" min="0" max="100" class="mono" value="'+esc(D.gewichte[t.k])+'"></div>'; }).join("")+'</div>'+
       '<p class="hint" style="margin:6px 0 0" id="gSumme">Summe: '+summe+' %'+(summe!==100?' · muss nicht 100 sein, die App rechnet anteilig':'')+'</p>'+
@@ -1792,12 +1646,6 @@ function einstellungen(){
     alle("#hilfeBar button",function(b){ b.setAttribute("aria-pressed",String(b.dataset.h===hilfe())); b.onclick=function(){ LS.set("netboard_hilfe",b.dataset.h); hilfeAnwenden(); knoepfe(); }; });
   }
   knoepfe();
-  $("k_save").onclick=function(){
-    var k=$("k_key").value.trim(); if(k) LS.set("netboard_key",k);
-    LS.set("netboard_modell",$("k_mod").value); einstellungen(); toast("Gespeichert.");
-  };
-  if($("k_del")) $("k_del").onclick=function(){ try{ localStorage.removeItem("netboard_key"); }catch(err){} einstellungen(); toast("Schlüssel entfernt."); };
-  $("t_save").onclick=function(){ D.themen=liste($("t_themen").value); sichern(); einstellungen(); toast("Themen übernommen."); };
   $("gSpeichern").onclick=function(){ TEILE.forEach(function(t){ D.gewichte[t.k]=Math.max(0,Number($("g_"+t.k).value)||0); }); sichern(); einstellungen(); toast("Gewichte übernommen."); };
   $("gStandard").onclick=function(){ D.gewichte=JSON.parse(JSON.stringify(GEWICHTE_STANDARD)); sichern(); einstellungen(); };
   $("expBtn").onclick=function(){ herunterladen("netboard-sicherung-"+ymd(new Date())+".json",JSON.stringify(D,null,2)); };
@@ -1826,7 +1674,7 @@ function beispielLaden(){
   var vorher=ymd(new Date(heute.getTime()-35*86400000)), bald=ymd(new Date(heute.getTime()+5*86400000));
   var e0={ id:uid(), name:"Beispiel: Vergangener Abend", spiel:"Golfturnier", datum:vorher, uhrzeit:"14:00", thema:"Unternehmer", plaetze:12, quote:10, rollen:[], ziel:"Unternehmer", ort:"Golfclub Beispielstadt", region:"NRW, Schwerpunkt Ruhrgebiet", einladungstext:TEXT_STANDARD, beispiel:true };
   var e1={ id:uid(), name:"Beispiel: Immobilien", spiel:"Abendessen", datum:bald, uhrzeit:"18:30", thema:"Immobilien", plaetze:14, quote:10,
-    rollen:["Projektentwickler","Bank","Architekt","Wohnungswirtschaft","Handwerk","Verband"], ziel:"Kooperationen", ort:"Restaurant Beispielstadt", region:"NRW, Schwerpunkt Ruhrgebiet", einladungstext:TEXT_STANDARD, beispiel:true };
+    rollen:["Projektentwickler","Bank","Architekt","Wohnungswirtschaft","Handwerk","Verband"], typen:["Projektentwickler","Bank","Architekt","Wohnungswirtschaft","Handwerk","Verband"], ziel:"Kooperationen", ort:"Restaurant Beispielstadt", region:"NRW, Schwerpunkt Ruhrgebiet", einladungstext:TEXT_STANDARD, beispiel:true };
   function P(name,pos,firma,rolle,branche,ort,tags,w,begr,grund){
     return { id:uid(), name:name+" (Beispiel)", position:pos, firma:firma, rolle:rolle, branche:branche, ort:ort, tags:tags,
       werte:{thema:w[0],beruf:w[1],netzwerk:w[2],region:w[3]}, begruendung:begr, einladungsgrund:grund, beispiel:true,
