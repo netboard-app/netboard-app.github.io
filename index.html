@@ -265,6 +265,7 @@ var JA = ["zugesagt","erschienen","nicht_erschienen"];
 var NEIN = ["abgesagt","keine_antwort"];
 var ZIELE = ["allgemeines Networking","Neukunden","Geschäftspartner","Kooperationen","Investoren","Unternehmer","Recruiting","Branchenkontakte","Entscheider","Multiplikatoren"];
 var TEILE = [
+  {k:"nutzen", t:"Nutzen für IFBA"},
   {k:"thema", t:"Thema"},
   {k:"beruf", t:"Beruf"},
   {k:"netzwerk", t:"Netzwerk"},
@@ -272,7 +273,7 @@ var TEILE = [
   {k:"region", t:"Region"},
   {k:"historie", t:"Zusagen bisher"}
 ];
-var GEWICHTE_STANDARD = { thema:30, beruf:20, netzwerk:20, runde:15, region:5, historie:10 };
+var GEWICHTE_STANDARD = { thema:25, nutzen:20, beruf:15, netzwerk:15, runde:10, region:5, historie:10 };
 var MARKER = [
   {k:"wertvoll", t:"Wertvoller Kontakt"},
   {k:"passte", t:"Hat gut zur Gruppe gepasst"},
@@ -340,6 +341,7 @@ var speicher={
     d=d||leer();
     ["events","personen","einladungen","verbindungen"].forEach(function(k){ if(!Array.isArray(d[k])) d[k]=[]; });
     if(!d.gewichte) d.gewichte=JSON.parse(JSON.stringify(GEWICHTE_STANDARD));
+    if(d.gewichte.nutzen===undefined) d.gewichte.nutzen=GEWICHTE_STANDARD.nutzen;
     return d;
   },
   sichern:function(d){ LS.set(SCHLUESSEL,JSON.stringify(d)); }
@@ -410,7 +412,7 @@ function historie(p,ohneEventId){
 }
 function teilwerte(p,e){
   var w=p.werte||{}; var r=e?rundenwert(p,e):{wert:null,grund:""}; var h=historie(p,e?e.id:null);
-  return { thema:zahl(w.thema), beruf:zahl(w.beruf), netzwerk:zahl(w.netzwerk), region:zahl(w.region),
+  return { thema:zahl(w.thema), nutzen:zahl(w.nutzen), beruf:zahl(w.beruf), netzwerk:zahl(w.netzwerk), region:zahl(w.region),
            runde:r.wert, rundeGrund:r.grund, historie:h.wert, historieText:h.text };
 }
 function gesamt(tw){
@@ -506,7 +508,9 @@ function eventOeffnen(id,tab){ S.sicht="event"; S.eventId=id; if(tab) S.tab=tab;
 /* Eckdaten eines Events: zuerst wo und worum, dann wann */
 function eventInfo(e){
   var zeilen=[["Anlass",e.spiel],["Ort",e.ort],["Thema",e.thema],
-    ["Datum",deDatumLang(e.datum)+(e.uhrzeit?", "+e.uhrzeit+" Uhr":"")],["Plätze",e.plaetze?String(e.plaetze):""]]
+    ["Datum",deDatumLang(e.datum)+(e.uhrzeit?", "+e.uhrzeit+" Uhr":"")],["Plätze",e.plaetze?String(e.plaetze):""],
+    ["Gesucht",(e.typen||[]).join(", ")],["Zielgruppe",(e.positionen||[]).join(", ")+(e.mindestMA&&e.mindestMA!=="egal"?((e.positionen||[]).length?", ":"")+"Firmen "+e.mindestMA:"")],
+    ["Ohne",(e.ohne||[]).join(", ")]]
     .filter(function(z){ return z[1]; });
   return '<dl class="kv eckdaten">'+zeilen.map(function(z){ return '<dt>'+esc(z[0])+'</dt><dd>'+esc(z[1])+'</dd>'; }).join("")+'</dl>';
 }
@@ -1249,7 +1253,9 @@ function profil(id,e){
     h+='<div><div class="sec-label" style="margin-top:0">Bewertung für dieses Event</div><div class="werte" style="grid-template-columns:1fr 1fr">'+
       wertZeile("Thema · "+D.gewichte.thema+" %",tw.thema)+wertZeile("Beruf · "+D.gewichte.beruf+" %",tw.beruf)+
       wertZeile("Netzwerk · "+D.gewichte.netzwerk+" %",tw.netzwerk)+wertZeile("Runde · "+D.gewichte.runde+" %",tw.runde)+
-      wertZeile("Region · "+D.gewichte.region+" %",tw.region)+wertZeile("Zusagen · "+D.gewichte.historie+" %",tw.historie)+'</div>'+
+      wertZeile("Region · "+D.gewichte.region+" %",tw.region)+wertZeile("Zusagen · "+D.gewichte.historie+" %",tw.historie)+
+      wertZeile("Nutzen IFBA · "+D.gewichte.nutzen+" %",tw.nutzen)+'</div>'+
+      (p.nutzenGrund?'<p class="hint" style="margin:8px 0 0">Nutzen für IFBA: '+esc(p.nutzenGrund)+'</p>':'')+
       '<p class="hint" style="margin:8px 0 0">Runde: '+esc(tw.rundeGrund)+'<br>Zusagen: '+esc(tw.historieText)+'<br>Unbekannte Werte zählen nicht mit, die übrigen werden nach Gewicht verrechnet.</p></div>';
   }
   h+='<div><div class="sec-label" style="margin-top:0">Warum interessant</div><p style="margin:0">'+(p.begruendung?esc(p.begruendung):'<span class="hint">Noch keine Begründung.</span>')+'</p></div>';
@@ -1298,6 +1304,39 @@ function profil(id,e){
   };
 }
 
+/* ---------------- Personentypen je Thema ----------------
+   Beim Thema erscheinen passende Typen zum Antippen. Die Recherche sucht gezielt nach den gewählten. */
+var TYP_VORSCHLAEGE={
+  "jagd":["Jagdpächter","Revierinhaber und Eigenjagdbesitzer","Forstbetriebe und Gutsbesitzer","Unternehmer mit Jagdleidenschaft","Jagdreise-Anbieter","Waffen- und Jagdhandel","Hersteller (Optik, Messer, Bekleidung)","Jagdverbände","Jagdschulen","Wildbret und Gastronomie","Messen und Veranstalter","Jagdpresse"],
+  "pflege":["Pflegedienst-Inhaber","Pflegeheimbetreiber","Kranken- und Pflegekassen","Klinik- und Rehamanagement","Sanitätshäuser","Wohnungswirtschaft und Genossenschaften","Handwerk Badumbau","Health-Tech","Pflegeverbände","Seniorenwohnen"],
+  "fussball":["Vereinsvorstände","Sportdirektoren","Sponsoren","Wirtschaftsräte der Vereine","Sportvermarktung","Fußballverbände","Spielerberater","Stadion- und Eventbetreiber","Sportmedien"],
+  "hotel":["Hoteliers","Regionaldirektoren von Hotelketten","Gastronomie","Tourismusverbände","Eventlocations","Hotelimmobilien und Investoren"],
+  "wohn":["Vorstände von Wohnungsunternehmen","Wohnungsgenossenschaften","Projektentwickler","Makler","Hausverwaltungen","Bauunternehmen","Architekten","Banken für Immobilienfinanzierung"],
+  "immobil":["Projektentwickler","Makler","Investoren","Hausverwaltungen","Bauunternehmen","Architekten","Banken für Immobilienfinanzierung"],
+  "unternehm":["Familienunternehmer","Mittelständler","Gründer","Investoren","Banken","Kanzleien und Steuerberater","IHK und Wirtschaftsverbände"]
+};
+var TYP_STANDARD=["Unternehmer mit Bezug zum Thema","Firmen der Branche","Verbände","Händler","Hersteller","Veranstalter","Fachpresse"];
+var POSITIONEN=["Inhaber","Geschäftsführer","Vorstand","Leitende Position","Selbstständig"];
+var AUSSCHLUESSE=["Amtsträger","Reine Verbandsleute","Ehrenamtliche ohne Beruf","Ohne Kontaktweg","Außerhalb NRW"];
+var MINDEST_MA=["egal","ab 10 Mitarbeitern","ab 50 Mitarbeitern","ab 250 Mitarbeitern"];
+function typVorschlaege(thema){
+  var t=norm2(thema), l=[];
+  Object.keys(TYP_VORSCHLAEGE).forEach(function(k){ if(t && (t.indexOf(k)>=0 || k.indexOf(t)===0)) TYP_VORSCHLAEGE[k].forEach(function(x){ if(l.indexOf(x)<0) l.push(x); }); });
+  return l.length?l:TYP_STANDARD;
+}
+// Wählbare Chips: Liste plus eigene Einträge, gewählte bleiben markiert
+function chipWahl(boxId,optionen,gewaehlt,eigene){
+  var box=$(boxId); if(!box) return;
+  var alleOpt=optionen.slice(); gewaehlt.forEach(function(g){ if(alleOpt.indexOf(g)<0) alleOpt.push(g); });
+  box.innerHTML=alleOpt.map(function(o){ return '<button type="button" class="kat" data-wahl-chip="'+esc(o)+'" aria-pressed="'+(gewaehlt.indexOf(o)>=0)+'">'+esc(o)+'</button>'; }).join("")+
+    (eigene?'<span style="display:inline-flex;gap:6px;flex:0 0 auto"><input class="eigen" placeholder="Eigener Eintrag" aria-label="Eigener Eintrag" style="border:1px solid var(--line);border-radius:999px;padding:8px 12px;min-height:40px;width:150px;background:var(--surface-2)"><button type="button" class="kat" data-eigen="1">+</button></span>':'');
+  alle("[data-wahl-chip]",function(b){ b.onclick=function(){ var v=b.dataset.wahlChip, i=gewaehlt.indexOf(v); if(i>=0) gewaehlt.splice(i,1); else gewaehlt.push(v); chipWahl(boxId,optionen,gewaehlt,eigene); }; },box);
+  var eb=box.querySelector("[data-eigen]");
+  if(eb){ var inp=box.querySelector(".eigen");
+    var add=function(){ var v=inp.value.trim(); if(v && gewaehlt.indexOf(v)<0){ gewaehlt.push(v); chipWahl(boxId,optionen,gewaehlt,eigene); } };
+    eb.onclick=add; inp.onkeydown=function(ev_){ if(ev_.key==="Enter"){ ev_.preventDefault(); add(); } }; }
+}
+
 /* ---------------- Formulare ---------------- */
 function eventFormular(alt){
   var e=alt||{ datum:ymd(new Date(Date.now()+5*86400000)), plaetze:14, quote:10, ort:"", region:"NRW, Schwerpunkt Ruhrgebiet", ziel:"allgemeines Networking", rollen:[], einladungstext:TEXT_STANDARD };
@@ -1310,11 +1349,18 @@ function eventFormular(alt){
       '<div class="two"><div class="field"><label for="f_datum">Datum</label><input id="f_datum" type="date" class="mono" value="'+esc(e.datum||"")+'"></div>'+
         '<div class="field"><label for="f_zeit">Uhrzeit</label><input id="f_zeit" type="time" class="mono" value="'+esc(e.uhrzeit||"")+'"></div></div>'+
       '<div class="field"><label for="f_thema">Thema</label><input id="f_thema" value="'+esc(e.thema||"")+'" placeholder="Jagd" autocomplete="off"></div>'+
+      '<div class="field"><label>Wen suchen wir? Antippen, mehrere möglich</label><div class="kats" id="typChips" style="flex-wrap:wrap"></div>'+
+        '<span class="hint erkl">Die Recherche sucht gezielt nach diesen Typen. Eigene Einträge gehen über das Feld am Ende.</span></div>'+
       '<div class="two"><div class="field"><label for="f_plaetze">Plätze</label><input id="f_plaetze" type="number" min="1" class="mono" value="'+esc(e.plaetze||"")+'"></div>'+
         '<div class="field"><label for="f_quote">Erwartete Zusagequote %</label><input id="f_quote" type="number" min="1" max="100" class="mono" value="'+esc(e.quote||10)+'">'+
         '<span class="hint erkl">Erfahrungswert. Sobald genug eigene Daten da sind, rechnet die App mit denen.</span></div></div>'+
     '</div>'+
     '<div id="s2" hidden style="display:flex;flex-direction:column;gap:12px">'+
+      '<div class="field"><label>Zielgruppe: Positionen</label><div class="kats" id="posChips" style="flex-wrap:wrap"></div></div>'+
+      '<div class="field"><label for="f_ma">Firmengröße mindestens</label><select id="f_ma">'+MINDEST_MA.map(function(m){ return '<option'+((e.mindestMA||"egal")===m?' selected':'')+'>'+m+'</option>'; }).join("")+'</select></div>'+
+      '<div class="field"><label for="f_stich">Weitere Stichworte</label><input id="f_stich" value="'+esc((e.stichworte||[]).join(", "))+'" placeholder="z. B. Revier, Drückjagd, Hubertusmesse" autocomplete="off">'+
+        '<span class="hint erkl">Mit Komma getrennt. Begriffe, nach denen zusätzlich gesucht wird.</span></div>'+
+      '<div class="field"><label>Nicht gewünscht</label><div class="kats" id="ohneChips" style="flex-wrap:wrap"></div></div>'+
       '<div class="field"><label for="f_rollen">Gewünschte Rollen am Tisch</label><input id="f_rollen" value="'+esc((e.rollen||[]).join(", "))+'" placeholder="Jagdpächter, Verband, Jagdhandel, Forst, Bank" autocomplete="off">'+
         '<span class="hint erkl">Mit Komma getrennt. Daraus erkennt die App, welche Person noch fehlt.</span></div>'+
       '<div class="field"><label for="f_branchen">Gewünschte Branchen</label><input id="f_branchen" value="'+esc(e.branchen||"")+'" autocomplete="off"></div>'+
@@ -1343,6 +1389,11 @@ function eventFormular(alt){
     if(!(Number($("f_plaetze").value)>0)) return fehler("Wie viele Plätze hat die Loge?","f_plaetze");
     return true;
   }
+  var typen=(e.typen||[]).slice(), positionen=(e.positionen||[]).slice(), ohne=(e.ohne||[]).slice();
+  function typenZeichnen(){ chipWahl("typChips",typVorschlaege($("f_thema").value),typen,true); }
+  typenZeichnen(); $("f_thema").oninput=typenZeichnen;
+  chipWahl("posChips",POSITIONEN,positionen,false);
+  chipWahl("ohneChips",AUSSCHLUESSE,ohne,true);
   schritt(1);
   $("weiterBtn").onclick=function(){ if(s1Ok()) schritt(2); };
   $("zurBtn").onclick=function(){ schritt(1); };
@@ -1354,6 +1405,8 @@ function eventFormular(alt){
     neu.rollen=liste($("f_rollen").value); neu.branchen=$("f_branchen").value.trim(); neu.ziel=$("f_ziel").value;
     neu.ort=$("f_ort").value.trim(); neu.region=$("f_region").value.trim(); neu.beschreibung=$("f_beschr").value.trim();
     neu.einladungstext=$("f_text").value.trim()||TEXT_STANDARD;
+    neu.typen=typen.slice(); neu.positionen=positionen.slice(); neu.ohne=ohne.slice();
+    neu.stichworte=liste($("f_stich").value); neu.mindestMA=$("f_ma").value;
     if(!alt) D.events.push(neu);
     speicher.sichern(D); fensterZu(); eventOeffnen(neu.id,"kandidaten"); toast(alt?"Gespeichert.":"Event angelegt.");
   };
@@ -1392,7 +1445,7 @@ function personFormular(alt,e){
     '<div class="field"><label for="p_profile">Profile, eins pro Zeile</label><textarea id="p_profile" placeholder="LinkedIn https://…">'+esc((p.profile||[]).map(function(l){ return (l.art?l.art+" ":"")+l.url; }).join("\n"))+'</textarea></div>'+
     '<div class="field"><label for="p_tags">Themen</label><input id="p_tags" value="'+esc((p.tags||[]).join(", "))+'" placeholder="Jagd, Forst, Mittelstand"></div>'+
     '<div class="sec-label" style="margin:4px 0 0">Bewertung 0 bis 100, leer heißt unbekannt</div>'+
-    '<div class="two">'+wf("thema","Thema")+wf("beruf","Beruf")+wf("netzwerk","Netzwerk")+wf("region","Region")+'</div>'+
+    '<div class="two">'+wf("thema","Thema")+wf("beruf","Beruf")+wf("netzwerk","Netzwerk")+wf("region","Region")+wf("nutzen","Nutzen für IFBA")+'</div>'+
     '<div class="field"><label for="p_begr">Warum interessant</label><textarea id="p_begr">'+esc(p.begruendung||"")+'</textarea></div>'+
     '<div class="field"><label for="p_grund">Persönlicher Satz für die Einladung</label><input id="p_grund" value="'+esc(p.einladungsgrund||"")+'"></div>'+
     '<div class="field"><label for="p_quellen">Quellen, eine pro Zeile</label><textarea id="p_quellen" placeholder="Vorstand Kreisjägerschaft laut Website https://…">'+esc((p.quellen||[]).map(function(q){ return [q.text,q.url].filter(Boolean).join(" "); }).join("\n"))+'</textarea>'+
@@ -1416,7 +1469,7 @@ function personFormular(alt,e){
     neu.rolle=$("p_rolle").value.trim(); neu.branche=$("p_branche").value.trim(); neu.ort=$("p_ort").value.trim(); neu.website=$("p_web").value.trim();
     neu.profile=zeilenLinks($("p_profile").value).filter(function(l){ return l.url; }).map(function(l){ return {art:l.art||"Profil",url:l.url}; });
     neu.tags=liste($("p_tags").value);
-    neu.werte={ thema:zahl($("w_thema").value), beruf:zahl($("w_beruf").value), netzwerk:zahl($("w_netzwerk").value), region:zahl($("w_region").value) };
+    neu.werte={ thema:zahl($("w_thema").value), nutzen:zahl($("w_nutzen").value), beruf:zahl($("w_beruf").value), netzwerk:zahl($("w_netzwerk").value), region:zahl($("w_region").value) };
     neu.begruendung=$("p_begr").value.trim(); neu.einladungsgrund=$("p_grund").value.trim();
     neu.quellen=zeilenLinks($("p_quellen").value).map(function(l){ return {text:l.text,url:l.url}; });
     neu.notizen=$("p_notiz").value.trim();
@@ -1490,7 +1543,8 @@ function uebernehmen(liste_,e,urls,herkunft){
     if(Array.isArray(r.kontaktwege)) p.kontaktwege=r.kontaktwege.filter(function(k){ return k&&k.wert; }).map(function(k){ return {art:k.art||"Telefon",wert:String(k.wert),typ:k.typ||"",quelle:k.quelle||""}; });
     if(Array.isArray(r.profile)) p.profile=r.profile.filter(function(l){ return l&&l.url; }).map(function(l){ return {art:l.art||"Profil",url:l.url,geprueft:l.geprueft===false?false:pruef(l.url)}; });
     if(Array.isArray(r.quellen)) p.quellen=r.quellen.filter(function(q){ return q&&(q.text||q.url); }).map(function(q){ return {text:q.text||"",url:q.url||"",geprueft:q.url?pruef(q.url):undefined}; });
-    var w=r.werte||{}; p.werte={ thema:zahl(w.thema), beruf:zahl(w.beruf), netzwerk:zahl(w.netzwerk), region:zahl(w.region) };
+    var w=r.werte||{}; p.werte={ thema:zahl(w.thema), nutzen:zahl(w.nutzen), beruf:zahl(w.beruf), netzwerk:zahl(w.netzwerk), region:zahl(w.region) };
+    if(r.nutzenGrund) p.nutzenGrund=String(r.nutzenGrund);
     if(!vorh){ D.personen.push(p); neu++; } else akt++;
     if(!einl(e.id,p.id)) zurEvent(e.id,p.id,"vorgeschlagen");
   });
@@ -1555,6 +1609,11 @@ function auftragText(e,anzahl,schonDa){
     (e.rollen||[]).length?"Gewünschte Rollen am Tisch (für das Feld rolle verwenden): "+e.rollen.join(", "):"",
     e.branchen?"Gewünschte Branchen: "+e.branchen:"",
     e.spiel?"Anlass: "+e.spiel:"", e.ort?"Ort: "+e.ort:"",
+    (e.typen||[]).length?"Gesuchte Personentypen: "+e.typen.join(", "):"",
+    (e.stichworte||[]).length?"Weitere Stichworte: "+e.stichworte.join(", "):"",
+    (e.positionen||[]).length?"Nur Positionen: "+e.positionen.join(", "):"",
+    (e.mindestMA&&e.mindestMA!=="egal")?"Firmen "+e.mindestMA:"",
+    (e.ohne||[]).length?"Nicht gewünscht: "+e.ohne.join(", "):"",
     "Region: "+(e.region||"NRW, Schwerpunkt Ruhrgebiet"),
     "Finde "+anzahl+" neue Personen.",
     schonDa.length?"Diese Personen sind schon bekannt, nicht noch einmal liefern: "+schonDa.join("; "):""
@@ -1611,19 +1670,38 @@ async function suchRunde(e,anzahl,schonDa,signal,meldung,kosten){
 }
 function dollar(k){ var m=modell(); return (k.ein/1e6*m.ein + k.aus/1e6*m.aus + k.suchen*0.01); }
 
+/* Fertiger Befehl für Claude mit allen Angaben aus dem Event */
+function auftragBefehl(e,anzahl){
+  return ["/netboard "+(e.thema||"Thema")+" "+anzahl,
+    (e.typen||[]).length?"Typen: "+e.typen.join(", "):"",
+    (e.stichworte||[]).length?"Stichworte: "+e.stichworte.join(", "):"",
+    ((e.positionen||[]).length||(e.mindestMA&&e.mindestMA!=="egal"))?"Zielgruppe: "+[(e.positionen||[]).join(", "),(e.mindestMA&&e.mindestMA!=="egal")?"Firmen "+e.mindestMA:""].filter(Boolean).join("; "):"",
+    (e.ohne||[]).length?"Ohne: "+e.ohne.join(", "):"",
+    "Region: "+(e.region||"NRW, Schwerpunkt Ruhrgebiet"),
+    e.ziel?"Ziel: "+e.ziel:"",
+    (e.rollen||[]).length?"Rollen am Tisch: "+e.rollen.join(", "):""
+  ].filter(Boolean).join("\n");
+}
 function sucheFenster(e){
   if(SUCHE_LAEUFT){ toast("Es läuft schon eine Suche."); return; }
   if(!schluessel()){
     fenster("Kandidaten finden",
       '<p style="margin:0">Die Suche läuft gerade über Claude im Chat:</p>'+
+      '<div class="field"><label for="a_anz">Wie viele?</label><select id="a_anz"><option>10</option><option selected>20</option><option>30</option></select></div>'+
+      '<div class="textkarte mono" id="a_befehl" style="font-size:13px"></div>'+
+      '<button class="btn primary" id="a_kopie">Auftrag kopieren</button>'+
       '<ol style="margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px">'+
-        '<li>In Claude Code eintippen: <b class="mono">/netboard '+esc(e.thema||"Thema")+' 30</b></li>'+
+        '<li>Auftrag kopieren und in Claude Code einfügen.</li>'+
         '<li>Claude legt eine Datei in <span class="mono">Downloads/netboard/recherche</span> ab.</li>'+
         '<li>Hier auf <b>Datei importieren</b> tippen und die Datei wählen.</li></ol>'+
       '<p class="hint erkl" style="margin:0">Mit einem eigenen Schlüssel von Anthropic sucht die App später selbst. Den trägt man in den Einstellungen ein.</p>',
       '<button class="btn primary" id="zuImport">Datei importieren</button><button class="btn" id="zuEinst">Einstellungen</button>');
     $("zuImport").onclick=function(){ importFenster(e); };
-    $("zuEinst").onclick=einstellungen; return;
+    $("zuEinst").onclick=einstellungen;
+    var befehl=function(){ $("a_befehl").textContent=auftragBefehl(e,$("a_anz").value); };
+    befehl(); $("a_anz").onchange=befehl;
+    $("a_kopie").onclick=function(){ kopieren(auftragBefehl(e,$("a_anz").value)); };
+    return;
   }
   var m=modell();
   fenster("Kandidaten finden",
