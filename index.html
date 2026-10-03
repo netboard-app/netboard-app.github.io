@@ -535,8 +535,10 @@ function zeichneStart(){
   if(!D.events.length){
     h+='<div class="leer">Noch kein Event angelegt. Über <b>+ Event</b> unten legst du das erste an.'+
        '<div class="knopfreihe" style="justify-content:center;margin-top:12px"><button class="btn" id="beispielBtn">Beispiel ansehen</button></div></div>';
+    h+=pflegeBlock();
     box.innerHTML=h;
     $("beispielBtn").onclick=beispielLaden;
+    profilVerdrahten(box);
     return;
   }
   if(e){
@@ -567,7 +569,9 @@ function zeichneStart(){
         '<span class="rechts">'+esc(deDatum(x.datum))+'<br><small>'+k.zu+' / '+esc(x.plaetze||0)+'</small></span></button>';
     }).join("")+'</div>';
   }
+  h+=pflegeBlock();
   box.innerHTML=h;
+  profilVerdrahten(box);
   alle("[data-ev]",function(b){ b.onclick=function(){ eventOeffnen(b.dataset.ev,"kandidaten"); }; },box);
   alle("[data-geh]",function(b){ b.onclick=function(){
     var g=b.dataset.geh;
@@ -873,42 +877,298 @@ function gehoertZu(p,thema){
   if((p.tags||[]).concat([p.rolle,p.branche]).some(function(x){ var n=norm(x); return n && (n===t || n.indexOf(t)>=0); })) return true;
   return D.einladungen.some(function(x){ if(x.personId!==p.id) return false; var e=ev(x.eventId); return e && norm(e.thema)===t; });
 }
-function personKarte(p){
-  var b=bilanz(p);
-  var marken=[b.wertvoll?'<span class="chip ok">wertvoll</span>':'', b.erneut?'<span class="chip akz">erneut einladen</span>':'', b.nichtErneut?'<span class="chip bad">nicht erneut</span>':''].join("");
-  return '<button class="karte" data-prof="'+esc(p.id)+'"><span class="avatar">'+esc(initialen(p.name))+'</span><span style="min-width:0"><b>'+esc(p.name)+'</b><small>'+esc([p.position,p.firma].filter(Boolean).join(" · "))+'</small>'+(marken?'<span class="tags" style="margin-top:4px">'+marken+'</span>':'')+'</span>'+
-    '<span class="rechts" style="white-space:nowrap">'+(b.einladungen?b.teilnahmen+' von '+b.einladungen+'<br><small>dabei</small>':'<span class="chip">neu</span>')+'</span></button>';
+/* ---------------- Wichtigkeit ----------------
+   Automatisch aus Position, Netzwerk und dem, was bei Events passiert ist. Von Hand überschreibbar. */
+var WICHTIG={3:{t:"Sehr wichtig",f:"ok"},2:{t:"Wichtig",f:"akz"},1:{t:"Normal",f:""}};
+function empfohlenVon(p){ return D.personen.filter(function(q){ return q.kamUeber===p.id; }); }
+function autoWichtigkeit(p){
+  var w=p.werte||{}, b=bilanz(p), gruende=[];
+  var s_=Math.max(zahl(w.beruf)||0, zahl(w.netzwerk)||0);
+  if(s_>=90) gruende.push("hohe Position oder großes Netzwerk");
+  else if(s_>=70) gruende.push("gute Position oder Netzwerk");
+  if(b.wertvoll){ s_+=20; gruende.push("als wertvoll markiert"); }
+  if(D.verbindungen.some(function(v){ return v.art==="geschaeft" && (v.a===p.id||v.b===p.id); })){ s_+=15; gruende.push("Geschäftskontakt entstanden"); }
+  if(b.teilnahmen){ s_+=5*b.teilnahmen; gruende.push(plural(b.teilnahmen,"Teilnahme","Teilnahmen")); }
+  var emp=empfohlenVon(p).length; if(emp){ s_+=10*emp; gruende.push(plural(emp,"Person empfohlen","Personen empfohlen")); }
+  if(b.nichtErneut){ s_-=30; gruende.push("nicht erneut einladen"); }
+  return { stufe: s_>=90?3:(s_>=70?2:1), grund: gruende.length?gruende.join(", "):"noch wenig bekannt" };
 }
+function wichtigkeit(p){ return p.wichtigkeit ? {stufe:p.wichtigkeit, grund:"von Hand gesetzt", hand:true} : autoWichtigkeit(p); }
+function wichtigChip(p){ var w=wichtigkeit(p).stufe; return w>1 ? '<span class="chip '+WICHTIG[w].f+'">'+WICHTIG[w].t+'</span>' : ''; }
+
+/* ---------------- Kontaktpflege ---------------- */
+var KONTAKTARTEN=["Treffen","Anruf","Nachricht","E-Mail","Vorstellung"];
+function tageSeit(d){ return Math.floor((Date.now()-new Date(d+"T12:00:00").getTime())/86400000); }
+function seitText(d){
+  var t=tageSeit(d);
+  if(t<=0) return "heute"; if(t===1) return "gestern"; if(t<14) return "vor "+t+" Tagen";
+  if(t<60) return "vor "+Math.round(t/7)+" Wochen"; if(t<730) return "vor "+Math.round(t/30)+" Monaten";
+  return "vor "+Math.round(t/365)+" Jahren";
+}
+// Eigene Einträge plus Events, bei denen die Person da war. Neueste zuerst.
+function kontaktListe(p){
+  var l=(p.kontakte||[]).slice();
+  D.einladungen.forEach(function(x){ if(x.personId===p.id && x.status==="erschienen"){ var e=ev(x.eventId); if(e) l.push({datum:e.datum,art:"Event",notiz:e.name}); } });
+  return l.filter(function(k){ return k.datum; }).sort(function(a,b){ return a.datum<b.datum?1:-1; });
+}
+function letzterKontakt(p){ return kontaktListe(p)[0]||null; }
+// Nur echte Beziehungen: wer schon einmal Kontakt hatte und wichtig ist. Sehr wichtig nach 60 Tagen, wichtig nach 120.
+function pflegeFaellig(){
+  return D.personen.map(function(p){
+    var w=wichtigkeit(p).stufe, k=letzterKontakt(p); if(!k || w<2) return null;
+    var t=tageSeit(k.datum); return t>=(w===3?60:120) ? {p:p,k:k,t:t,w:w} : null;
+  }).filter(Boolean).sort(function(a,b){ return (b.w-a.w)||(b.t-a.t); });
+}
+function pflegeBlock(){
+  var l=pflegeFaellig().slice(0,5); if(!l.length) return "";
+  return '<div class="sec-label">Lange nicht gemeldet</div><div class="liste">'+l.map(function(r){
+    return '<button class="karte" data-prof="'+esc(r.p.id)+'"><span class="avatar">'+esc(initialen(r.p.name))+'</span><span style="min-width:0"><b>'+esc(r.p.name)+'</b><small>'+esc(r.k.art+" "+seitText(r.k.datum))+'</small></span><span class="rechts">'+wichtigChip(r.p)+'</span></button>';
+  }).join("")+'</div>';
+}
+function kontaktEintragen(p,danach){
+  fenster("Kontakt eintragen",
+    '<p style="margin:0"><b>'+esc(p.name)+'</b></p>'+
+    '<div class="two"><div class="field"><label for="k_datum">Datum</label><input id="k_datum" type="date" class="mono" value="'+ymd(new Date())+'"></div>'+
+    '<div class="field"><label for="k_art">Art</label><select id="k_art">'+KONTAKTARTEN.map(function(a){ return '<option>'+a+'</option>'; }).join("")+'</select></div></div>'+
+    '<div class="field"><label for="k_notiz">Worum ging es?</label><textarea id="k_notiz" placeholder="Kurz, nur Berufliches"></textarea></div>',
+    '<button class="btn" id="k_zur">Zurück</button><button class="btn primary" id="k_save">Eintragen</button>');
+  $("k_zur").onclick=danach;
+  $("k_save").onclick=function(){
+    if(!$("k_datum").value){ toast("Bitte ein Datum wählen."); return; }
+    p.kontakte=(p.kontakte||[]).concat([{datum:$("k_datum").value, art:$("k_art").value, notiz:$("k_notiz").value.trim()}]);
+    speicher.sichern(D); zeichnen(); danach(); toast("Kontakt eingetragen.");
+  };
+}
+
+function personKarte(p){
+  var b=bilanz(p), k=letzterKontakt(p);
+  var marken=[wichtigChip(p), b.wertvoll?'<span class="chip ok">wertvoll</span>':'', b.nichtErneut?'<span class="chip bad">nicht erneut</span>':''].join("");
+  return '<button class="karte" data-prof="'+esc(p.id)+'"><span class="avatar">'+esc(initialen(p.name))+'</span><span style="min-width:0"><b>'+esc(p.name)+'</b><small>'+esc([p.position,p.firma].filter(Boolean).join(" · "))+'</small>'+(marken?'<span class="tags" style="margin-top:4px">'+marken+'</span>':'')+'</span>'+
+    '<span class="rechts" style="white-space:nowrap">'+(k?'<small>'+esc(seitText(k.datum))+'</small>':(b.einladungen?b.teilnahmen+' von '+b.einladungen+'<br><small>dabei</small>':'<span class="chip">neu</span>'))+'</span></button>';
+}
+function sortieren(l){
+  var m=S.sortierung||"wichtig";
+  return l.sort(function(a,b){
+    if(m==="wichtig"){ var d=wichtigkeit(b).stufe-wichtigkeit(a).stufe; if(d) return d; }
+    if(m==="kontakt"){ var ka=letzterKontakt(a), kb=letzterKontakt(b); var da=ka?ka.datum:"", db=kb?kb.datum:""; if(da!==db) return da<db?1:-1; }
+    return a.name.localeCompare(b.name,"de");
+  });
+}
+
+/* ---------------- Netzwerk: vier Bereiche ---------------- */
 function zeichnePersonen(){
-  var box=$("sicht-personen");
+  var box=$("sicht-personen"), t=S.netzTab||"kontakte";
+  box.innerHTML='<h2 style="font-size:22px">Netzwerk</h2><p class="hint" style="margin:2px 0 12px">'+plural(D.personen.length,"Person","Personen")+' aus allen Events und Recherchen.</p>'+
+    '<div class="modus" id="netzTabs" style="margin-bottom:14px"><button data-nt="kontakte">Kontakte</button><button data-nt="hilfe">Wer hilft?</button><button data-nt="kennen">Kennenlernen</button><button data-nt="tuer">Türöffner</button></div>'+
+    '<div id="netzInhalt"></div>';
+  alle("#netzTabs button",function(b){ b.setAttribute("aria-pressed",String(b.dataset.nt===t)); b.onclick=function(){ S.netzTab=b.dataset.nt; zeichnePersonen(); }; },box);
+  if(!D.personen.length){ $("netzInhalt").innerHTML='<div class="leer">Noch keine Personen. Sie kommen über die Recherche oder von Hand in einem Event dazu.</div>'; return; }
+  if(t==="hilfe") netzHilfe(); else if(t==="kennen") netzKennen(); else if(t==="tuer") netzTuer(); else netzKontakte();
+}
+function profilVerdrahten(box){ alle("[data-prof]",function(b){ b.onclick=function(){ profil(b.dataset.prof,null); }; },box); }
+
+function netzKontakte(){
+  var box=$("netzInhalt");
   var q=norm(S.suche), kat=S.kategorie||null;
   var themen=themenListe();
   var zahl_=function(t){ return D.personen.filter(function(p){ return gehoertZu(p,t); }).length; };
-  var sortiert=function(l){ return l.sort(function(a,b){ return a.name.localeCompare(b.name,"de"); }); };
-  var h='<h2 style="font-size:22px">Netzwerk</h2><p class="hint" style="margin:2px 0 12px">'+plural(D.personen.length,"Person","Personen")+' aus allen Events, nach Themen sortiert.</p>'+
-    '<div class="field" style="margin-bottom:10px"><input id="suche" type="search" placeholder="Name, Firma, Rolle, Thema" value="'+esc(S.suche)+'" aria-label="Suchen"></div>'+
+  var m=S.sortierung||"wichtig";
+  var h='<div class="field" style="margin-bottom:10px"><input id="suche" type="search" placeholder="Name, Firma, Rolle, Thema" value="'+esc(S.suche)+'" aria-label="Suchen"></div>'+
     '<div class="kats" id="kats"><button class="kat" data-kat="" aria-pressed="'+(!kat)+'">Alle <span class="mono">'+D.personen.length+'</span></button>'+
-      themen.map(function(t){ return '<button class="kat" data-kat="'+esc(t)+'" aria-pressed="'+(kat===t)+'">'+esc(t)+' <span class="mono">'+zahl_(t)+'</span></button>'; }).join("")+'</div>';
+      themen.map(function(t){ return '<button class="kat" data-kat="'+esc(t)+'" aria-pressed="'+(kat===t)+'">'+esc(t)+' <span class="mono">'+zahl_(t)+'</span></button>'; }).join("")+'</div>'+
+    '<div class="modus" id="sortBar" style="margin:4px 0 4px"><button data-s="wichtig">Wichtigkeit</button><button data-s="kontakt">Letzter Kontakt</button><button data-s="name">Name</button></div>';
   var treffer=function(p){ return !q || [p.name,p.firma,p.position,p.rolle,p.branche,p.ort,(p.tags||[]).join(" ")].join(" ").toLowerCase().indexOf(q)>=0; };
-  if(!D.personen.length){
-    h+='<div class="leer">Noch keine Personen. Sie kommen über die Recherche oder von Hand in einem Event dazu.</div>';
-  } else if(kat || q){
-    var ps=sortiert(D.personen.filter(function(p){ return treffer(p) && (!kat || gehoertZu(p,kat)); }));
+  if(kat || q){
+    var ps=sortieren(D.personen.filter(function(p){ return treffer(p) && (!kat || gehoertZu(p,kat)); }));
     h+='<div class="sec-label">'+esc(kat||"Suche")+' · '+ps.length+'</div>'+
       (ps.length?'<div class="liste">'+ps.map(personKarte).join("")+'</div>':'<div class="leer">'+(kat?'Zu „'+esc(kat)+'“ ist noch niemand im Netzwerk.':'Niemand gefunden.')+'</div>');
   } else {
-    // Ohne Auswahl: jedes Thema als aufklappbare Gruppe, so hat man einen roten Faden
     themen.forEach(function(t){
-      var ps=sortiert(D.personen.filter(function(p){ return gehoertZu(p,t); })); if(!ps.length) return;
+      var ps=sortieren(D.personen.filter(function(p){ return gehoertZu(p,t); })); if(!ps.length) return;
       h+='<details class="gruppe" open><summary><span>'+esc(t)+'</span><span class="mono">'+ps.length+'</span></summary><div class="liste">'+ps.map(personKarte).join("")+'</div></details>';
     });
-    var ohne=sortiert(D.personen.filter(function(p){ return !themen.some(function(t){ return gehoertZu(p,t); }); }));
+    var ohne=sortieren(D.personen.filter(function(p){ return !themen.some(function(t){ return gehoertZu(p,t); }); }));
     if(ohne.length) h+='<details class="gruppe"><summary><span>Ohne Thema</span><span class="mono">'+ohne.length+'</span></summary><div class="liste">'+ohne.map(personKarte).join("")+'</div></details>';
   }
   box.innerHTML=h;
-  var s=$("suche"); s.oninput=function(){ S.suche=s.value; var pos=s.selectionStart; zeichnePersonen(); var n=$("suche"); n.focus(); try{ n.setSelectionRange(pos,pos); }catch(e){} };
-  alle(".kat",function(b){ b.onclick=function(){ S.kategorie=b.dataset.kat||null; zeichnePersonen(); }; },box);
-  alle("[data-prof]",function(b){ b.onclick=function(){ profil(b.dataset.prof,null); }; },box);
+  var s_=$("suche"); s_.oninput=function(){ S.suche=s_.value; var pos=s_.selectionStart; netzKontakte(); var n=$("suche"); n.focus(); try{ n.setSelectionRange(pos,pos); }catch(e){} };
+  alle(".kat",function(b){ b.onclick=function(){ S.kategorie=b.dataset.kat||null; netzKontakte(); }; },box);
+  alle("#sortBar button",function(b){ b.setAttribute("aria-pressed",String(b.dataset.s===m)); b.onclick=function(){ S.sortierung=b.dataset.s; netzKontakte(); }; },box);
+  profilVerdrahten(box);
+}
+
+/* "Wer hilft?": Anliegen in ein paar Wörtern, die App sucht über Wörter und verwandte Begriffe.
+   Ohne KI, deshalb eine Liste mit Begriffen, die zusammengehören. */
+function norm2(x){ return norm(x).replace(/ä/g,"ae").replace(/ö/g,"oe").replace(/ü/g,"ue").replace(/ß/g,"ss"); }
+var VERWANDT=[
+  [["fussball","mannschaft","team","kicker"],["fussball","verein","verband","sportdirektor","bundesliga","flvw","sport","jugend"]],
+  [["verein","club","klub"],["verein","vorstand","verband","sport"]],
+  [["sport","training"],["sport","verein","verband","fussball"]],
+  [["jugend","nachwuchs","sohn","tochter","kind"],["jugend","nachwuchs","verein","sportdirektor"]],
+  [["immobilie","wohnung","wohnen","haus","miete","grundstueck","makler"],["immobilie","wohnung","wohnbau","vonovia","wohnungsgenossenschaft","makler","bauverein"]],
+  [["jagd","jaeger","jager","revier","schiessen"],["jagd","jaeger","forst","eigenjagd","jagdgenossenschaft","jagdhandel","waffen"]],
+  [["pacht","pachten","verpacht"],["jagdgenossenschaft","eigenjagd","grundbesitz","grundeigentuemer"]],
+  [["wald","forst","holz"],["forst","wald","grundbesitz","holz"]],
+  [["pflege","pflegekasse","pflegegrad","senior"],["pflege","krankenkasse","klinik","gesundheit","sanitaet","senior","wohnungswirtschaft"]],
+  [["krankenhaus","klinik","arzt","gesundheit","reha"],["klinik","krankenhaus","gesundheit","pflege","reha","medizin"]],
+  [["geld","finanz","kredit","bank","investor","investition","kapital"],["bank","finanz","sparkasse","investor","kapital","versicherung"]],
+  [["recht","anwalt","vertrag","klage","jurist"],["recht","anwalt","justiz","jurist"]],
+  [["job","stelle","ausbildung","praktikum","arbeit","bewerbung","karriere"],["geschaeftsfuehrer","inhaber","vorstand","personal","unternehm"]],
+  [["marketing","werbung","sponsor","sponsoring","reichweite"],["marketing","sponsoring","vermarktung","agentur","vertrieb","medien"]],
+  [["energie","strom","solar","gas"],["energie","strom","versorgung"]],
+  [["versicherung","absicherung"],["versicherung"]],
+  [["hotel","uebernachtung","reise","urlaub"],["hotel","gastronomie","reise"]],
+  [["messe","event","veranstaltung","halle"],["messe","veranstaltung","event"]],
+  [["politik","stadt","behoerde","genehmigung","amt"],["politik","verband","stadt","verwaltung"]],
+  [["handwerk","bau","sanierung","renovierung","umbau"],["handwerk","bauunternehm","sanierung","badsanierung"]],
+  [["logistik","transport","lager","spedition"],["logistik","intralogistik","transport"]]
+];
+var FUELLWOERTER="neuer neues sohn tochter mutter vater kind kinder frau mann eltern besserer besseres bessere ich mein meine meinen meinem meiner will moechte mochte wuerde bei einer eine einen ein besseren bessere besser anmelden suche suchen brauche fuer mit und oder der die das den dem des zu zum zur in im an am auf wer kann koennte helfen hilfe jemand jemanden kontakt neue neuen guten gute wie was wo bitte mir uns unser unsere".split(" ");
+function stamm(w){ return w.length>5 ? w.replace(/(en|e|n|s)$/,"") : w; }
+function suchbegriffe(text){
+  // Füllwörter suchen nicht selbst, lösen aber verwandte Begriffe aus (Sohn führt zu Jugend und Verein)
+  var woerter=norm2(text).split(/[^a-z0-9]+/).filter(function(w){ return w.length>=3; });
+  var begriffe=[];
+  woerter.forEach(function(w){
+    var st=stamm(w);
+    if(FUELLWOERTER.indexOf(w)<0 && begriffe.indexOf(st)<0 && st.length>=3) begriffe.push(st);
+    VERWANDT.forEach(function(g){
+      if(g[0].some(function(k){ return w.indexOf(k)>=0 || (w.length>=4 && k.indexOf(st)===0); }))
+        g[1].forEach(function(b){ if(begriffe.indexOf(b)<0) begriffe.push(b); });
+    });
+  });
+  return begriffe;
+}
+function helferSuchen(text){
+  var begriffe=suchbegriffe(text);
+  var felder=[["Thema",3,function(p){ return (p.tags||[]).join(" "); }],["Rolle",3,function(p){ return p.rolle; }],["Branche",2,function(p){ return p.branche; }],
+    ["Position",2,function(p){ return p.position; }],["Firma",1,function(p){ return p.firma; }],["Begründung",1,function(p){ return p.begruendung; }]];
+  var erg=D.personen.map(function(p){
+    var punkte=0, gruende=[];
+    felder.forEach(function(f){
+      var roh=f[2](p)||"", n=norm2(roh); if(!n) return;
+      var hit=begriffe.filter(function(b){ return n.indexOf(b)>=0; });
+      if(hit.length){ punkte+=f[1]*Math.min(hit.length,2); if(f[0]!=="Begründung") gruende.push(f[0]+": "+roh); else gruende.push("Begründung erwähnt "+hit[0]); }
+    });
+    if(!punkte) return null;
+    punkte+=wichtigkeit(p).stufe*.5;
+    return {p:p,punkte:punkte,gruende:gruende};
+  }).filter(Boolean).sort(function(a,b){ return b.punkte-a.punkte; });
+  return {begriffe:begriffe, erg:erg};
+}
+function netzHilfe(){
+  var box=$("netzInhalt");
+  box.innerHTML='<form id="hilfeForm" style="display:flex;gap:8px;margin-bottom:10px"><div class="field" style="flex:1"><input id="hilfeText" placeholder="z. B. Sohn besserer Fußballverein" value="'+esc(S.hilfeText||"")+'" aria-label="Anliegen"></div><button class="btn primary" type="submit">Suchen</button></form>'+
+    '<p class="hint erkl" style="margin:0 0 8px">Ein paar Wörter reichen. Das Netboard sucht auch nach verwandten Begriffen.</p><div id="hilfeErg"></div>';
+  function zeigen(){
+    var t=$("hilfeText").value.trim(); S.hilfeText=t; var z=$("hilfeErg");
+    if(!t){ z.innerHTML=''; return; }
+    var r=helferSuchen(t);
+    z.innerHTML='<p class="hint" style="margin:0 0 8px">Gesucht nach: '+esc(r.begriffe.join(", ")||"nichts Verwertbarem")+'</p>'+
+      (r.erg.length?'<div class="liste">'+r.erg.slice(0,20).map(function(x){
+        return '<button class="karte" data-prof="'+esc(x.p.id)+'"><span class="avatar">'+esc(initialen(x.p.name))+'</span><span style="min-width:0"><b>'+esc(x.p.name)+'</b><small>'+esc([x.p.position,x.p.firma].filter(Boolean).join(" · "))+'</small>'+
+          '<small style="color:var(--accent-ink)">'+esc(x.gruende.slice(0,2).join(" · "))+'</small></span><span class="rechts">'+wichtigChip(x.p)+'</span></button>';
+      }).join("")+'</div>':'<div class="leer">Niemand im Netzwerk passt dazu. Andere Wörter versuchen, oder mit /netboard gezielt recherchieren.</div>');
+    profilVerdrahten(z);
+  }
+  $("hilfeForm").onsubmit=function(e_){ e_.preventDefault(); zeigen(); };
+  zeigen();
+}
+
+/* "Kennenlernen": Paare aus dem ganzen Netzwerk, ohne Event. Nur mit gemeinsamem Thema oder Branche, nie aus derselben Firma. */
+function netzKennen(){
+  var box=$("netzInhalt"), kat=S.kennenThema||null, themen=themenListe();
+  var pool=D.personen.filter(function(p){ return !kat || gehoertZu(p,kat); });
+  if(pool.length>250) pool=pool.slice().sort(function(a,b){ return wichtigkeit(b).stufe-wichtigkeit(a).stufe; }).slice(0,250);
+  var paare=[];
+  for(var i=0;i<pool.length;i++) for(var j=i+1;j<pool.length;j++){
+    var a=pool[i], b=pool[j];
+    if(norm(a.firma) && norm(a.firma)===norm(b.firma)) continue;
+    if(D.verbindungen.some(function(v){ return (v.a===a.id&&v.b===b.id)||(v.a===b.id&&v.b===a.id); })) continue;
+    var r=paar(a,b);
+    if(r.staerke<40 || !r.gruende.some(function(g){ return g.indexOf("Gemeinsame Themen")===0 || g.indexOf("Gleiche Branche")===0; })) continue;
+    paare.push({a:a,b:b,s:r.staerke+5*(wichtigkeit(a).stufe+wichtigkeit(b).stufe),st:r.staerke,gr:r.gruende});
+  }
+  paare.sort(function(x,y){ return y.s-x.s; });
+  var h='<div class="kats" id="kennKats"><button class="kat" data-kat="" aria-pressed="'+(!kat)+'">Alle</button>'+
+    themen.map(function(t){ return '<button class="kat" data-kat="'+esc(t)+'" aria-pressed="'+(kat===t)+'">'+esc(t)+'</button>'; }).join("")+'</div>'+
+    '<p class="hint erkl" style="margin:4px 0 10px">Wer sich noch nicht kennt, aber Themen oder Branche teilt. Wichtige Kontakte zuerst.</p>';
+  h+= paare.length ? '<div class="liste">'+paare.slice(0,20).map(function(x,i){
+      return '<div class="box" style="display:flex;flex-direction:column;gap:8px;box-shadow:none"><div class="paar"><b>'+esc(x.a.name)+' ↔ '+esc(x.b.name)+' <span class="mono" style="color:var(--ink-3);font-weight:500">'+x.st+'</span></b>'+
+        '<small>'+esc([x.a.position,x.a.firma].filter(Boolean).join(", "))+'<br>'+esc([x.b.position,x.b.firma].filter(Boolean).join(", "))+'</small>'+
+        '<small style="color:var(--accent-ink)">'+esc(x.gr.join(" · "))+'</small></div>'+
+        '<div class="knopfreihe"><button class="btn klein primary" data-vor="'+i+'">Vorstellen</button></div></div>';
+    }).join("")+'</div>'
+    : '<div class="leer">Keine passenden Paare gefunden. Mehr Themen bei den Personen eintragen hilft.</div>';
+  box.innerHTML=h;
+  alle("#kennKats .kat",function(b){ b.onclick=function(){ S.kennenThema=b.dataset.kat||null; netzKennen(); }; },box);
+  alle("[data-vor]",function(b){ b.onclick=function(){ var x=paare[Number(b.dataset.vor)]; vorstellen(x.a,x.b); }; },box);
+}
+function vorstellText(an,ueber,gem){
+  return "Guten Tag "+an.name.replace(/\s*\(.*?\)\s*/g,"").trim()+",\n\nich möchte Ihnen gern "+ueber.name.replace(/\s*\(.*?\)\s*/g,"").trim()+" vorstellen"+
+    (ueber.position||ueber.firma?", "+[ueber.position,ueber.firma].filter(Boolean).join(" bei "):"")+"."+
+    (gem.length?" Sie verbindet das Thema "+gem.join(" und ")+".":"")+
+    "\n\nIch glaube, ein Austausch könnte für Sie beide interessant sein. Darf ich den Kontakt herstellen?";
+}
+function vorstellen(a,b){
+  var ta=(a.tags||[]).map(norm), gem=(b.tags||[]).filter(function(t){ return ta.indexOf(norm(t))>=0; }).slice(0,2);
+  var t1=vorstellText(a,b,gem), t2=vorstellText(b,a,gem);
+  fenster("Vorstellen",
+    '<p class="hint" style="margin:0">Zwei Texte, je einer für beide. Die App verschickt nichts.</p>'+
+    '<b>An '+esc(a.name)+'</b><div class="textkarte">'+esc(t1)+'</div><button class="btn klein" id="v1">Text kopieren</button>'+
+    '<b>An '+esc(b.name)+'</b><div class="textkarte">'+esc(t2)+'</div><button class="btn klein" id="v2">Text kopieren</button>',
+    '<button class="btn primary" id="vFertig">Als vorgestellt eintragen</button>');
+  $("v1").onclick=function(){ kopieren(t1); };
+  $("v2").onclick=function(){ kopieren(t2); };
+  $("vFertig").onclick=function(){
+    var heute=ymd(new Date());
+    D.verbindungen.push({ id:uid(), eventId:null, a:a.id, b:b.id, art:"vorgestellt", zeit:new Date().toISOString() });
+    [a,b].forEach(function(p){ p.kontakte=(p.kontakte||[]).concat([{datum:heute,art:"Vorstellung",notiz:"Vorgestellt: "+(p===a?b.name:a.name)}]); });
+    speicher.sichern(D); fensterZu(); zeichnen(); toast("Als vorgestellt eingetragen.");
+  };
+}
+
+/* "Türöffner": wer bringt die meisten neuen Leute mit (Feld „Kam über“ bei der Person) */
+function netzTuer(){
+  var box=$("netzInhalt");
+  var l=D.personen.map(function(p){ return {p:p,emp:empfohlenVon(p)}; }).filter(function(x){ return x.emp.length; })
+    .sort(function(a,b){ return b.emp.length-a.emp.length; });
+  box.innerHTML='<p class="hint erkl" style="margin:0 0 10px">Wer dir neue Kontakte bringt. Eingetragen wird das bei der neuen Person unter Bearbeiten, Feld „Kam über“.</p>'+
+    (l.length?'<div class="liste">'+l.map(function(x){
+      var geschaeft=x.emp.filter(function(q){ return D.verbindungen.some(function(v){ return v.art==="geschaeft"&&(v.a===q.id||v.b===q.id); }); }).length;
+      return '<button class="karte" data-prof="'+esc(x.p.id)+'"><span class="avatar">'+esc(initialen(x.p.name))+'</span><span style="min-width:0"><b>'+esc(x.p.name)+'</b><small>hat gebracht: '+esc(x.emp.map(function(q){ return q.name; }).join(", "))+'</small>'+
+        (geschaeft?'<small style="color:var(--ok)">'+plural(geschaeft,"davon mit Geschäftskontakt","davon mit Geschäftskontakt")+'</small>':'')+'</span><span class="rechts mono">'+x.emp.length+'</span></button>';
+    }).join("")+'</div>':'<div class="leer">Noch keine Empfehlungen eingetragen.</div>');
+  profilVerdrahten(box);
+}
+
+/* Steckbrief: alles Wichtige vor einem Treffen auf einer Seite */
+function steckbrief(p,e){
+  var b=bilanz(p), w=wichtigkeit(p), k=kontaktListe(p);
+  var verb=D.verbindungen.filter(function(v){ return v.a===p.id||v.b===p.id; }).map(function(v){ return pers(v.a===p.id?v.b:v.a); });
+  var kam=p.kamUeber?pers(p.kamUeber):null;
+  var gemeinsam=[];
+  verb.concat(kam?[kam]:[]).concat(empfohlenVon(p)).concat(D.personen.filter(function(q){ return q.id!==p.id && norm(q.firma) && norm(q.firma)===norm(p.firma); }))
+    .forEach(function(q){ if(q && gemeinsam.indexOf(q)<0) gemeinsam.push(q); });
+  var themen=(p.tags||[]).slice();
+  D.einladungen.forEach(function(x){ if(x.personId===p.id && x.status==="erschienen"){ var ee=ev(x.eventId); if(ee && ee.thema && themen.indexOf(ee.thema)<0) themen.push(ee.thema); } });
+  var zeile=function(t,v){ return v?'<dt>'+t+'</dt><dd>'+v+'</dd>':''; };
+  fenster("Steckbrief",
+    '<div><b style="font-size:20px;font-family:var(--font-display)">'+esc(p.name)+'</b><div class="hint">'+esc([p.position,p.firma].filter(Boolean).join(" · "))+'</div><div class="tags" style="margin-top:6px">'+wichtigChip(p)+'</div></div>'+
+    '<dl class="kv">'+
+      zeile("Zuletzt",k[0]?esc(k[0].art+", "+seitText(k[0].datum)+(k[0].notiz?": "+k[0].notiz:"")):'noch kein Kontakt')+
+      zeile("Woher",kam?'über '+esc(kam.name):(p.gefundenUeber?'Recherche über '+esc(p.gefundenUeber):''))+
+      zeile("Bisher",b.einladungen?esc(b.teilnahmen+" von "+b.einladungen+" Einladungen dabei"):'')+
+      zeile("Ort",esc(p.ort||""))+
+    '</dl>'+
+    '<div><div class="sec-label" style="margin-top:0">Worüber reden</div>'+(themen.length?'<div class="tags">'+themen.map(function(t){ return '<span class="chip">'+esc(t)+'</span>'; }).join("")+'</div>':'<p class="hint" style="margin:0">Keine Themen hinterlegt.</p>')+
+      (k.filter(function(x){ return x.notiz && x.art!=="Event"; }).slice(0,2).map(function(x){ return '<p class="hint" style="margin:6px 0 0">'+esc(deDatum(x.datum)+": "+x.notiz)+'</p>'; }).join(""))+'</div>'+
+    '<div><div class="sec-label" style="margin-top:0">Gemeinsame Kontakte</div>'+(gemeinsam.length?gemeinsam.slice(0,6).map(function(q){ return '<div class="hint">'+esc(q.name)+(q.firma?' · '+esc(q.firma):'')+'</div>'; }).join(""):'<p class="hint" style="margin:0">Noch keine bekannt.</p>')+'</div>'+
+    (p.begruendung?'<div><div class="sec-label" style="margin-top:0">Warum wichtig</div><p style="margin:0">'+esc(p.begruendung)+'</p></div>':'')+
+    '<p class="hint" style="margin:0">Wichtigkeit: '+esc(WICHTIG[w.stufe].t+" ("+w.grund+")")+'</p>',
+    '<button class="btn" id="sbZur">Zum Profil</button><button class="btn primary" id="sbKontakt">Kontakt eintragen</button>');
+  $("sbZur").onclick=function(){ profil(p.id,e); };
+  $("sbKontakt").onclick=function(){ kontaktEintragen(p,function(){ steckbrief(p,e); }); };
 }
 
 /* ---------------- Profil ---------------- */
@@ -920,7 +1180,11 @@ function profil(id,e){
       '<div style="flex:1;min-width:0"><b style="font-size:17px">'+esc(p.name)+'</b><div class="hint">'+esc([p.position,p.firma].filter(Boolean).join(" · ")||"Position unbekannt")+'</div></div>'+
       (e?'<div class="gesamt">'+(g.wert===null?'–':g.wert)+'<small>Gesamt</small></div>':'')+'</div>';
   if(p.beispiel) h+='<p class="infobox">Ausgedachte Beispielperson zum Ausprobieren. Keine echte Person.</p>';
+  var wk=wichtigkeit(p), kam=p.kamUeber?pers(p.kamUeber):null, emp=empfohlenVon(p);
+  h+='<div class="tags" style="align-items:center">'+(wichtigChip(p)||'<span class="chip">Normal</span>')+'<span class="hint">'+esc(wk.hand?"von Hand gesetzt":"automatisch: "+wk.grund)+'</span></div>';
   h+='<dl class="kv">'+
+    (kam?'<dt>Kam über</dt><dd><a href="#" data-zu="'+esc(kam.id)+'">'+esc(kam.name)+'</a></dd>':'')+
+    (emp.length?'<dt>Hat gebracht</dt><dd>'+emp.map(function(q){ return '<a href="#" data-zu="'+esc(q.id)+'">'+esc(q.name)+'</a>'; }).join(", ")+'</dd>':'')+
     '<dt>Rolle</dt><dd>'+esc(p.rolle||"unbekannt")+'</dd>'+
     '<dt>Branche</dt><dd>'+esc(p.branche||"unbekannt")+'</dd>'+
     '<dt>Ort</dt><dd>'+esc(p.ort||"unbekannt")+'</dd>'+
@@ -959,11 +1223,18 @@ function profil(id,e){
     var o=pers(v.a===p.id?v.b:v.a); var ee=ev(v.eventId); if(!o) return "";
     return '<div class="hint">'+esc(o.name)+' · '+(v.art==="geschaeft"?'Geschäftskontakt':'vorgestellt')+(ee?' · '+esc(ee.name):'')+'</div>'; }).join("")+'</div>';
   if(p.notizen) h+='<div><div class="sec-label" style="margin-top:0">Notizen</div><p style="margin:0;white-space:pre-wrap">'+esc(p.notizen)+'</p></div>';
-  var fuss='<button class="btn" id="pBearb">Bearbeiten</button>';
+  var kl=kontaktListe(p);
+  h+='<div><div class="sec-label" style="margin-top:0">Kontakte</div>'+
+    (kl.length?kl.slice(0,5).map(function(k){ return '<div class="hint">'+esc(deDatum(k.datum)+" · "+k.art+(k.notiz?": "+k.notiz:""))+'</div>'; }).join(""):'<p class="hint" style="margin:0">Noch kein Kontakt eingetragen.</p>')+
+    '<button class="btn klein" id="pKontakt" style="margin-top:8px">Kontakt eintragen</button></div>';
+  var fuss='<button class="btn" id="pBearb">Bearbeiten</button><button class="btn" id="pSteck">Steckbrief</button>';
   if(e && x && x.status==="vorgeschlagen") fuss+='<button class="btn primary" id="pWahl">Auswählen</button>';
   if(e && x && x.status!=="vorgeschlagen" && x.status!=="aussortiert") fuss+='<button class="btn primary" id="pText">Einladungstext</button>';
   fenster("Profil",h,fuss);
   $("pBearb").onclick=function(){ personFormular(p,e); };
+  $("pSteck").onclick=function(){ steckbrief(p,e); };
+  $("pKontakt").onclick=function(){ kontaktEintragen(p,function(){ profil(id,e); }); };
+  alle("[data-zu]",function(a){ a.onclick=function(ev_){ ev_.preventDefault(); profil(a.dataset.zu,e); }; });
   if($("pWahl")) $("pWahl").onclick=function(){ statusSetzen(x,"ausgewaehlt"); speicher.sichern(D); zeichnen(); profil(id,e); toast("Ausgewählt."); };
   if($("pText")) $("pText").onclick=function(){
     fenster("Einladungstext",'<p class="hint" style="margin:0">Für '+esc(p.name)+'. Die App verschickt nichts.</p><div class="textkarte">'+esc(textFuer(p,e))+'</div>',
@@ -1069,6 +1340,12 @@ function personFormular(alt,e){
     '<div class="field"><label for="p_grund">Persönlicher Satz für die Einladung</label><input id="p_grund" value="'+esc(p.einladungsgrund||"")+'"></div>'+
     '<div class="field"><label for="p_quellen">Quellen, eine pro Zeile</label><textarea id="p_quellen" placeholder="Vorstand Kreisjägerschaft laut Website https://…">'+esc((p.quellen||[]).map(function(q){ return [q.text,q.url].filter(Boolean).join(" "); }).join("\n"))+'</textarea>'+
       '<span class="hint erkl">Ohne Quelle keine Aussage. Was nicht belegt ist, bleibt leer.</span></div>'+
+    '<div class="two"><div class="field"><label for="p_wichtig">Wichtigkeit</label><select id="p_wichtig">'+
+      '<option value="">Automatisch'+(alt?' (jetzt: '+WICHTIG[autoWichtigkeit(p).stufe].t+')':'')+'</option>'+
+      [3,2,1].map(function(n){ return '<option value="'+n+'"'+(p.wichtigkeit===n?' selected':'')+'>'+WICHTIG[n].t+'</option>'; }).join("")+'</select></div>'+
+    '<div class="field"><label for="p_kam">Kam über</label><select id="p_kam"><option value="">niemanden</option>'+
+      D.personen.filter(function(q){ return q.id!==p.id; }).sort(function(a,b){ return a.name.localeCompare(b.name,"de"); })
+        .map(function(q){ return '<option value="'+esc(q.id)+'"'+(p.kamUeber===q.id?' selected':'')+'>'+esc(q.name)+'</option>'; }).join("")+'</select></div></div>'+
     '<div class="field"><label for="p_notiz">Notizen</label><textarea id="p_notiz">'+esc(p.notizen||"")+'</textarea></div>'+
     '<p class="err" id="p_err" hidden></p>',
     '<button class="btn primary" id="pSpeichern">'+(alt?"Speichern":"Person anlegen")+'</button>'+
@@ -1086,6 +1363,8 @@ function personFormular(alt,e){
     neu.begruendung=$("p_begr").value.trim(); neu.einladungsgrund=$("p_grund").value.trim();
     neu.quellen=zeilenLinks($("p_quellen").value).map(function(l){ return {text:l.text,url:l.url}; });
     neu.notizen=$("p_notiz").value.trim();
+    neu.wichtigkeit=$("p_wichtig").value?Number($("p_wichtig").value):undefined;
+    neu.kamUeber=$("p_kam").value||undefined;
     if(!alt){ D.personen.push(neu); if(e) zurEvent(e.id,neu.id,"vorgeschlagen"); }
     speicher.sichern(D); zeichnen(); profil(neu.id,e); toast(alt?"Gespeichert.":"Person angelegt.");
   };
@@ -1433,6 +1712,12 @@ function beispielLaden(){
   zurEvent(e1.id,ps[3].id,"ausgewaehlt");
   zurEvent(e1.id,ps[7].id,"ausgewaehlt");
   [1,4,5,6,8,9].forEach(function(i){ zurEvent(e1.id,ps[i].id,"vorgeschlagen"); });
+  var vor=function(t){ return ymd(new Date(heute.getTime()-t*86400000)); };
+  ps[0].kontakte=[{datum:vor(95),art:"Treffen",notiz:"Kaffee nach dem Event, sucht Kontakt zu Krankenkassen"}];
+  ps[5].kontakte=[{datum:vor(10),art:"Anruf",notiz:"Finanzierung für neuen Standort besprochen"}];
+  ps[4].kontakte=[{datum:vor(150),art:"Nachricht",notiz:"Kennt viele Genossenschaften im Ruhrgebiet"}];
+  ps[3].kamUeber=ps[0].id; ps[5].kamUeber=ps[0].id; ps[9].kamUeber=ps[4].id;
+  ps[4].wichtigkeit=3;
   speicher.sichern(D); fensterZu(); S.sicht="start"; zeichnen(); toast("Beispiel geladen. Alle Personen sind ausgedacht.");
 }
 

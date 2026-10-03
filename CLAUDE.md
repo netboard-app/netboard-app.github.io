@@ -35,3 +35,10 @@ Hochladen: `git push` (gh-CLI unter ~/bin/gh, angemeldet als Eljas-Webstar). Kei
 
 ## Anmeldung
 Sichtschutz im Browser: Benutzername und Passwort werden als SHA-256 von `benutzername-klein:passwort` mit `ZUGANG` in index.html verglichen, gemerkt in localStorage `netboard_zugang`. Kein echter Schutz, weil der Code oeffentlich ist. Echte Anmeldung kommt mit Supabase. Zugangsdaten stehen nicht im Repo.
+
+## Netzwerk-Funktionen (03.10.2026)
+- Netzwerk hat vier Bereiche: Kontakte (Themen, Sortierung Wichtigkeit/Letzter Kontakt/Name), Wer hilft? (`helferSuchen`, Wortsuche mit Liste `VERWANDT` und `FUELLWOERTER`), Kennenlernen (`netzKennen`, Paare mit gemeinsamem Thema oder Branche, nie gleiche Firma, Knopf Vorstellen), Tueroeffner (`netzTuer`, Feld `kamUeber`).
+- Wichtigkeit: `autoWichtigkeit` aus beruf/netzwerk, wertvoll, Geschaeftskontakt, Teilnahmen, Empfehlungen; von Hand ueberschreibbar (`p.wichtigkeit` 1 bis 3).
+- Kontaktpflege: `p.kontakte` [{datum, art, notiz}] plus Events als Kontakt. Startseite "Lange nicht gemeldet": sehr wichtig nach 60, wichtig nach 120 Tagen, nur wer schon Kontakt hatte.
+- Steckbrief am Profil: zuletzt, woher, worueber reden, gemeinsame Kontakte.
+- Wer hilft? ist Wortsuche ohne KI. Wenn Treffer fehlen, zuerst `VERWANDT` erweitern. Allgemeine Silben wie "bau" oder "genossenschaft" vermeiden, sie treffen Falsches (Baumwerk, Jagdgenossenschaften).
