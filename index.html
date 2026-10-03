@@ -219,7 +219,7 @@ body.gesperrt header.kopf, body.gesperrt main, body.gesperrt .untenleiste{displa
     <button class="marke" id="markeBtn" title="Zur Startseite">Netboard</button>
     <div class="spacer"></div>
     <button class="rund" id="einstBtn" aria-label="Einstellungen">
-      <span class="avatar">IF</span>
+      <span class="avatar">NB</span>
       <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
     </button>
   </div>
@@ -265,7 +265,7 @@ var JA = ["zugesagt","erschienen","nicht_erschienen"];
 var NEIN = ["abgesagt","keine_antwort"];
 var ZIELE = ["allgemeines Networking","Neukunden","Geschäftspartner","Kooperationen","Investoren","Unternehmer","Recruiting","Branchenkontakte","Entscheider","Multiplikatoren"];
 var TEILE = [
-  {k:"nutzen", t:"Nutzen für IFBA"},
+  {k:"nutzen", t:"Nutzen für uns"},
   {k:"thema", t:"Thema"},
   {k:"beruf", t:"Beruf"},
   {k:"netzwerk", t:"Netzwerk"},
@@ -281,8 +281,8 @@ var MARKER = [
   {k:"nicht_erneut", t:"Nicht erneut einladen"},
   {k:"geschaeft", t:"Geschäftlicher Kontakt entstanden"}
 ];
-var TEXT_STANDARD = "Guten Tag {name},\n\nich melde mich im Auftrag der IFBA. Am {datum} laden wir eine kleine Runde von Unternehmern ein. Anlass: {anlass}{ort}. Thema des Abends: {thema}.\n\n{grund}\n\nWir würden uns freuen, Sie als unseren Gast zu begrüßen. Hätten Sie Interesse?";
-var THEMEN_STANDARD = ["Jagd","Pflegekasse","Fußball","Hotels","Wohnungswirtschaft","Unternehmer"];
+var TEXT_STANDARD = "Guten Tag {name},\n\nam {datum} laden wir eine kleine Runde von Unternehmern ein. Anlass: {anlass}{ort}. Thema des Abends: {thema}.\n\n{grund}\n\nWir würden uns freuen, Sie als unseren Gast zu begrüßen. Hätten Sie Interesse?";
+var THEMEN_STANDARD = ["Unternehmer","Immobilien","Finanzen","Gesundheit","Sport","Handwerk"];
 
 /* ---------------- Helfer ---------------- */
 function $(id){ return document.getElementById(id); }
@@ -561,7 +561,7 @@ function zeichneStart(){
         '<div class="zahl"><b>'+k.frei+'</b><span>'+(k.frei===1?'Platz frei':'Plätze frei')+'</span></div>'+
       '</div>'+
       (k.noch>0 ? '<p class="infobox">Bei '+Math.round(k.q*100)+' % Zusagequote ('+esc(k.quelle)+') brauchst du noch etwa <b class="mono">'+k.noch+'</b> Einladungen.</p>'
-                : (k.frei>0?'<p class="okbox">Mit den offenen Einladungen ist die Loge rechnerisch voll.</p>':'<p class="okbox">Die Loge ist voll.</p>'))+
+                : (k.frei>0?'<p class="okbox">Mit den offenen Einladungen ist die Runde rechnerisch voll.</p>':'<p class="okbox">Die Runde ist voll.</p>'))+
       '<div class="two">'+
         '<button class="btn primary" data-geh="kandidaten">Kandidaten finden</button>'+
         '<button class="btn" data-geh="runde">Gästeliste analysieren</button>'+
@@ -1110,7 +1110,7 @@ function helferSuchen(text){
 }
 function netzHilfe(){
   var box=$("netzInhalt");
-  box.innerHTML='<form id="hilfeForm" style="display:flex;gap:8px;margin-bottom:10px"><div class="field" style="flex:1"><input id="hilfeText" placeholder="z. B. Sohn besserer Fußballverein" value="'+esc(S.hilfeText||"")+'" aria-label="Anliegen"></div><button class="btn primary" type="submit">Suchen</button></form>'+
+  box.innerHTML='<form id="hilfeForm" style="display:flex;gap:8px;margin-bottom:10px"><div class="field" style="flex:1"><input id="hilfeText" placeholder="z. B. Kontakt zu einer Bank" value="'+esc(S.hilfeText||"")+'" aria-label="Anliegen"></div><button class="btn primary" type="submit">Suchen</button></form>'+
     '<p class="hint erkl" style="margin:0 0 8px">Ein paar Wörter reichen. Das Netboard sucht auch nach verwandten Begriffen.</p><div id="hilfeErg"></div>';
   function zeigen(){
     var t=$("hilfeText").value.trim(); S.hilfeText=t; var z=$("hilfeErg");
@@ -1254,8 +1254,8 @@ function profil(id,e){
       wertZeile("Thema · "+D.gewichte.thema+" %",tw.thema)+wertZeile("Beruf · "+D.gewichte.beruf+" %",tw.beruf)+
       wertZeile("Netzwerk · "+D.gewichte.netzwerk+" %",tw.netzwerk)+wertZeile("Runde · "+D.gewichte.runde+" %",tw.runde)+
       wertZeile("Region · "+D.gewichte.region+" %",tw.region)+wertZeile("Zusagen · "+D.gewichte.historie+" %",tw.historie)+
-      wertZeile("Nutzen IFBA · "+D.gewichte.nutzen+" %",tw.nutzen)+'</div>'+
-      (p.nutzenGrund?'<p class="hint" style="margin:8px 0 0">Nutzen für IFBA: '+esc(p.nutzenGrund)+'</p>':'')+
+      wertZeile("Nutzen für uns · "+D.gewichte.nutzen+" %",tw.nutzen)+'</div>'+
+      (p.nutzenGrund?'<p class="hint" style="margin:8px 0 0">Nutzen für uns: '+esc(p.nutzenGrund)+'</p>':'')+
       '<p class="hint" style="margin:8px 0 0">Runde: '+esc(tw.rundeGrund)+'<br>Zusagen: '+esc(tw.historieText)+'<br>Unbekannte Werte zählen nicht mit, die übrigen werden nach Gewicht verrechnet.</p></div>';
   }
   h+='<div><div class="sec-label" style="margin-top:0">Warum interessant</div><p style="margin:0">'+(p.begruendung?esc(p.begruendung):'<span class="hint">Noch keine Begründung.</span>')+'</p></div>';
@@ -1343,12 +1343,12 @@ function eventFormular(alt){
   fenster(alt?"Event bearbeiten":"Neues Event",
     '<div class="schritte"><span id="sk1">1 Das Wichtigste</span><span id="sk2">2 Details</span></div>'+
     '<div id="s1" style="display:flex;flex-direction:column;gap:12px">'+
-      '<div class="field"><label for="f_name">Eventname</label><input id="f_name" value="'+esc(e.name||"")+'" placeholder="Netzwerkabend Jagd" autocomplete="off"></div>'+
-      '<div class="two"><div class="field"><label for="f_spiel">Anlass</label><input id="f_spiel" value="'+esc(e.spiel||"")+'" placeholder="BVB-Spiel, Golfturnier, Abendessen" autocomplete="off"></div>'+
-        '<div class="field"><label for="f_ort">Ort</label><input id="f_ort" value="'+esc(e.ort||"")+'" placeholder="BVB-Loge Dortmund"></div></div>'+
+      '<div class="field"><label for="f_name">Eventname</label><input id="f_name" value="'+esc(e.name||"")+'" placeholder="Netzwerkabend Immobilien" autocomplete="off"></div>'+
+      '<div class="two"><div class="field"><label for="f_spiel">Anlass</label><input id="f_spiel" value="'+esc(e.spiel||"")+'" placeholder="Abendessen, Golfturnier, Sportevent" autocomplete="off"></div>'+
+        '<div class="field"><label for="f_ort">Ort</label><input id="f_ort" value="'+esc(e.ort||"")+'" placeholder="Restaurant, Hotel, Loge"></div></div>'+
       '<div class="two"><div class="field"><label for="f_datum">Datum</label><input id="f_datum" type="date" class="mono" value="'+esc(e.datum||"")+'"></div>'+
         '<div class="field"><label for="f_zeit">Uhrzeit</label><input id="f_zeit" type="time" class="mono" value="'+esc(e.uhrzeit||"")+'"></div></div>'+
-      '<div class="field"><label for="f_thema">Thema</label><input id="f_thema" value="'+esc(e.thema||"")+'" placeholder="Jagd" autocomplete="off"></div>'+
+      '<div class="field"><label for="f_thema">Thema</label><input id="f_thema" value="'+esc(e.thema||"")+'" placeholder="z. B. Immobilien" autocomplete="off"></div>'+
       '<div class="field"><label>Wen suchen wir? Antippen, mehrere möglich</label><div class="kats" id="typChips" style="flex-wrap:wrap"></div>'+
         '<span class="hint erkl">Die Recherche sucht gezielt nach diesen Typen. Eigene Einträge gehen über das Feld am Ende.</span></div>'+
       '<div class="two"><div class="field"><label for="f_plaetze">Plätze</label><input id="f_plaetze" type="number" min="1" class="mono" value="'+esc(e.plaetze||"")+'"></div>'+
@@ -1358,10 +1358,10 @@ function eventFormular(alt){
     '<div id="s2" hidden style="display:flex;flex-direction:column;gap:12px">'+
       '<div class="field"><label>Zielgruppe: Positionen</label><div class="kats" id="posChips" style="flex-wrap:wrap"></div></div>'+
       '<div class="field"><label for="f_ma">Firmengröße mindestens</label><select id="f_ma">'+MINDEST_MA.map(function(m){ return '<option'+((e.mindestMA||"egal")===m?' selected':'')+'>'+m+'</option>'; }).join("")+'</select></div>'+
-      '<div class="field"><label for="f_stich">Weitere Stichworte</label><input id="f_stich" value="'+esc((e.stichworte||[]).join(", "))+'" placeholder="z. B. Revier, Drückjagd, Hubertusmesse" autocomplete="off">'+
+      '<div class="field"><label for="f_stich">Weitere Stichworte</label><input id="f_stich" value="'+esc((e.stichworte||[]).join(", "))+'" placeholder="z. B. Neubau, Gewerbe, Finanzierung" autocomplete="off">'+
         '<span class="hint erkl">Mit Komma getrennt. Begriffe, nach denen zusätzlich gesucht wird.</span></div>'+
       '<div class="field"><label>Nicht gewünscht</label><div class="kats" id="ohneChips" style="flex-wrap:wrap"></div></div>'+
-      '<div class="field"><label for="f_rollen">Gewünschte Rollen am Tisch</label><input id="f_rollen" value="'+esc((e.rollen||[]).join(", "))+'" placeholder="Jagdpächter, Verband, Jagdhandel, Forst, Bank" autocomplete="off">'+
+      '<div class="field"><label for="f_rollen">Gewünschte Rollen am Tisch</label><input id="f_rollen" value="'+esc((e.rollen||[]).join(", "))+'" placeholder="Projektentwickler, Bank, Architekt, Makler" autocomplete="off">'+
         '<span class="hint erkl">Mit Komma getrennt. Daraus erkennt die App, welche Person noch fehlt.</span></div>'+
       '<div class="field"><label for="f_branchen">Gewünschte Branchen</label><input id="f_branchen" value="'+esc(e.branchen||"")+'" autocomplete="off"></div>'+
       '<div class="field"><label for="f_ziel">Ziel des Abends</label><select id="f_ziel">'+ZIELE.map(function(z){ return '<option'+(z===e.ziel?' selected':'')+'>'+esc(z)+'</option>'; }).join("")+'</select></div>'+
@@ -1386,7 +1386,7 @@ function eventFormular(alt){
     if(!$("f_name").value.trim()) return fehler("Gib dem Event einen Namen.","f_name");
     if(!$("f_datum").value) return fehler("Wähl ein Datum.","f_datum");
     if(!$("f_thema").value.trim()) return fehler("Ohne Thema kann die Recherche nicht suchen.","f_thema");
-    if(!(Number($("f_plaetze").value)>0)) return fehler("Wie viele Plätze hat die Loge?","f_plaetze");
+    if(!(Number($("f_plaetze").value)>0)) return fehler("Wie viele Plätze hat die Runde?","f_plaetze");
     return true;
   }
   var typen=(e.typen||[]).slice(), positionen=(e.positionen||[]).slice(), ohne=(e.ohne||[]).slice();
@@ -1443,12 +1443,12 @@ function personFormular(alt,e){
       esc((p.kontaktwege||[]).map(function(k){ return k.art+" "+k.wert+(k.typ?" ("+k.typ+")":""); }).join("\n"))+'</textarea>'+
       '<span class="hint erkl">Nur dienstliche Wege. Art zuerst: Telefon, E-Mail, Kontaktformular oder Nachricht. In Klammern, wo man landet.</span></div>'+
     '<div class="field"><label for="p_profile">Profile, eins pro Zeile</label><textarea id="p_profile" placeholder="LinkedIn https://…">'+esc((p.profile||[]).map(function(l){ return (l.art?l.art+" ":"")+l.url; }).join("\n"))+'</textarea></div>'+
-    '<div class="field"><label for="p_tags">Themen</label><input id="p_tags" value="'+esc((p.tags||[]).join(", "))+'" placeholder="Jagd, Forst, Mittelstand"></div>'+
+    '<div class="field"><label for="p_tags">Themen</label><input id="p_tags" value="'+esc((p.tags||[]).join(", "))+'" placeholder="Immobilien, Finanzen, Mittelstand"></div>'+
     '<div class="sec-label" style="margin:4px 0 0">Bewertung 0 bis 100, leer heißt unbekannt</div>'+
-    '<div class="two">'+wf("thema","Thema")+wf("beruf","Beruf")+wf("netzwerk","Netzwerk")+wf("region","Region")+wf("nutzen","Nutzen für IFBA")+'</div>'+
+    '<div class="two">'+wf("thema","Thema")+wf("beruf","Beruf")+wf("netzwerk","Netzwerk")+wf("region","Region")+wf("nutzen","Nutzen für uns")+'</div>'+
     '<div class="field"><label for="p_begr">Warum interessant</label><textarea id="p_begr">'+esc(p.begruendung||"")+'</textarea></div>'+
     '<div class="field"><label for="p_grund">Persönlicher Satz für die Einladung</label><input id="p_grund" value="'+esc(p.einladungsgrund||"")+'"></div>'+
-    '<div class="field"><label for="p_quellen">Quellen, eine pro Zeile</label><textarea id="p_quellen" placeholder="Vorstand Kreisjägerschaft laut Website https://…">'+esc((p.quellen||[]).map(function(q){ return [q.text,q.url].filter(Boolean).join(" "); }).join("\n"))+'</textarea>'+
+    '<div class="field"><label for="p_quellen">Quellen, eine pro Zeile</label><textarea id="p_quellen" placeholder="Vorstand laut Firmenwebsite https://…">'+esc((p.quellen||[]).map(function(q){ return [q.text,q.url].filter(Boolean).join(" "); }).join("\n"))+'</textarea>'+
       '<span class="hint erkl">Ohne Quelle keine Aussage. Was nicht belegt ist, bleibt leer.</span></div>'+
     '<div class="two"><div class="field"><label for="p_wichtig">Wichtigkeit</label><select id="p_wichtig">'+
       '<option value="">Automatisch'+(alt?' (jetzt: '+WICHTIG[autoWichtigkeit(p).stufe].t+')':'')+'</option>'+
@@ -1554,7 +1554,7 @@ function uebernehmen(liste_,e,urls,herkunft){
 
 /* ---------------- Suche über Claude ----------------
    Die App fragt Claude mit Websuche, in Runden zu je 10 Personen. Der Schlüssel liegt nur in diesem Browser.
-   Für den Einsatz bei IFBA gehört der Aufruf auf einen Server (Supabase-Funktion), damit der Schlüssel nicht im Browser steht. */
+   Für den echten Einsatz gehört der Aufruf auf einen Server (Supabase-Funktion), damit der Schlüssel nicht im Browser steht. */
 var MODELLE=[
   {id:"claude-opus-5-5", t:"Claude Opus 5.5 (gründlicher)", ein:4, aus:20},
   {id:"claude-sonnet-5-5", t:"Claude Sonnet 5.5 (günstiger)", ein:2, aus:10}
@@ -1588,7 +1588,7 @@ var WERKZEUG={
 
 function systemText(){
   return [
-    "Du recherchierst Gäste für Business-Netzwerkabende der Firma IFBA, zum Beispiel in der BVB-Loge in Dortmund. Anlass, Ort und Region stehen im Auftrag.",
+    "Du recherchierst Gäste für Business-Netzwerkabende. Anlass, Ort und Region stehen im Auftrag.",
     "Ziel sind wertvolle Kontakte: Entscheider und Multiplikatoren, die öffentlich nachweisbar mit dem Thema des Abends verbunden sind und beruflich Gewicht haben (Inhaber, Geschäftsführer, Vorstand, leitende Position, Ämter in Verbänden oder Vereinen). Ein Ticket ist rund 2.000 Euro wert, also keine Zufallsfunde, keine reinen Privatpersonen, keine Profile ohne erkennbare Reichweite.",
     "Suche über die Websuche, auch gezielt mit site:linkedin.com/in, site:instagram.com, Firmenwebsites, Verbandsseiten und Lokalpresse.",
     "Regeln:",
@@ -1646,7 +1646,7 @@ async function suchRunde(e,anzahl,schonDa,signal,meldung,kosten){
     var d=await anfrage({ model:m.id, max_tokens:16000, thinking:{type:"adaptive"}, output_config:{effort:"medium"}, fallbacks:"default",
       system:systemText(), tool_choice:{type:"auto"},
       tools:[{ type:"web_search_20260209", name:"web_search", max_uses:10,
-        user_location:{ type:"approximate", city:"Dortmund", region:"Nordrhein-Westfalen", country:"DE", timezone:"Europe/Berlin" } }, WERKZEUG],
+        user_location:{ type:"approximate", country:"DE", timezone:"Europe/Berlin" } }, WERKZEUG],
       messages:nachrichten }, signal);
     var u=d.usage||{};
     kosten.ein+=(u.input_tokens||0)+(u.cache_read_input_tokens||0)+(u.cache_creation_input_tokens||0);
@@ -1825,24 +1825,24 @@ function beispielLaden(){
   var heute=new Date();
   var vorher=ymd(new Date(heute.getTime()-35*86400000)), bald=ymd(new Date(heute.getTime()+5*86400000));
   var e0={ id:uid(), name:"Beispiel: Mittelstand", spiel:"Golfturnier", datum:vorher, uhrzeit:"14:00", thema:"Unternehmer", plaetze:12, quote:10, rollen:[], ziel:"Unternehmer", ort:"Golfclub Beispielstadt", region:"NRW, Schwerpunkt Ruhrgebiet", einladungstext:TEXT_STANDARD, beispiel:true };
-  var e1={ id:uid(), name:"Beispiel: Pflegekasse", spiel:"BVB-Heimspiel", datum:bald, uhrzeit:"18:30", thema:"Pflegekasse", plaetze:14, quote:10,
-    rollen:["Pflegeunternehmer","Krankenkasse","Klinikmanagement","Health-Tech","Wohnungswirtschaft","Bank"], ziel:"Kooperationen", ort:"BVB-Loge Dortmund", region:"NRW, Schwerpunkt Ruhrgebiet", einladungstext:TEXT_STANDARD, beispiel:true };
+  var e1={ id:uid(), name:"Beispiel: Immobilien", spiel:"Abendessen", datum:bald, uhrzeit:"18:30", thema:"Immobilien", plaetze:14, quote:10,
+    rollen:["Projektentwickler","Bank","Architekt","Wohnungswirtschaft","Handwerk","Verband"], ziel:"Kooperationen", ort:"Restaurant Beispielstadt", region:"NRW, Schwerpunkt Ruhrgebiet", einladungstext:TEXT_STANDARD, beispiel:true };
   function P(name,pos,firma,rolle,branche,ort,tags,w,begr,grund){
     return { id:uid(), name:name+" (Beispiel)", position:pos, firma:firma, rolle:rolle, branche:branche, ort:ort, tags:tags,
       werte:{thema:w[0],beruf:w[1],netzwerk:w[2],region:w[3]}, begruendung:begr, einladungsgrund:grund, beispiel:true,
       quellen:[{text:"Ausgedachte Quelle, nur zur Ansicht",url:""}], profile:[], herkunft:"Beispiel", angelegt:new Date().toISOString() };
   }
   var ps=[
-    P("Anna Muster","Geschäftsführerin","Musterpflege GmbH","Pflegeunternehmer","Pflege","Dortmund",["Pflege","Personal","Digitalisierung"],[94,85,72,100],"Führt einen ambulanten Pflegedienst mit mehreren Standorten. Direkter Bezug zum Abendthema.","Sie führen einen der größeren Pflegedienste der Region, das Thema des Abends betrifft Sie direkt."),
-    P("Bernd Beispiel","Bereichsleiter Pflege","Beispiel-Krankenkasse","Krankenkasse","Versicherung","Bochum",["Pflege","Prävention"],[90,80,85,90],"Verantwortet den Bereich Pflegeleistungen. Sitzt auf der anderen Seite des Antrags.",""),
-    P("Clara Probe","Kaufmännische Direktorin","Probe-Klinikum","Klinikmanagement","Krankenhaus","Hamm",["Entlassmanagement","Pflege"],[78,88,80,95],"Klinik mit Entlassmanagement, Schnittstelle zur häuslichen Pflege.",""),
-    P("David Test","Gründer","Testcare Software","Health-Tech","Software","Essen",["Digitalisierung","Pflege"],[70,75,65,85],"Software für Pflegedienste. Sucht Kontakt zu Kassen und Kliniken.",""),
-    P("Eva Vorlage","Vorstand","Wohnbau Vorlage eG","Wohnungswirtschaft","Wohnungsbau","Dortmund",["Barrierefreiheit","Senioren"],[72,82,78,100],"Genossenschaft mit vielen älteren Mietern. Muss Umbauten ohnehin zustimmen.",""),
+    P("Anna Muster","Geschäftsführerin","Muster Projektbau GmbH","Projektentwickler","Immobilien","Dortmund",["Immobilien","Neubau","Mittelstand"],[94,85,72,100],"Entwickelt Wohn- und Gewerbeprojekte in der Region. Direkter Bezug zum Abendthema.","Sie entwickeln einige der größeren Projekte der Region, das Thema des Abends betrifft Sie direkt."),
+    P("Bernd Beispiel","Bereichsleiter Immobilienfinanzierung","Beispiel-Bank","Bank","Finanzen","Bochum",["Immobilien","Finanzierung"],[90,80,85,90],"Verantwortet die Finanzierung gewerblicher Bauprojekte.",""),
+    P("Clara Probe","Inhaberin","Probe Architekten","Architekt","Architektur","Essen",["Neubau","Sanierung"],[78,88,80,95],"Architekturbüro mit Schwerpunkt Wohnungsbau und Sanierung.",""),
+    P("David Test","Gründer","Testbau Software","Software","Software","Essen",["Digitalisierung","Immobilien"],[70,75,65,85],"Software für Hausverwaltungen. Sucht Kontakt zu Bestandshaltern.",""),
+    P("Eva Vorlage","Vorstand","Wohnbau Vorlage eG","Wohnungswirtschaft","Wohnungsbau","Dortmund",["Immobilien","Sanierung"],[72,82,78,100],"Genossenschaft mit großem Bestand. Plant mehrere Sanierungen.",""),
     P("Frank Fiktiv","Firmenkundenbetreuer","Fiktiv-Sparkasse","Bank","Finanzen","Unna",["Mittelstand","Finanzierung"],[40,80,90,95],"Betreut Mittelständler in der Region. Thematisch fern, aber starker Vermittler.",""),
-    P("Gerd Erfunden","Inhaber","Erfunden Sanitätshaus","Pflegeunternehmer","Hilfsmittel","Lünen",["Hilfsmittel","Pflege"],[85,70,null,95],"Sanitätshaus mit Hilfsmitteln für zu Hause. Netzwerk nicht belegt, deshalb unbekannt.",""),
-    P("Hanna Platzhalter","Geschäftsführerin","Platzhalter Pflegeheime","Pflegeunternehmer","Pflege","Münster",["Pflege","Personal"],[88,82,70,60],"Betreibt stationäre Einrichtungen, ergänzt die ambulante Sicht.",""),
-    P("Ingo Annahme","Leiter Sozialdienst","Annahme-Reha","Klinikmanagement","Reha","Bad Sassendorf",["Entlassmanagement","Reha"],[75,65,55,70],"Reha-Klinik mit Überleitung in die häusliche Versorgung.",""),
-    P("Jana Muster","Referentin","Beispiel-Landesverband Pflege","Verband","Verband","Düsseldorf",["Pflege","Politik"],[86,70,88,50],"Verbandsarbeit, kennt viele Träger. Klassische Multiplikatorin.","")
+    P("Gerd Erfunden","Inhaber","Erfunden Bau GmbH","Handwerk","Bau","Lünen",["Neubau","Handwerk"],[85,70,null,95],"Bauunternehmen mit eigenem Team. Netzwerk nicht belegt, deshalb unbekannt.",""),
+    P("Hanna Platzhalter","Geschäftsführerin","Platzhalter Immobilien","Makler","Immobilien","Münster",["Immobilien","Gewerbe"],[88,82,70,60],"Gewerbemaklerin, ergänzt die Sicht der Entwickler.",""),
+    P("Ingo Annahme","Leiter Facility Management","Annahme Gruppe","Wohnungswirtschaft","Immobilien","Hamm",["Bestand","Energie"],[75,65,55,70],"Verwaltet einen großen Gewerbebestand.",""),
+    P("Jana Muster","Referentin","Beispiel-Landesverband Wohnen","Verband","Verband","Düsseldorf",["Immobilien","Politik"],[86,70,88,50],"Verbandsarbeit, kennt viele Bestandshalter. Klassische Multiplikatorin.","")
   ];
   D.events.push(e0,e1); ps.forEach(function(p){ D.personen.push(p); });
   // Vergangenes Event mit Ergebnissen, damit Verlauf und Quote etwas zeigen
