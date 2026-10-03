@@ -151,6 +151,11 @@ hr.sep{border:0;border-top:1px solid var(--line-soft);margin:4px 0;width:100%}
 .zahl span{font-size:12px;color:var(--ink-3)}
 .textkarte{background:var(--surface-2);border:1px solid var(--line);border-radius:9px;padding:12px;font-size:14px;white-space:pre-wrap;overflow-wrap:anywhere}
 .quelle{font-size:13px;overflow-wrap:anywhere}
+.kws{display:flex;flex-direction:column;gap:6px}
+.kw{display:flex;align-items:center;gap:10px;flex-wrap:wrap;border:1px solid var(--line);border-radius:9px;padding:6px 6px 6px 12px;background:var(--surface-2);min-height:44px}
+.kw-art{font-size:12px;color:var(--ink-3);min-width:110px}
+.kw-wert{flex:1;min-width:0;font-weight:600;overflow-wrap:anywhere;font-variant-numeric:tabular-nums}
+.kw-wert a{color:var(--accent-ink);text-decoration:none}
 /* Themen im Netzwerk */
 .kats{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;margin-bottom:6px;scrollbar-width:none}
 .kats::-webkit-scrollbar{display:none}
@@ -617,6 +622,35 @@ function profilLinks(p){
       (l.geprueft===false?'<span class="chip warn" title="Link stand nicht in den Suchergebnissen">unbestätigt</span>':'');
   }).join("")+'</div>';
 }
+/* ---------------- Kontaktwege ----------------
+   Nur dienstliche Wege aus öffentlichen Quellen: Telefon, E-Mail, Kontaktformular, Nachricht über ein Profil.
+   typ sagt, wo man landet: direkt, Sekretariat, Zentrale, Geschäftsstelle. */
+var KW_ARTEN=["Telefon","E-Mail","Kontaktformular","Nachricht"];
+function erreichbar(p){ return (p.kontaktwege||[]).some(function(k){ return k.wert; }); }
+function telLink(w){ var d=String(w).replace(/[^\d+]/g,""); if(d.indexOf("00")===0) d="+"+d.slice(2); else if(d.charAt(0)==="0") d="+49"+d.slice(1); return "tel:"+d; }
+function kwZeile(k){
+  var art=k.art||"Telefon", typ=k.typ?' · '+esc(k.typ):'';
+  var wert;
+  if(art==="Telefon") wert='<a href="'+esc(telLink(k.wert))+'" class="mono">'+esc(k.wert)+'</a>';
+  else if(art==="E-Mail") wert='<a href="mailto:'+esc(k.wert)+'">'+esc(k.wert)+'</a>';
+  else wert='<a href="'+esc(k.wert)+'" target="_blank" rel="noopener">öffnen</a>';
+  return '<div class="kw"><span class="kw-art">'+esc(art)+typ+'</span><span class="kw-wert">'+wert+'</span>'+
+    ((art==="Telefon"||art==="E-Mail")?'<button class="btn ghost klein" data-kopie-kw="'+esc(k.wert)+'">Kopieren</button>':'')+'</div>';
+}
+function kontaktwegeHtml(p){
+  var l=(p.kontaktwege||[]).filter(function(k){ return k.wert; });
+  if(!l.length) return '<p class="warnbox">Noch kein Kontaktweg gefunden. Ohne Telefon oder E-Mail ist die Person schwer einzuladen.</p>';
+  return '<div class="kws">'+l.map(kwZeile).join("")+'</div>'+
+    (l.some(function(k){ return k.art==="E-Mail"; })?'<p class="hint erkl" style="margin:6px 0 0">E-Mail nur nach einem ersten Kontakt. Werbemails an Fremde sind auch zwischen Firmen unzulässig. Erst anrufen.</p>':'');
+}
+function kwChip(p){
+  var l=(p.kontaktwege||[]).filter(function(k){ return k.wert; });
+  if(!l.length) return '<span class="chip warn">kein Kontaktweg</span>';
+  var arten=[]; l.forEach(function(k){ if(arten.indexOf(k.art)<0) arten.push(k.art); });
+  return '<span class="chip ok">erreichbar: '+esc(arten.join(", "))+'</span>';
+}
+function kopierKnoepfe(box){ alle("[data-kopie-kw]",function(b){ b.onclick=function(ev_){ ev_.stopPropagation(); kopieren(b.dataset.kopieKw); }; },box); }
+
 function kandKarte(p,e,x){
   var tw=teilwerte(p,e), g=gesamt(tw);
   var knoepfe;
@@ -630,8 +664,9 @@ function kandKarte(p,e,x){
       '<div class="gesamt">'+(g.wert===null?'–':g.wert)+'<small>Passung</small></div></div>'+
     '<div class="balken" style="height:6px;border-radius:3px;margin:0" title="Gesamtpassung, Einzelwerte im Profil"><i style="width:'+(g.wert||0)+'%"></i></div>'+
     (p.begruendung?'<p class="warum"><b>Warum interessant:</b> '+esc(p.begruendung)+'</p>':'<p class="warum hint">Noch keine Begründung hinterlegt.</p>')+
-    '<div class="tags" style="align-items:center">'+(p.gefundenUeber?'<span class="chip akz">über '+esc(p.gefundenUeber)+'</span>':'')+
+    '<div class="tags" style="align-items:center">'+kwChip(p)+(p.gefundenUeber?'<span class="chip akz">über '+esc(p.gefundenUeber)+'</span>':'')+
       ((p.quellen||[]).length?'<span class="hint">'+plural(p.quellen.length,"Quelle","Quellen")+'</span>':'<span class="chip warn">Keine Quelle</span>')+'</div>'+
+    ((p.kontaktwege||[]).filter(function(k){ return k.wert; }).slice(0,1).map(kwZeile).join(""))+
     profilLinks(p)+
     '<div class="knopfreihe" style="align-items:center">'+knoepfe+'</div></div>';
 }
@@ -641,7 +676,7 @@ function tabKandidaten(e){
   var grp={ vorschlaege:xs.filter(function(x){ return x.status==="vorgeschlagen"; }),
             gewaehlt:xs.filter(function(x){ return x.status!=="vorgeschlagen" && x.status!=="aussortiert"; }),
             aussortiert:xs.filter(function(x){ return x.status==="aussortiert"; }) };
-  var sicht=grp[S.filter]||grp.vorschlaege;
+  var sicht=(grp[S.filter]||grp.vorschlaege).filter(function(x){ var p=pers(x.personId); return !S.nurErreichbar || (p && erreichbar(p)); });
   var reihe=sicht.map(function(x){ var p=pers(x.personId); return p?{p:p,x:x,g:gesamt(teilwerte(p,e)).wert}:null; })
     .filter(Boolean).sort(function(a,b){ return (b.g===null?-1:b.g)-(a.g===null?-1:a.g); });
   var h='<div class="knopfreihe" style="margin-bottom:12px">'+
@@ -653,10 +688,13 @@ function tabKandidaten(e){
     '<div class="modus" id="filter" style="margin-bottom:12px">'+
       '<button data-f="vorschlaege">Vorschläge '+grp.vorschlaege.length+'</button>'+
       '<button data-f="gewaehlt">In der Runde '+grp.gewaehlt.length+'</button>'+
-      '<button data-f="aussortiert">Aussortiert '+grp.aussortiert.length+'</button></div>';
+      '<button data-f="aussortiert">Aussortiert '+grp.aussortiert.length+'</button></div>'+
+    '<label class="check" style="margin:-4px 0 12px;padding:9px 12px"><input type="checkbox" id="nurErr"'+(S.nurErreichbar?' checked':'')+'><span><b>Nur erreichbare</b><br>Mit Telefon, E-Mail oder Kontaktformular</span></label>';
   h+= reihe.length ? '<div class="liste">'+reihe.map(function(r){ return kandKarte(r.p,e,r.x); }).join("")+'</div>'
     : '<div class="leer">'+(S.filter==="vorschlaege"?'Keine offenen Vorschläge. Importiere eine Recherche oder leg Personen von Hand an.':'Hier ist noch niemand.')+'</div>';
   var box=$("tabInhalt"); box.innerHTML=h;
+  $("nurErr").onchange=function(){ S.nurErreichbar=this.checked; zeichneEvent(); };
+  kopierKnoepfe(box);
   alle("#filter button",function(b){ b.setAttribute("aria-pressed",String(b.dataset.f===S.filter)); b.onclick=function(){ S.filter=b.dataset.f; zeichneEvent(); }; },box);
   $("importBtn").onclick=function(){ importFenster(e); };
   $("sucheBtn").onclick=function(){ sucheFenster(e); };
@@ -942,7 +980,7 @@ function kontaktEintragen(p,danach){
 
 function personKarte(p){
   var b=bilanz(p), k=letzterKontakt(p);
-  var marken=[wichtigChip(p), b.wertvoll?'<span class="chip ok">wertvoll</span>':'', b.nichtErneut?'<span class="chip bad">nicht erneut</span>':''].join("");
+  var marken=[wichtigChip(p), erreichbar(p)?'<span class="chip ok">erreichbar</span>':'', b.wertvoll?'<span class="chip ok">wertvoll</span>':'', b.nichtErneut?'<span class="chip bad">nicht erneut</span>':''].join("");
   return '<button class="karte" data-prof="'+esc(p.id)+'"><span class="avatar">'+esc(initialen(p.name))+'</span><span style="min-width:0"><b>'+esc(p.name)+'</b><small>'+esc([p.position,p.firma].filter(Boolean).join(" · "))+'</small>'+(marken?'<span class="tags" style="margin-top:4px">'+marken+'</span>':'')+'</span>'+
     '<span class="rechts" style="white-space:nowrap">'+(k?'<small>'+esc(seitText(k.datum))+'</small>':(b.einladungen?b.teilnahmen+' von '+b.einladungen+'<br><small>dabei</small>':'<span class="chip">neu</span>'))+'</span></button>';
 }
@@ -1161,6 +1199,7 @@ function steckbrief(p,e){
       zeile("Bisher",b.einladungen?esc(b.teilnahmen+" von "+b.einladungen+" Einladungen dabei"):'')+
       zeile("Ort",esc(p.ort||""))+
     '</dl>'+
+    '<div><div class="sec-label" style="margin-top:0">Erreichbar</div>'+kontaktwegeHtml(p)+'</div>'+
     '<div><div class="sec-label" style="margin-top:0">Worüber reden</div>'+(themen.length?'<div class="tags">'+themen.map(function(t){ return '<span class="chip">'+esc(t)+'</span>'; }).join("")+'</div>':'<p class="hint" style="margin:0">Keine Themen hinterlegt.</p>')+
       (k.filter(function(x){ return x.notiz && x.art!=="Event"; }).slice(0,2).map(function(x){ return '<p class="hint" style="margin:6px 0 0">'+esc(deDatum(x.datum)+": "+x.notiz)+'</p>'; }).join(""))+'</div>'+
     '<div><div class="sec-label" style="margin-top:0">Gemeinsame Kontakte</div>'+(gemeinsam.length?gemeinsam.slice(0,6).map(function(q){ return '<div class="hint">'+esc(q.name)+(q.firma?' · '+esc(q.firma):'')+'</div>'; }).join(""):'<p class="hint" style="margin:0">Noch keine bekannt.</p>')+'</div>'+
@@ -1168,6 +1207,7 @@ function steckbrief(p,e){
     '<p class="hint" style="margin:0">Wichtigkeit: '+esc(WICHTIG[w.stufe].t+" ("+w.grund+")")+'</p>',
     '<button class="btn" id="sbZur">Zum Profil</button><button class="btn primary" id="sbKontakt">Kontakt eintragen</button>');
   $("sbZur").onclick=function(){ profil(p.id,e); };
+  kopierKnoepfe(document.querySelector(".panel-body"));
   $("sbKontakt").onclick=function(){ kontaktEintragen(p,function(){ steckbrief(p,e); }); };
 }
 
@@ -1182,6 +1222,7 @@ function profil(id,e){
   if(p.beispiel) h+='<p class="infobox">Ausgedachte Beispielperson zum Ausprobieren. Keine echte Person.</p>';
   var wk=wichtigkeit(p), kam=p.kamUeber?pers(p.kamUeber):null, emp=empfohlenVon(p);
   h+='<div class="tags" style="align-items:center">'+(wichtigChip(p)||'<span class="chip">Normal</span>')+'<span class="hint">'+esc(wk.hand?"von Hand gesetzt":"automatisch: "+wk.grund)+'</span></div>';
+  h+='<div><div class="sec-label" style="margin-top:0">So erreichst du '+esc(p.name.split(" ")[0]==="Dr."?p.name:p.name.split(" ")[0])+'</div>'+kontaktwegeHtml(p)+'</div>';
   h+='<dl class="kv">'+
     (kam?'<dt>Kam über</dt><dd><a href="#" data-zu="'+esc(kam.id)+'">'+esc(kam.name)+'</a></dd>':'')+
     (emp.length?'<dt>Hat gebracht</dt><dd>'+emp.map(function(q){ return '<a href="#" data-zu="'+esc(q.id)+'">'+esc(q.name)+'</a>'; }).join(", ")+'</dd>':'')+
@@ -1233,6 +1274,7 @@ function profil(id,e){
   fenster("Profil",h,fuss);
   $("pBearb").onclick=function(){ personFormular(p,e); };
   $("pSteck").onclick=function(){ steckbrief(p,e); };
+  kopierKnoepfe(document.querySelector(".panel-body"));
   $("pKontakt").onclick=function(){ kontaktEintragen(p,function(){ profil(id,e); }); };
   alle("[data-zu]",function(a){ a.onclick=function(ev_){ ev_.preventDefault(); profil(a.dataset.zu,e); }; });
   if($("pWahl")) $("pWahl").onclick=function(){ statusSetzen(x,"ausgewaehlt"); speicher.sichern(D); zeichnen(); profil(id,e); toast("Ausgewählt."); };
@@ -1332,6 +1374,9 @@ function personFormular(alt,e){
       '<div class="field"><label for="p_branche">Branche</label><input id="p_branche" value="'+esc(p.branche||"")+'"></div></div>'+
     '<div class="two"><div class="field"><label for="p_ort">Ort</label><input id="p_ort" value="'+esc(p.ort||"")+'"></div>'+
       '<div class="field"><label for="p_web">Website</label><input id="p_web" type="url" value="'+esc(p.website||"")+'"></div></div>'+
+    '<div class="field"><label for="p_kw">Kontaktwege, einer pro Zeile</label><textarea id="p_kw" placeholder="Telefon 0231 123456 (Zentrale)&#10;E-Mail info@firma.de (Geschäftsstelle)">'+
+      esc((p.kontaktwege||[]).map(function(k){ return k.art+" "+k.wert+(k.typ?" ("+k.typ+")":""); }).join("\n"))+'</textarea>'+
+      '<span class="hint erkl">Nur dienstliche Wege. Art zuerst: Telefon, E-Mail, Kontaktformular oder Nachricht. In Klammern, wo man landet.</span></div>'+
     '<div class="field"><label for="p_profile">Profile, eins pro Zeile</label><textarea id="p_profile" placeholder="LinkedIn https://…">'+esc((p.profile||[]).map(function(l){ return (l.art?l.art+" ":"")+l.url; }).join("\n"))+'</textarea></div>'+
     '<div class="field"><label for="p_tags">Themen</label><input id="p_tags" value="'+esc((p.tags||[]).join(", "))+'" placeholder="Jagd, Forst, Mittelstand"></div>'+
     '<div class="sec-label" style="margin:4px 0 0">Bewertung 0 bis 100, leer heißt unbekannt</div>'+
@@ -1363,6 +1408,15 @@ function personFormular(alt,e){
     neu.begruendung=$("p_begr").value.trim(); neu.einladungsgrund=$("p_grund").value.trim();
     neu.quellen=zeilenLinks($("p_quellen").value).map(function(l){ return {text:l.text,url:l.url}; });
     neu.notizen=$("p_notiz").value.trim();
+    var alteKw=neu.kontaktwege||[];
+    neu.kontaktwege=$("p_kw").value.split("\n").map(function(z){
+      z=z.trim(); if(!z) return null;
+      var m=z.match(/^(Telefon|Tel\.?|E-Mail|Email|Mail|Kontaktformular|Formular|Nachricht)\s+(.+?)(?:\s*\(([^)]*)\))?$/i);
+      var art=m?m[1]:"Telefon", wert=m?m[2]:z, typ=m?(m[3]||""):"";
+      art=/^tel/i.test(art)?"Telefon":(/mail/i.test(art)?"E-Mail":(/formular/i.test(art)?"Kontaktformular":"Nachricht"));
+      var alt_=alteKw.filter(function(k){ return k.wert===wert; })[0];
+      return {art:art, wert:wert.trim(), typ:typ.trim(), quelle:alt_?alt_.quelle:""};
+    }).filter(Boolean);
     neu.wichtigkeit=$("p_wichtig").value?Number($("p_wichtig").value):undefined;
     neu.kamUeber=$("p_kam").value||undefined;
     if(!alt){ D.personen.push(neu); if(e) zurEvent(e.id,neu.id,"vorgeschlagen"); }
@@ -1420,6 +1474,7 @@ function uebernehmen(liste_,e,urls,herkunft){
     var p=vorh||{ id:uid(), angelegt:new Date().toISOString(), herkunft:herkunft };
     ["name","position","firma","branche","ort","website","rolle","begruendung","einladungsgrund","gefundenUeber"].forEach(function(k){ if(r[k]!==undefined&&r[k]!==null&&r[k]!=="") p[k]=String(r[k]); });
     if(Array.isArray(r.tags)) p.tags=r.tags.map(String);
+    if(Array.isArray(r.kontaktwege)) p.kontaktwege=r.kontaktwege.filter(function(k){ return k&&k.wert; }).map(function(k){ return {art:k.art||"Telefon",wert:String(k.wert),typ:k.typ||"",quelle:k.quelle||""}; });
     if(Array.isArray(r.profile)) p.profile=r.profile.filter(function(l){ return l&&l.url; }).map(function(l){ return {art:l.art||"Profil",url:l.url,geprueft:pruef(l.url)}; });
     if(Array.isArray(r.quellen)) p.quellen=r.quellen.filter(function(q){ return q&&(q.text||q.url); }).map(function(q){ return {text:q.text||"",url:q.url||"",geprueft:q.url?pruef(q.url):undefined}; });
     var w=r.werte||{}; p.werte={ thema:zahl(w.thema), beruf:zahl(w.beruf), netzwerk:zahl(w.netzwerk), region:zahl(w.region) };

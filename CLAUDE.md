@@ -42,3 +42,4 @@ Sichtschutz im Browser: Benutzername und Passwort werden als SHA-256 von `benutz
 - Kontaktpflege: `p.kontakte` [{datum, art, notiz}] plus Events als Kontakt. Startseite "Lange nicht gemeldet": sehr wichtig nach 60, wichtig nach 120 Tagen, nur wer schon Kontakt hatte.
 - Steckbrief am Profil: zuletzt, woher, worueber reden, gemeinsame Kontakte.
 - Wer hilft? ist Wortsuche ohne KI. Wenn Treffer fehlen, zuerst `VERWANDT` erweitern. Allgemeine Silben wie "bau" oder "genossenschaft" vermeiden, sie treffen Falsches (Baumwerk, Jagdgenossenschaften).
+- Kontaktwege (03.10.2026): `p.kontaktwege` [{art: Telefon|E-Mail|Kontaktformular|Nachricht, wert, typ, quelle}]. Karte zeigt "erreichbar" oder "kein Kontaktweg" und den ersten Weg, Filter "Nur erreichbare" im Kandidaten-Tab, Block "So erreichst du …" im Profil und Steckbrief. Telefon als tel:-Link plus Kopieren. Hinweis: E-Mail erst nach erstem Kontakt (UWG).
