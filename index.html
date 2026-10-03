@@ -1488,7 +1488,7 @@ function uebernehmen(liste_,e,urls,herkunft){
     ["name","position","firma","branche","ort","website","rolle","begruendung","einladungsgrund","gefundenUeber"].forEach(function(k){ if(r[k]!==undefined&&r[k]!==null&&r[k]!=="") p[k]=String(r[k]); });
     if(Array.isArray(r.tags)) p.tags=r.tags.map(String);
     if(Array.isArray(r.kontaktwege)) p.kontaktwege=r.kontaktwege.filter(function(k){ return k&&k.wert; }).map(function(k){ return {art:k.art||"Telefon",wert:String(k.wert),typ:k.typ||"",quelle:k.quelle||""}; });
-    if(Array.isArray(r.profile)) p.profile=r.profile.filter(function(l){ return l&&l.url; }).map(function(l){ return {art:l.art||"Profil",url:l.url,geprueft:pruef(l.url)}; });
+    if(Array.isArray(r.profile)) p.profile=r.profile.filter(function(l){ return l&&l.url; }).map(function(l){ return {art:l.art||"Profil",url:l.url,geprueft:l.geprueft===false?false:pruef(l.url)}; });
     if(Array.isArray(r.quellen)) p.quellen=r.quellen.filter(function(q){ return q&&(q.text||q.url); }).map(function(q){ return {text:q.text||"",url:q.url||"",geprueft:q.url?pruef(q.url):undefined}; });
     var w=r.werte||{}; p.werte={ thema:zahl(w.thema), beruf:zahl(w.beruf), netzwerk:zahl(w.netzwerk), region:zahl(w.region) };
     if(!vorh){ D.personen.push(p); neu++; } else akt++;
