@@ -1447,11 +1447,12 @@ function importFenster(e){
     '<p class="hint" style="margin:0">Datei aus der Recherche wählen oder den Inhalt einfügen. Alle Personen landen als Vorschlag in <b>'+esc(e.name)+'</b>.</p>'+
     '<div class="field"><label for="i_datei">Datei</label><input id="i_datei" type="file" accept=".json,application/json"></div>'+
     '<div class="field"><label for="i_text">Oder einfügen</label><textarea id="i_text" style="min-height:160px" class="mono" placeholder="{&quot;personen&quot;:[…]}"></textarea></div>'+
-    '<p class="err" id="i_err" hidden></p>',
+    '<p class="err" id="i_err" hidden></p>'+
+    '<p class="hint erkl" style="margin:0">Nach dem Wählen der Datei geht der Import von allein los. Beim Einfügen unten auf „Importieren“ tippen.</p>',
     '<button class="btn primary" id="iLos">Importieren</button>');
   $("i_datei").onchange=function(){
     var f=this.files[0]; if(!f) return; var r=new FileReader();
-    r.onload=function(){ $("i_text").value=r.result; }; r.readAsText(f);
+    r.onload=function(){ $("i_text").value=r.result; $("iLos").click(); }; r.readAsText(f);
   };
   $("iLos").onclick=function(){
     var roh; try{ roh=JSON.parse($("i_text").value); }catch(err){ var f=$("i_err"); f.hidden=false; f.textContent="Das ist keine gültige Recherche-Datei. Bitte die Datei unverändert einfügen."; return; }
