@@ -626,6 +626,7 @@ function profilLinks(p){
    Nur dienstliche Wege aus öffentlichen Quellen: Telefon, E-Mail, Kontaktformular, Nachricht über ein Profil.
    typ sagt, wo man landet: direkt, Sekretariat, Zentrale, Geschäftsstelle. */
 var KW_ARTEN=["Telefon","E-Mail","Kontaktformular","Nachricht"];
+function hatProfil(p,arten){ return (p.profile||[]).some(function(l){ var a=norm(l.art)+" "+norm(l.url); return arten.some(function(x){ return a.indexOf(x)>=0; }); }); }
 function erreichbar(p){ return (p.kontaktwege||[]).some(function(k){ return k.wert; }); }
 function telLink(w){ var d=String(w).replace(/[^\d+]/g,""); if(d.indexOf("00")===0) d="+"+d.slice(2); else if(d.charAt(0)==="0") d="+49"+d.slice(1); return "tel:"+d; }
 function kwZeile(k){
@@ -676,7 +677,13 @@ function tabKandidaten(e){
   var grp={ vorschlaege:xs.filter(function(x){ return x.status==="vorgeschlagen"; }),
             gewaehlt:xs.filter(function(x){ return x.status!=="vorgeschlagen" && x.status!=="aussortiert"; }),
             aussortiert:xs.filter(function(x){ return x.status==="aussortiert"; }) };
-  var sicht=(grp[S.filter]||grp.vorschlaege).filter(function(x){ var p=pers(x.personId); return !S.nurErreichbar || (p && erreichbar(p)); });
+  var sicht=(grp[S.filter]||grp.vorschlaege).filter(function(x){
+    var p=pers(x.personId); if(!p) return false;
+    if(S.nurErreichbar && !erreichbar(p)) return false;
+    if(S.nurLinkedin && !hatProfil(p,["linkedin"])) return false;
+    if(S.nurSocial && !hatProfil(p,["instagram","facebook"])) return false;
+    return true;
+  });
   var reihe=sicht.map(function(x){ var p=pers(x.personId); return p?{p:p,x:x,g:gesamt(teilwerte(p,e)).wert}:null; })
     .filter(Boolean).sort(function(a,b){ return (b.g===null?-1:b.g)-(a.g===null?-1:a.g); });
   var h='<div class="knopfreihe" style="margin-bottom:12px">'+
@@ -689,11 +696,14 @@ function tabKandidaten(e){
       '<button data-f="vorschlaege">Vorschläge '+grp.vorschlaege.length+'</button>'+
       '<button data-f="gewaehlt">In der Runde '+grp.gewaehlt.length+'</button>'+
       '<button data-f="aussortiert">Aussortiert '+grp.aussortiert.length+'</button></div>'+
-    '<label class="check" style="margin:-4px 0 12px;padding:9px 12px"><input type="checkbox" id="nurErr"'+(S.nurErreichbar?' checked':'')+'><span><b>Nur erreichbare</b><br>Mit Telefon, E-Mail oder Kontaktformular</span></label>';
+    '<div class="kats" id="profFilter" style="margin:-4px 0 12px">'+
+      '<button class="kat" data-pf="nurErreichbar" aria-pressed="'+!!S.nurErreichbar+'">Nur erreichbare</button>'+
+      '<button class="kat" data-pf="nurLinkedin" aria-pressed="'+!!S.nurLinkedin+'">Mit LinkedIn</button>'+
+      '<button class="kat" data-pf="nurSocial" aria-pressed="'+!!S.nurSocial+'">Mit Instagram oder Facebook</button></div>';
   h+= reihe.length ? '<div class="liste">'+reihe.map(function(r){ return kandKarte(r.p,e,r.x); }).join("")+'</div>'
     : '<div class="leer">'+(S.filter==="vorschlaege"?'Keine offenen Vorschläge. Importiere eine Recherche oder leg Personen von Hand an.':'Hier ist noch niemand.')+'</div>';
   var box=$("tabInhalt"); box.innerHTML=h;
-  $("nurErr").onchange=function(){ S.nurErreichbar=this.checked; zeichneEvent(); };
+  alle("#profFilter .kat",function(b){ b.onclick=function(){ S[b.dataset.pf]=!S[b.dataset.pf]; zeichneEvent(); }; },box);
   kopierKnoepfe(box);
   alle("#filter button",function(b){ b.setAttribute("aria-pressed",String(b.dataset.f===S.filter)); b.onclick=function(){ S.filter=b.dataset.f; zeichneEvent(); }; },box);
   $("importBtn").onclick=function(){ importFenster(e); };
