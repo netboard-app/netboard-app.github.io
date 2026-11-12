@@ -24,8 +24,8 @@
   --ok:#0F7355; --ok-soft:#DFF1EA;
   --bad:#B3261E; --bad-soft:#FAE8E6;
   --warn:#D25A00; --warn-soft:#FBEADD;
-  --shadow:0 1px 2px rgba(14,27,42,.05),0 10px 26px -14px rgba(11,95,165,.28);
-  --radius:10px;
+  --shadow:0 1px 2px rgba(14,27,42,.06),0 2px 8px rgba(14,27,42,.05);
+  --radius:6px;
   --font-display:"Archivo","Helvetica Neue",Arial,sans-serif;
   --font-body:"Public Sans","Helvetica Neue",Arial,sans-serif;
   --font-mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
@@ -54,8 +54,8 @@ header.kopf{position:sticky;top:0;z-index:30;background:var(--surface);border-bo
 .kopf-in{max-width:940px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:10px}
 .marke{border:0;background:transparent;padding:0;cursor:pointer;font-family:var(--font-display);font-weight:800;font-size:19px;letter-spacing:-.03em;color:var(--accent)}
 .spacer{flex:1}
-.rund{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:4px 10px 4px 4px;cursor:pointer;min-height:40px}
-.avatar{width:30px;height:30px;border-radius:999px;display:grid;place-items:center;font-family:var(--font-display);font-weight:700;font-size:12px;background:var(--accent-soft);color:var(--accent-ink);flex:0 0 auto}
+.rund{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);background:var(--surface);border-radius:var(--radius);padding:4px 10px 4px 4px;cursor:pointer;min-height:40px}
+.avatar{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;font-family:var(--font-display);font-weight:700;font-size:12px;background:var(--accent-soft);color:var(--accent-ink);flex:0 0 auto}
 .ico{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:0 0 auto}
 
 main{max-width:940px;margin:0 auto;padding:16px 16px 96px}
@@ -72,34 +72,34 @@ main{max-width:940px;margin:0 auto;padding:16px 16px 96px}
 .leer{border:1px dashed var(--line);border-radius:var(--radius);padding:18px;color:var(--ink-3);text-align:center}
 .box{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:14px 16px;box-shadow:var(--shadow)}
 
-.btn{border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:10px 14px;border-radius:8px;font-weight:600;font-size:14px;cursor:pointer;min-height:44px}
+.btn{border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:10px 14px;border-radius:var(--radius);font-weight:600;font-size:14px;cursor:pointer;min-height:44px}
 .btn:hover{border-color:var(--accent)}
 .btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
 .btn.ghost{border-color:transparent;background:transparent;color:var(--ink-2)}
 .btn.danger{color:var(--bad);border-color:var(--bad)}
 .btn.klein{min-height:40px;padding:8px 12px;font-size:13.5px}
 .knopfreihe{display:flex;gap:8px;flex-wrap:wrap}
-.modus{display:inline-flex;background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:3px;gap:2px;max-width:100%;overflow-x:auto}
-.modus button{border:0;background:transparent;border-radius:8px;padding:9px 14px;font-size:13.5px;font-weight:600;color:var(--ink-3);cursor:pointer;white-space:nowrap;min-height:40px}
+.modus{display:inline-flex;background:var(--surface-2);border:1px solid var(--line);border-radius:var(--radius);padding:3px;gap:2px;max-width:100%;overflow-x:auto}
+.modus button{border:0;background:transparent;border-radius:calc(var(--radius) - 2px);padding:9px 14px;font-size:13.5px;font-weight:600;color:var(--ink-3);cursor:pointer;white-space:nowrap;min-height:40px}
 .modus button[aria-pressed="true"]{background:var(--surface);color:var(--accent-ink);box-shadow:0 1px 2px rgba(15,35,70,.12)}
 
 .field{display:flex;flex-direction:column;gap:5px}
 .field label{font-size:11.5px;text-transform:uppercase;letter-spacing:.07em;color:var(--ink-3);font-weight:600}
-.field input,.field select,.field textarea{border:1px solid var(--line);background:var(--surface-2);border-radius:8px;padding:10px 11px;width:100%;min-height:44px}
+.field input,.field select,.field textarea{border:1px solid var(--line);background:var(--surface-2);border-radius:var(--radius);padding:10px 11px;width:100%;min-height:44px}
 .field input:focus,.field select:focus,.field textarea:focus{background:var(--surface)}
 .field textarea{min-height:90px;resize:vertical}
 .two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .three{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
 @media (max-width:640px){ .two{grid-template-columns:1fr} .three{grid-template-columns:1fr 1fr} }
 @media (max-width:900px),(pointer:coarse){ input,select,textarea{font-size:16px} }
-.check{display:flex;gap:10px;align-items:flex-start;font-size:12.5px;color:var(--ink-3);cursor:pointer;line-height:1.4;border:1px solid var(--line);border-radius:9px;padding:11px 12px}
+.check{display:flex;gap:10px;align-items:flex-start;font-size:12.5px;color:var(--ink-3);cursor:pointer;line-height:1.4;border:1px solid var(--line);border-radius:var(--radius);padding:11px 12px}
 .check b{color:var(--ink);font-size:14px;font-weight:600}
 .check input{margin-top:3px;flex:0 0 auto;width:18px;height:18px}
 .hint{font-size:12.5px;color:var(--ink-3)}
 .err{font-size:13px;color:var(--bad);font-weight:600}
-.warnbox{border:1px solid var(--warn);background:var(--warn-soft);border-radius:9px;padding:10px 12px;font-size:13.5px;margin:0}
-.okbox{border:1px solid var(--ok);background:var(--ok-soft);border-radius:9px;padding:10px 12px;font-size:13.5px;margin:0}
-.infobox{border:1px solid var(--line);background:var(--surface-2);border-radius:9px;padding:10px 12px;font-size:13.5px;margin:0}
+.warnbox{border:1px solid var(--warn);background:var(--warn-soft);border-radius:var(--radius);padding:10px 12px;font-size:13.5px;margin:0}
+.okbox{border:1px solid var(--ok);background:var(--ok-soft);border-radius:var(--radius);padding:10px 12px;font-size:13.5px;margin:0}
+.infobox{border:1px solid var(--line);background:var(--surface-2);border-radius:var(--radius);padding:10px 12px;font-size:13.5px;margin:0}
 body.ohne-hilfe .erkl{display:none}
 .kv{display:grid;grid-template-columns:96px 1fr;gap:6px 12px;font-size:14px;margin:0}
 .kv dt{color:var(--ink-3);font-size:12px;text-transform:uppercase;letter-spacing:.06em;padding-top:2px}
@@ -112,7 +112,7 @@ hr.sep{border:0;border-top:1px solid var(--line-soft);margin:4px 0;width:100%}
 .schritte span[aria-current="true"]{color:var(--accent);border-color:var(--accent)}
 
 /* Status-Chips: Farbe plus weicher Hintergrund */
-.chip{display:inline-flex;align-items:center;font-size:12px;font-weight:600;border-radius:999px;padding:2px 9px;background:var(--surface-2);color:var(--ink-2);border:1px solid var(--line);white-space:nowrap}
+.chip{display:inline-flex;align-items:center;font-size:12px;font-weight:600;border-radius:var(--radius);padding:2px 9px;background:var(--surface-2);color:var(--ink-2);border:1px solid var(--line);white-space:nowrap}
 .chip.ok{background:var(--ok-soft);color:var(--ok);border-color:transparent}
 .chip.bad{background:var(--bad-soft);color:var(--bad);border-color:transparent}
 .chip.warn{background:var(--warn-soft);color:var(--warn);border-color:transparent}
@@ -151,6 +151,9 @@ hr.sep{border:0;border-top:1px solid var(--line-soft);margin:4px 0;width:100%}
 .firma-treffer .tags{margin-top:4px}
 .firma-treffer .rechts{flex:0 0 auto}
 .firma-treffer .ft-n{display:block;font-size:20px;font-weight:600;color:var(--accent-ink);line-height:1.1}
+.fs-oben{margin-bottom:0}
+.fs-wenig{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:12px}
+.fs-wenig span{flex:1;min-width:200px}
 .fs-filter{border:1px solid var(--line);border-radius:var(--radius);background:var(--surface);padding:0 12px;margin:10px 0 0}
 .fs-filter summary{cursor:pointer;min-height:48px;display:flex;align-items:center;font-weight:600;font-size:14px;list-style:none}
 .fs-filter summary::-webkit-details-marker{display:none}
@@ -168,26 +171,26 @@ hr.sep{border:0;border-top:1px solid var(--line-soft);margin:4px 0;width:100%}
 .zeile-gast .wer{flex:1;min-width:150px;cursor:pointer}
 .zeile-gast .wer b{display:block;font-size:14.5px}
 .zeile-gast .wer small{color:var(--ink-3);font-size:12.5px}
-.zeile-gast select{border:1px solid var(--line);background:var(--surface-2);border-radius:8px;padding:8px;min-height:40px;max-width:100%}
+.zeile-gast select{border:1px solid var(--line);background:var(--surface-2);border-radius:var(--radius);padding:8px;min-height:40px;max-width:100%}
 .paar{display:flex;flex-direction:column;gap:2px;border-left:3px solid var(--accent);padding:4px 0 4px 10px}
 .paar b{font-size:14px}
 .paar small{color:var(--ink-2);font-size:12.5px}
 .zahlen{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
 @media (max-width:640px){ .zahlen{grid-template-columns:repeat(2,1fr)} }
-.zahl{background:var(--surface-2);border-radius:9px;padding:10px 12px}
+.zahl{background:var(--surface-2);border-radius:var(--radius);padding:10px 12px}
 .zahl b{display:block;font-family:var(--font-mono);font-size:22px;font-variant-numeric:tabular-nums}
 .zahl span{font-size:12px;color:var(--ink-3)}
-.textkarte{background:var(--surface-2);border:1px solid var(--line);border-radius:9px;padding:12px;font-size:14px;white-space:pre-wrap;overflow-wrap:anywhere}
+.textkarte{background:var(--surface-2);border:1px solid var(--line);border-radius:var(--radius);padding:12px;font-size:14px;white-space:pre-wrap;overflow-wrap:anywhere}
 .quelle{font-size:13px;overflow-wrap:anywhere}
 .kws{display:flex;flex-direction:column;gap:6px}
-.kw{display:flex;align-items:center;gap:10px;flex-wrap:wrap;border:1px solid var(--line);border-radius:9px;padding:6px 6px 6px 12px;background:var(--surface-2);min-height:44px}
+.kw{display:flex;align-items:center;gap:10px;flex-wrap:wrap;border:1px solid var(--line);border-radius:var(--radius);padding:6px 6px 6px 12px;background:var(--surface-2);min-height:44px}
 .kw-art{font-size:12px;color:var(--ink-3);min-width:110px}
 .kw-wert{flex:1;min-width:0;font-weight:600;overflow-wrap:anywhere;font-variant-numeric:tabular-nums}
 .kw-wert a{color:var(--accent-ink);text-decoration:none}
 /* Themen im Netzwerk */
 .kats{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;margin-bottom:6px;scrollbar-width:none}
 .kats::-webkit-scrollbar{display:none}
-.kat{flex:0 0 auto;border:1px solid var(--line);background:var(--surface);color:var(--ink-2);border-radius:999px;padding:8px 14px;min-height:40px;font-size:13.5px;font-weight:600;cursor:pointer;white-space:nowrap}
+.kat{flex:0 0 auto;border:1px solid var(--line);background:var(--surface);color:var(--ink-2);border-radius:var(--radius);padding:8px 14px;min-height:40px;font-size:13.5px;font-weight:600;cursor:pointer;white-space:nowrap}
 .kat span{color:var(--ink-3);font-weight:500;margin-left:4px}
 .kat[aria-pressed="true"]{background:var(--accent-soft);color:var(--accent-ink);border-color:transparent}
 .gruppe{margin-top:12px}
@@ -199,9 +202,9 @@ hr.sep{border:0;border-top:1px solid var(--line-soft);margin:4px 0;width:100%}
   background:var(--surface);border-top:1px solid var(--line);
   padding:6px max(10px,env(safe-area-inset-left)) calc(6px + env(safe-area-inset-bottom)) max(10px,env(safe-area-inset-right))}
 .untenleiste>*{max-width:200px}
-.ul-knopf{flex:1 1 0;border:0;background:transparent;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 2px;border-radius:9px;font-size:11px;font-weight:600;color:var(--ink-3);min-height:44px}
+.ul-knopf{flex:1 1 0;border:0;background:transparent;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 2px;border-radius:var(--radius);font-size:11px;font-weight:600;color:var(--ink-3);min-height:44px}
 .ul-knopf[aria-selected="true"]{color:var(--accent)}
-.ul-haupt{flex:0 0 auto;border:0;background:var(--accent);color:#fff;border-radius:11px;font-size:15px;font-weight:700;cursor:pointer;padding:0 22px;height:46px;min-width:136px}
+.ul-haupt{flex:0 0 auto;border:0;background:var(--accent);color:#fff;border-radius:var(--radius);font-size:15px;font-weight:700;cursor:pointer;padding:0 22px;height:46px;min-width:136px}
 
 .scrim{position:fixed;inset:0;background:rgba(10,25,45,.44);z-index:40;border:0;padding:0}
 .panel{position:fixed;top:0;right:0;bottom:0;width:min(480px,100%);z-index:50;background:var(--surface);border-left:1px solid var(--line);display:flex;flex-direction:column;box-shadow:var(--shadow)}
@@ -221,12 +224,42 @@ hr.sep{border:0;border-top:1px solid var(--line-soft);margin:4px 0;width:100%}
   .panel{animation:rein .18s ease-out}
   @keyframes rein{from{transform:translateX(18px);opacity:.4}to{transform:none;opacity:1}}
 }
+/* Seitenleiste am Rechner, untere Leiste nur am Handy */
+.seitenleiste{display:none}
+@media (min-width:761px){
+  body{padding-left:228px}
+  body.gesperrt{padding-left:0}
+  header.kopf{margin-left:-228px}
+  .kopf-in{max-width:none;padding:10px 20px}
+  main{padding:24px 24px 40px}
+  .untenleiste{display:none}
+  .seitenleiste{display:flex;flex-direction:column;gap:2px;position:fixed;left:0;top:61px;bottom:0;width:228px;z-index:27;
+    background:var(--surface);border-right:1px solid var(--line);padding:16px 12px;overflow-y:auto}
+  .sl-neu{width:100%;margin-bottom:12px;min-height:44px}
+  .sl-knopf{display:flex;align-items:center;gap:10px;width:100%;border:0;background:transparent;color:var(--ink-2);cursor:pointer;
+    padding:10px 12px;min-height:44px;border-radius:var(--radius);font-size:14.5px;font-weight:600;text-align:left}
+  .sl-knopf:hover{background:var(--surface-2);color:var(--ink)}
+  .sl-knopf[aria-current="page"]{background:var(--accent-soft);color:var(--accent-ink)}
+  .sl-knopf .ico{flex:0 0 auto}
+  .sl-knopf span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .sl-label{font-size:11.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3);padding:14px 12px 4px}
+  .toast,.fassung{bottom:20px}
+  .fassung{left:auto;right:20px;width:min(460px,calc(100% - 268px))}
+  #clubModus{display:none}
+}
+/* Weiche Apple-Ecken, wo der Browser sie kann */
+@supports (corner-shape:squircle){
+  :root{--radius:9px}
+  *{corner-shape:squircle}
+  .avatar{corner-shape:round}
+}
 /* Anmeldung */
+body.gesperrt .seitenleiste{display:none!important}
 body.gesperrt header.kopf, body.gesperrt main, body.gesperrt .untenleiste{display:none}
 .anmeldung{min-height:100vh;min-height:100dvh;display:grid;place-items:center;padding:24px 16px}
 .anmeldung .box{width:min(380px,100%);display:flex;flex-direction:column;gap:14px;padding:24px 20px}
 .anmeldung h1{font-size:26px;color:var(--accent);letter-spacing:-.03em}
-.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(76px + env(safe-area-inset-bottom));z-index:70;background:var(--ink);color:var(--paper);padding:11px 16px;border-radius:9px;font-size:14px;box-shadow:var(--shadow);max-width:min(520px,92vw)}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(76px + env(safe-area-inset-bottom));z-index:70;background:var(--ink);color:var(--paper);padding:11px 16px;border-radius:var(--radius);font-size:14px;box-shadow:var(--shadow);max-width:min(520px,92vw)}
 .fassung{position:fixed;left:12px;right:12px;bottom:calc(76px + env(safe-area-inset-bottom));z-index:60;display:flex;align-items:center;gap:8px;
   background:var(--surface);border:1px solid var(--accent);border-radius:var(--radius);padding:10px 12px;box-shadow:var(--shadow)}
 .fassung span{flex:1;font-size:13.5px;font-weight:600}
@@ -254,6 +287,22 @@ body.gesperrt header.kopf, body.gesperrt main, body.gesperrt .untenleiste{displa
   <section id="sicht-clubs" hidden></section>
 </main>
 
+<nav class="seitenleiste" aria-label="Bereiche">
+  <button class="btn primary sl-neu" id="neuBtn2">+ Event</button>
+  <button class="sl-knopf" data-ziel="start">
+    <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/></svg><span>Start</span>
+  </button>
+  <button class="sl-knopf" data-ziel="personen">
+    <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.2"/><path d="M3.5 19c.6-3.2 2.8-5 5.5-5s4.9 1.8 5.5 5"/><circle cx="17" cy="9" r="2.4"/><path d="M15.5 14.2c2.6-.5 4.6 1 5 4.3"/></svg><span>Netzwerk</span>
+  </button>
+  <button class="sl-knopf" data-ziel="clubs">
+    <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l7 3v5c0 4.6-3 8.1-7 10-4-1.9-7-5.4-7-10V6z"/></svg><span>Clubs</span>
+  </button>
+  <button class="sl-knopf" data-ziel="betriebe">
+    <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V8l5 3V8l5 3V5h6v15z"/><path d="M8 16h1M12 16h1M16 16h1"/></svg><span>Betriebe</span>
+  </button>
+  <div id="slEvent"></div>
+</nav>
 <nav class="untenleiste">
   <button class="ul-knopf" data-sicht="start" aria-label="Start">
     <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/></svg><span>Start</span>
@@ -698,12 +747,32 @@ function zeichnen(){
   $("sicht-personen").hidden = S.sicht!=="personen";
   $("sicht-clubs").hidden = S.sicht!=="clubs";
   alle(".ul-knopf",function(b){ b.setAttribute("aria-selected",String(b.dataset.sicht===S.sicht)); });
+  seitenleisteZeichnen();
   var schl=S.sicht+(S.sicht==="event"?S.eventId:(S.sicht==="clubs"?(S.clubId||S.clubTab):""));
   if(S.letzteSicht!==schl){ S.letzteSicht=schl; window.scrollTo(0,0); }
   if(S.sicht==="start") zeichneStart();
   else if(S.sicht==="event") zeichneEvent();
   else if(S.sicht==="clubs") zeichneClubs();
   else zeichnePersonen();
+}
+/* Seitenleiste am Rechner: welcher Punkt ist aktiv, und das zuletzt geöffnete Event als eigener Punkt */
+function navZiel(){ return S.sicht==="clubs" ? (S.clubTab==="firmen"&&!S.clubId?"betriebe":"clubs") : S.sicht; }
+function seitenleisteZeichnen(){
+  var z=navZiel();
+  alle(".sl-knopf[data-ziel]",function(b){ if(b.dataset.ziel===z) b.setAttribute("aria-current","page"); else b.removeAttribute("aria-current"); });
+  var e=S.eventId?ev(S.eventId):null, box=$("slEvent");
+  if(!box) return;
+  box.innerHTML = e ? '<div class="sl-label">Event</div><button class="sl-knopf" id="slEventBtn"'+(S.sicht==="event"?' aria-current="page"':'')+'>'+
+    '<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/></svg>'+
+    '<span>'+esc(e.name||e.thema||"Event")+'</span></button>' : '';
+  if(e) $("slEventBtn").onclick=function(){ eventOeffnen(e.id); };
+}
+function navGehen(ziel){
+  fensterZu();
+  if(ziel==="betriebe"){ S.sicht="clubs"; S.clubId=null; S.clubTab="firmen"; }
+  else if(ziel==="clubs"){ S.sicht="clubs"; S.clubId=null; S.clubTab="clubs"; }
+  else S.sicht=ziel;
+  zeichnen();
 }
 function eventOeffnen(id,tab){ S.sicht="event"; S.eventId=id; if(tab) S.tab=tab; fensterZu(); zeichnen(); }
 
@@ -1600,7 +1669,7 @@ function chipWahl(boxId,optionen,gewaehlt,eigene){
   var box=$(boxId); if(!box) return;
   var alleOpt=optionen.slice(); gewaehlt.forEach(function(g){ if(alleOpt.indexOf(g)<0) alleOpt.push(g); });
   box.innerHTML=alleOpt.map(function(o){ return '<button type="button" class="kat" data-wahl-chip="'+esc(o)+'" aria-pressed="'+(gewaehlt.indexOf(o)>=0)+'">'+esc(o)+'</button>'; }).join("")+
-    (eigene?'<span style="display:inline-flex;gap:6px;flex:0 0 auto"><input class="eigen" placeholder="Eigener Eintrag" aria-label="Eigener Eintrag" style="border:1px solid var(--line);border-radius:999px;padding:8px 12px;min-height:40px;width:150px;background:var(--surface-2)"><button type="button" class="kat" data-eigen="1">+</button></span>':'');
+    (eigene?'<span style="display:inline-flex;gap:6px;flex:0 0 auto"><input class="eigen" placeholder="Eigener Eintrag" aria-label="Eigener Eintrag" style="border:1px solid var(--line);border-radius:var(--radius);padding:8px 12px;min-height:40px;width:150px;background:var(--surface-2)"><button type="button" class="kat" data-eigen="1">+</button></span>':'');
   alle("[data-wahl-chip]",function(b){ b.onclick=function(){ var v=b.dataset.wahlChip, i=gewaehlt.indexOf(v); if(i>=0) gewaehlt.splice(i,1); else gewaehlt.push(v); chipWahl(boxId,optionen,gewaehlt,eigene); }; },box);
   var eb=box.querySelector("[data-eigen]");
   if(eb){ var inp=box.querySelector(".eigen");
@@ -1984,8 +2053,8 @@ function clubVorschlaege(e){
 function zeichneClubs(){
   var box=$("sicht-clubs");
   if(S.clubId){ zeichneClub(club(S.clubId)); return; }
-  var h='<h2 style="font-size:22px">Clubs</h2>'+
-    '<div class="modus" id="clubModus" style="margin:10px 0 12px"><button data-m="clubs">Clubs</button><button data-m="firmen">Alle Firmen</button></div>';
+  var h='<h2 style="font-size:22px">'+(S.clubTab==="firmen"?"Betriebe":"Clubs")+'</h2>'+
+    '<div class="modus" id="clubModus" style="margin:10px 0 12px"><button data-m="clubs">Clubs</button><button data-m="firmen">Betriebe</button></div>';
   if(S.clubTab==="firmen"){
     box.innerHTML=h+firmenSucheHtml();
     firmenSucheVerdrahten();
@@ -2027,7 +2096,7 @@ function firmenGruppen(){
     var c=cm[f.clubId]; if(!c) return;
     var k=namensSchluessel(f.name)||f.id, x=nach[k];
     if(!x){ x=nach[k]={ k:k, e:[], clubs:[] }; l.push(x); }
-    x.e.push({ f:f, c:c, n:nutzenWert(f), br:norm(f.branche), vb:norm(f.verbindung), liga:norm(c.liga), p:(f.personId&&pm[f.personId])||null });
+    x.e.push({ f:f, c:c, n:nutzenWert(f), br:norm(f.branche), bra:ohneAkzent(f.branche), vb:norm(f.verbindung), liga:norm(c.liga), p:(f.personId&&pm[f.personId])||null });
     if(x.clubs.indexOf(c)<0) x.clubs.push(c);
   });
   l.forEach(function(x){
@@ -2057,14 +2126,16 @@ function fsWerte(feld){
   });
   return l.sort(function(a,b){ return vergleich(a.t,b.t); });
 }
-function fsAktiv(){ var o=S.fs; return [o.club,o.liga,o.branche,o.verbindung,o.min,o.ap].filter(Boolean).length; }
+function fsAktiv(){ var o=S.fs; return [o.club,o.liga,o.verbindung,o.min,o.ap].filter(Boolean).length; }
 /* Passt eine Club-Verbindung zu allen gesetzten Filtern? */
 function fsPasst(y){
   var o=S.fs;
-  return (!o.club||y.c.id===o.club) && (!o.liga||y.liga===o.liga) && (!o.branche||y.br===o.branche) &&
+  return (!o.club||y.c.id===o.club) && (!o.liga||y.liga===o.liga) && (!FS_BT||y.bra.indexOf(FS_BT)>=0) &&
     (!o.verbindung||y.vb===o.verbindung) && y.n>=(o.min?Number(o.min):-1) && (!o.ap||y.p);
 }
+var FS_BT="";
 function firmenFiltern(){
+  FS_BT=ohneAkzent(S.fs.branche);
   var o=S.fs, w=ohneAkzent(o.q).split(/\s+/).filter(Boolean);
   // Nach Club sortieren ergibt bei einem gewählten Club nichts, dann nach Nutzen
   return firmenSortiert(o.sort==="club"&&o.club ? "nutzen" : o.sort).filter(function(x){
@@ -2090,13 +2161,16 @@ function firmenSucheHtml(){
   W.verbindung=fsWerte(function(y){ return y.f.verbindung; });
   var offen=o.offen!==undefined ? o.offen : window.innerWidth>640;
   return '<p class="hint erkl" style="margin:0 0 10px">Alle Firmen aus allen Clubs. Dieselbe Firma bei mehreren Clubs steht einmal da, mit allen Verbindungen.</p>'+
-    '<div class="field"><label for="fs_q">Suche</label><input id="fs_q" type="search" value="'+esc(o.q)+'" placeholder="Name, Branche, Ort oder Idee" autocomplete="off" enterkeyhint="search"></div>'+
+    '<div class="two fs-oben">'+
+      '<div class="field"><label for="fs_q">Suche</label><input id="fs_q" type="search" value="'+esc(o.q)+'" placeholder="Name, Ort oder Idee" autocomplete="off" enterkeyhint="search"></div>'+
+      '<div class="field"><label for="fs_branche">Branche</label><input id="fs_branche" type="search" list="fs_branchen" value="'+esc(o.branche)+'" placeholder="z. B. Bau, Pflege, Autohaus" autocomplete="off" enterkeyhint="search">'+
+        '<datalist id="fs_branchen">'+W.branche.map(function(w){ return '<option value="'+esc(w.t)+'" label="'+w.n+' Firmen">'; }).join("")+'</datalist></div>'+
+    '</div>'+
     '<details class="fs-filter" id="fs_box"'+(offen?' open':'')+'><summary>Filter und Sortierung<span id="fs_aktiv"></span>'+
       '<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></summary>'+
       '<div class="three">'+
         fsAuswahl("fs_club","Club",fsOptionen(clubs,o.club,"Alle Clubs"))+
         (W.liga.length?fsAuswahl("fs_liga","Liga",fsOptionen(W.liga,o.liga,"Alle Ligen")):'')+
-        fsAuswahl("fs_branche","Branche",fsOptionen(W.branche,o.branche,"Alle Branchen"))+
         fsAuswahl("fs_vb","Verbindung",fsOptionen(W.verbindung,o.verbindung,"Alle Arten"))+
         fsAuswahl("fs_min","Nutzen",["","30","50","70","85"].map(function(v){ return '<option value="'+v+'"'+(o.min===v?' selected':'')+'>'+(v?"ab "+v:"egal")+'</option>'; }).join(""))+
         fsAuswahl("fs_sort","Sortierung",[["nutzen","nach Nutzen"],["name","nach Name"],["club","nach Club"]].map(function(s){ return '<option value="'+s[0]+'"'+(o.sort===s[0]?' selected':'')+'>'+s[1]+'</option>'; }).join(""))+
@@ -2104,7 +2178,7 @@ function firmenSucheHtml(){
       '<label class="check fs-ap"><input type="checkbox" id="fs_ap"'+(o.ap?' checked':'')+'><span><b>Nur mit Ansprechpartner</b></span></label>'+
     '</details>'+
     '<div class="fs-zeile"><b id="fs_zahl"></b><span class="spacer"></span><button class="btn ghost klein" id="fs_reset">Filter zurücksetzen</button></div>'+
-    '<div class="knopfreihe" style="margin-bottom:12px"><button class="btn klein" id="fs_pdf">Treffer als PDF</button><button class="btn klein" id="fs_csv">Treffer als CSV</button></div>'+
+    '<div class="knopfreihe" style="margin-bottom:12px"><button class="btn klein" id="fs_pdf">Treffer als PDF</button><button class="btn klein" id="fs_csv">Treffer als CSV</button><button class="btn klein" id="fs_rech">Neue Betriebe recherchieren</button></div>'+
     '<div class="liste" id="fs_liste"></div><div class="fs-mehr" id="fs_mehr"></div>';
 }
 function trefferKarte(x,i){
@@ -2120,7 +2194,7 @@ function trefferKarte(x,i){
 }
 function trefferZeichnen(){
   FT=firmenFiltern();
-  var o=S.fs, z=Math.min(o.zahl,FT.length), a=fsAktiv(), gefiltert=!!(a||o.q.trim());
+  var o=S.fs, z=Math.min(o.zahl,FT.length), a=fsAktiv(), gefiltert=!!(a||o.q.trim()||o.branche);
   $("fs_zahl").textContent=gefiltert ? tausend(FT.length)+" von "+tausend(FG.l.length)+" Firmen" : tausend(FG.l.length)+" Firmen";
   $("fs_aktiv").textContent=a ? " · "+a+" aktiv" : "";
   $("fs_reset").hidden=!gefiltert;
@@ -2128,12 +2202,20 @@ function trefferZeichnen(){
   $("fs_liste").innerHTML=FT.length ? FT.slice(0,z).map(trefferKarte).join("") : '<div class="leer">Keine Treffer. Suchwort kürzen oder Filter lockern.</div>';
   $("fs_mehr").innerHTML=FT.length>z ? '<button class="btn" id="fs_mehrBtn">Mehr laden</button><span class="hint">'+tausend(z)+' von '+tausend(FT.length)+' angezeigt</span>' : '';
   if($("fs_mehrBtn")) $("fs_mehrBtn").onclick=function(){ o.zahl+=100; trefferZeichnen(); };
+  var suchwort=o.branche||o.q.trim();
+  if(suchwort && FT.length<10){
+    $("fs_mehr").innerHTML+='<div class="infobox fs-wenig"><span>Nur '+FT.length+' Treffer für „'+esc(suchwort)+'“. Claude kann weitere Betriebe dieser Branche suchen.</span>'+
+      '<button class="btn primary klein" id="fs_wenigBtn">Recherchieren</button></div>';
+    $("fs_wenigBtn").onclick=function(){ betriebeAuftrag(suchwort); };
+  }
 }
 function firmenSucheVerdrahten(){
   if(!$("fs_q")) return;
   var o=S.fs;
   $("fs_q").oninput=function(){ o.q=this.value; o.zahl=100; trefferZeichnen(); };
-  [["fs_club","club"],["fs_liga","liga"],["fs_branche","branche"],["fs_vb","verbindung"],["fs_min","min"],["fs_sort","sort"]].forEach(function(p){
+  $("fs_branche").oninput=function(){ o.branche=this.value.trim(); o.zahl=100; trefferZeichnen(); };
+  $("fs_rech").onclick=function(){ betriebeAuftrag(o.branche||o.q.trim()); };
+  [["fs_club","club"],["fs_liga","liga"],["fs_vb","verbindung"],["fs_min","min"],["fs_sort","sort"]].forEach(function(p){
     var el=$(p[0]); if(el) el.onchange=function(){ o[p[1]]=el.value; o.zahl=100; trefferZeichnen(); };
   });
   $("fs_ap").onchange=function(){ o.ap=this.checked; o.zahl=100; trefferZeichnen(); };
@@ -2189,7 +2271,7 @@ function zeichneClub(c){
   var box=$("sicht-clubs"), fs=firmenVon(c.id), sp=spieleVon(c);
   var evs=D.events.filter(function(e){ return e.clubId===c.id; });
   var h='<button class="btn ghost klein" id="alleClubs" style="margin:-6px 0 6px -8px;display:inline-flex;align-items:center;gap:4px">'+
-      '<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>'+(S.clubTab==="firmen"?"Alle Firmen":"Alle Clubs")+'</button>'+
+      '<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>'+(S.clubTab==="firmen"?"Alle Betriebe":"Alle Clubs")+'</button>'+
     '<h2 style="font-size:22px">'+esc(c.name)+'</h2>'+
     '<dl class="kv eckdaten" style="margin:10px 0 12px">'+
       (c.liga?'<dt>Liga</dt><dd>'+esc(c.liga)+'</dd>':'')+
@@ -2263,6 +2345,31 @@ function clubImportFenster(){
   $("ciLos").onclick=function(){ zeigen(clubDateienUebernehmen([{ name:"Eingefügter Text", text:$("ci_text").value }])); };
 }
 
+function betriebeAuftrag(branche){
+  var evs=D.events.slice().sort(function(a,b){ return (b.datum||"")<(a.datum||"")?-1:1; });
+  fenster("Neue Betriebe recherchieren",
+    '<p style="margin:0">Claude sucht Betriebe dieser Branche und deren Inhaber oder Geschäftsführer. Sie landen als Vorschläge im gewählten Event und unter Netzwerk.</p>'+
+    '<div class="field"><label for="b_branche">Branche</label><input id="b_branche" value="'+esc(branche||"")+'" placeholder="z. B. Sanitätshaus" autocomplete="off"></div>'+
+    '<div class="field"><label for="b_region">Region</label><input id="b_region" value="NRW, Schwerpunkt Ruhrgebiet" autocomplete="off"></div>'+
+    '<div class="two"><div class="field"><label for="b_anz">Wie viele?</label><select id="b_anz"><option>10</option><option selected>15</option><option>20</option><option>30</option></select></div>'+
+      '<div class="field"><label for="b_event">Für Event</label><select id="b_event">'+(evs.length?evs.map(function(e){ return '<option value="'+esc(e.id)+'">'+esc(e.name||e.thema||"Event")+'</option>'; }).join(""):'<option value="">Noch kein Event</option>')+'</select></div></div>'+
+    '<div class="textkarte mono" id="b_befehl" style="font-size:13px"></div>'+
+    '<button class="btn primary" id="b_kopie">Auftrag kopieren</button>'+
+    '<ol style="margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px">'+
+      '<li>Auftrag kopieren und in Claude Code einfügen.</li>'+
+      '<li>Claude sucht und spielt das Ergebnis direkt ins Event ein.</li>'+
+      '<li>Nach spätestens 30 Sekunden stehen die Betriebe in der App.</li></ol>');
+  function befehl(){
+    var e=ev($("b_event").value), br=$("b_branche").value.trim()||"<Branche>";
+    return ["/netboard "+br+" "+$("b_anz").value,
+      "Gesucht: Betriebe der Branche "+br+", je Betrieb Inhaber oder Geschäftsführer",
+      "Region: "+($("b_region").value.trim()||"NRW, Schwerpunkt Ruhrgebiet"),
+      e?"Event: "+(e.name||e.thema):""].filter(Boolean).join("\n");
+  }
+  function zeigen(){ $("b_befehl").textContent=befehl(); }
+  zeigen(); ["b_branche","b_region"].forEach(function(id){ $(id).oninput=zeigen; }); $("b_anz").onchange=$("b_event").onchange=zeigen;
+  $("b_kopie").onclick=function(){ kopieren(befehl()); };
+}
 function clubAuftrag(name){
   fenster("Recherche-Auftrag",
     '<p style="margin:0">Die Suche läuft über Claude im Chat:</p>'+
@@ -2759,7 +2866,8 @@ function start(){
   themaAnwenden(); hilfeAnwenden();
   $("markeBtn").onclick=function(){ fensterZu(); S.sicht="start"; zeichnen(); };
   $("einstBtn").onclick=einstellungen;
-  $("neuBtn").onclick=function(){ eventFormular(null); };
+  $("neuBtn").onclick=$("neuBtn2").onclick=function(){ eventFormular(null); };
+  alle(".sl-knopf[data-ziel]",function(b){ b.onclick=function(){ navGehen(b.dataset.ziel); }; });
   alle(".ul-knopf",function(b){ b.onclick=function(){ fensterZu(); S.sicht=b.dataset.sicht; if(S.sicht==="clubs") S.clubId=null; zeichnen(); }; });
   document.addEventListener("visibilitychange",function(){ if(!document.hidden) abrufen(); });
   window.addEventListener("focus",abrufen);
