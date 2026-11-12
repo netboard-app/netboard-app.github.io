@@ -50,7 +50,9 @@ a{color:var(--accent-ink)}
 .mono{font-family:var(--font-mono);font-variant-numeric:tabular-nums}
 [hidden]{display:none!important}
 
-header.kopf{position:sticky;top:0;z-index:30;background:var(--surface);border-bottom:1px solid var(--line)}
+header.kopf{position:fixed;top:0;left:0;right:0;z-index:30;background:var(--surface);border-bottom:1px solid var(--line);padding-top:env(safe-area-inset-top)}
+body{padding-top:calc(61px + env(safe-area-inset-top))}
+body.gesperrt{padding-top:0}
 .kopf-in{max-width:940px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:10px}
 .marke{border:0;background:transparent;padding:0;cursor:pointer;font-family:var(--font-display);font-weight:800;font-size:19px;letter-spacing:-.03em;color:var(--accent)}
 .spacer{flex:1}
@@ -204,7 +206,7 @@ hr.sep{border:0;border-top:1px solid var(--line-soft);margin:4px 0;width:100%}
 .untenleiste>*{max-width:200px}
 .ul-knopf{flex:1 1 0;border:0;background:transparent;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 2px;border-radius:var(--radius);font-size:11px;font-weight:600;color:var(--ink-3);min-height:44px}
 .ul-knopf[aria-selected="true"]{color:var(--accent)}
-.ul-haupt{flex:0 0 auto;border:0;background:var(--accent);color:#fff;border-radius:var(--radius);font-size:15px;font-weight:700;cursor:pointer;padding:0 22px;height:46px;min-width:136px}
+.ul-haupt{flex:0 0 auto;border:0;background:var(--accent);color:#fff;border-radius:var(--radius);font-size:15px;font-weight:700;cursor:pointer;padding:0 18px;height:46px;min-width:0}
 
 .scrim{position:fixed;inset:0;background:rgba(10,25,45,.44);z-index:40;border:0;padding:0}
 .panel{position:fixed;top:0;right:0;bottom:0;width:min(480px,100%);z-index:50;background:var(--surface);border-left:1px solid var(--line);display:flex;flex-direction:column;box-shadow:var(--shadow)}
@@ -229,11 +231,10 @@ hr.sep{border:0;border-top:1px solid var(--line-soft);margin:4px 0;width:100%}
 @media (min-width:761px){
   body{padding-left:228px}
   body.gesperrt{padding-left:0}
-  header.kopf{margin-left:-228px}
   .kopf-in{max-width:none;padding:10px 20px}
   main{padding:24px 24px 40px}
   .untenleiste{display:none}
-  .seitenleiste{display:flex;flex-direction:column;gap:2px;position:fixed;left:0;top:61px;bottom:0;width:228px;z-index:27;
+  .seitenleiste{display:flex;flex-direction:column;gap:2px;position:fixed;left:0;top:calc(61px + env(safe-area-inset-top));bottom:0;width:228px;z-index:27;
     background:var(--surface);border-right:1px solid var(--line);padding:16px 12px;overflow-y:auto}
   .sl-neu{width:100%;margin-bottom:12px;min-height:44px}
   .sl-knopf{display:flex;align-items:center;gap:10px;width:100%;border:0;background:transparent;color:var(--ink-2);cursor:pointer;
@@ -245,7 +246,6 @@ hr.sep{border:0;border-top:1px solid var(--line-soft);margin:4px 0;width:100%}
   .sl-label{font-size:11.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3);padding:14px 12px 4px}
   .toast,.fassung{bottom:20px}
   .fassung{left:auto;right:20px;width:min(460px,calc(100% - 268px))}
-  #clubModus{display:none}
 }
 /* Weiche Apple-Ecken, wo der Browser sie kann */
 @supports (corner-shape:squircle){
@@ -314,6 +314,9 @@ body.gesperrt header.kopf, body.gesperrt main, body.gesperrt .untenleiste{displa
   <button class="ul-knopf" data-sicht="clubs" aria-label="Clubs">
     <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l7 3v5c0 4.6-3 8.1-7 10-4-1.9-7-5.4-7-10V6z"/></svg><span>Clubs</span>
   </button>
+  <button class="ul-knopf" data-sicht="betriebe" aria-label="Betriebe">
+    <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V8l5 3V8l5 3V5h6v15z"/><path d="M8 16h1M12 16h1M16 16h1"/></svg><span>Betriebe</span>
+  </button>
 </nav>
 <div id="fenster"></div>
 
@@ -321,7 +324,7 @@ body.gesperrt header.kopf, body.gesperrt main, body.gesperrt .untenleiste{displa
 (function(){
 "use strict";
 
-var VERSION = "2026-11-12-2358";
+var VERSION = "2026-11-13-0004";
 
 /* ---------------- Feste Listen ---------------- */
 var STATUS = [
@@ -594,7 +597,7 @@ function neuZeichnen(){
   var y=window.scrollY; zeichnen(); window.scrollTo(0,y);
 }
 var D=leer();
-var S={ sicht:"start", eventId:null, clubId:null, clubTab:"clubs", fs:fsLeer(), tab:"kandidaten", filter:"vorschlaege", suche:"", letzteSicht:null };
+var S={ sicht:"start", eventId:null, clubId:null, clubTab:"clubs", fs:null, fsC:fsLeer(), fsB:fsLeer(), tab:"kandidaten", filter:"vorschlaege", suche:"", letzteSicht:null };
 function sichern(){ speicher.sichern(D); zeichnen(); }
 
 /* ---------------- Zugriff ---------------- */
@@ -745,7 +748,7 @@ function zeichnen(){
   $("sicht-start").hidden = S.sicht!=="start";
   $("sicht-event").hidden = S.sicht!=="event";
   $("sicht-personen").hidden = S.sicht!=="personen";
-  $("sicht-clubs").hidden = S.sicht!=="clubs";
+  $("sicht-clubs").hidden = S.sicht!=="clubs" && S.sicht!=="betriebe";
   alle(".ul-knopf",function(b){ b.setAttribute("aria-selected",String(b.dataset.sicht===S.sicht)); });
   seitenleisteZeichnen();
   var schl=S.sicht+(S.sicht==="event"?S.eventId:(S.sicht==="clubs"?(S.clubId||S.clubTab):""));
@@ -753,10 +756,11 @@ function zeichnen(){
   if(S.sicht==="start") zeichneStart();
   else if(S.sicht==="event") zeichneEvent();
   else if(S.sicht==="clubs") zeichneClubs();
+  else if(S.sicht==="betriebe") zeichneBetriebe();
   else zeichnePersonen();
 }
 /* Seitenleiste am Rechner: welcher Punkt ist aktiv, und das zuletzt geöffnete Event als eigener Punkt */
-function navZiel(){ return S.sicht==="clubs" ? (S.clubTab==="firmen"&&!S.clubId?"betriebe":"clubs") : S.sicht; }
+function navZiel(){ return S.sicht; }
 function seitenleisteZeichnen(){
   var z=navZiel();
   alle(".sl-knopf[data-ziel]",function(b){ if(b.dataset.ziel===z) b.setAttribute("aria-current","page"); else b.removeAttribute("aria-current"); });
@@ -769,8 +773,7 @@ function seitenleisteZeichnen(){
 }
 function navGehen(ziel){
   fensterZu();
-  if(ziel==="betriebe"){ S.sicht="clubs"; S.clubId=null; S.clubTab="firmen"; }
-  else if(ziel==="clubs"){ S.sicht="clubs"; S.clubId=null; S.clubTab="clubs"; }
+  if(ziel==="clubs"){ S.sicht="clubs"; S.clubId=null; S.clubTab="clubs"; }
   else S.sicht=ziel;
   zeichnen();
 }
@@ -2053,9 +2056,10 @@ function clubVorschlaege(e){
 function zeichneClubs(){
   var box=$("sicht-clubs");
   if(S.clubId){ zeichneClub(club(S.clubId)); return; }
-  var h='<h2 style="font-size:22px">'+(S.clubTab==="firmen"?"Betriebe":"Clubs")+'</h2>'+
-    '<div class="modus" id="clubModus" style="margin:10px 0 12px"><button data-m="clubs">Clubs</button><button data-m="firmen">Betriebe</button></div>';
+  var h='<h2 style="font-size:22px">Clubs</h2>'+
+    '<div class="modus" id="clubModus" style="margin:10px 0 12px"><button data-m="clubs">Clubs</button><button data-m="firmen">Firmen suchen</button></div>';
   if(S.clubTab==="firmen"){
+    fsModus("clubs");
     box.innerHTML=h+firmenSucheHtml();
     firmenSucheVerdrahten();
   } else {
@@ -2133,7 +2137,10 @@ function fsPasst(y){
   return (!o.club||y.c.id===o.club) && (!o.liga||y.liga===o.liga) && (!FS_BT||y.bra.indexOf(FS_BT)>=0) &&
     (!o.verbindung||y.vb===o.verbindung) && y.n>=(o.min?Number(o.min):-1) && (!o.ap||y.p);
 }
-var FS_BT="";
+var FS_BT="", FS_MODUS="clubs";
+/* Firmensuche läuft in zwei Bereichen: unter Clubs mit Club-Filtern, unter Betriebe nur nach Branche */
+function fsModus(m){ FS_MODUS=m; S.fs = m==="betriebe" ? S.fsB : S.fsC; }
+function fsSetzen(neu){ if(FS_MODUS==="betriebe") S.fsB=neu; else S.fsC=neu; S.fs=neu; }
 function firmenFiltern(){
   FS_BT=ohneAkzent(S.fs.branche);
   var o=S.fs, w=ohneAkzent(o.q).split(/\s+/).filter(Boolean);
@@ -2160,7 +2167,8 @@ function firmenSucheHtml(){
   W.branche=fsWerte(function(y){ return y.f.branche; });
   W.verbindung=fsWerte(function(y){ return y.f.verbindung; });
   var offen=o.offen!==undefined ? o.offen : window.innerWidth>640;
-  return '<p class="hint erkl" style="margin:0 0 10px">Alle Firmen aus allen Clubs. Dieselbe Firma bei mehreren Clubs steht einmal da, mit allen Verbindungen.</p>'+
+  var B=FS_MODUS==="betriebe";
+  return '<p class="hint erkl" style="margin:0 0 10px">'+(B?'Alle Betriebe, gesucht nach Branche. Findet die Suche zu wenig, sucht Claude weitere.':'Alle Firmen aus allen Clubs. Dieselbe Firma bei mehreren Clubs steht einmal da, mit allen Verbindungen.')+'</p>'+
     '<div class="two fs-oben">'+
       '<div class="field"><label for="fs_q">Suche</label><input id="fs_q" type="search" value="'+esc(o.q)+'" placeholder="Name, Ort oder Idee" autocomplete="off" enterkeyhint="search"></div>'+
       '<div class="field"><label for="fs_branche">Branche</label><input id="fs_branche" type="search" list="fs_branchen" value="'+esc(o.branche)+'" placeholder="z. B. Bau, Pflege, Autohaus" autocomplete="off" enterkeyhint="search">'+
@@ -2169,16 +2177,16 @@ function firmenSucheHtml(){
     '<details class="fs-filter" id="fs_box"'+(offen?' open':'')+'><summary>Filter und Sortierung<span id="fs_aktiv"></span>'+
       '<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></summary>'+
       '<div class="three">'+
-        fsAuswahl("fs_club","Club",fsOptionen(clubs,o.club,"Alle Clubs"))+
+        (B?'':fsAuswahl("fs_club","Club",fsOptionen(clubs,o.club,"Alle Clubs"))+
         (W.liga.length?fsAuswahl("fs_liga","Liga",fsOptionen(W.liga,o.liga,"Alle Ligen")):'')+
-        fsAuswahl("fs_vb","Verbindung",fsOptionen(W.verbindung,o.verbindung,"Alle Arten"))+
+        fsAuswahl("fs_vb","Verbindung",fsOptionen(W.verbindung,o.verbindung,"Alle Arten")))+
         fsAuswahl("fs_min","Nutzen",["","30","50","70","85"].map(function(v){ return '<option value="'+v+'"'+(o.min===v?' selected':'')+'>'+(v?"ab "+v:"egal")+'</option>'; }).join(""))+
-        fsAuswahl("fs_sort","Sortierung",[["nutzen","nach Nutzen"],["name","nach Name"],["club","nach Club"]].map(function(s){ return '<option value="'+s[0]+'"'+(o.sort===s[0]?' selected':'')+'>'+s[1]+'</option>'; }).join(""))+
+        fsAuswahl("fs_sort","Sortierung",[["nutzen","nach Nutzen"],["name","nach Name"]].concat(B?[]:[["club","nach Club"]]).map(function(s){ return '<option value="'+s[0]+'"'+(o.sort===s[0]?' selected':'')+'>'+s[1]+'</option>'; }).join(""))+
       '</div>'+
       '<label class="check fs-ap"><input type="checkbox" id="fs_ap"'+(o.ap?' checked':'')+'><span><b>Nur mit Ansprechpartner</b></span></label>'+
     '</details>'+
     '<div class="fs-zeile"><b id="fs_zahl"></b><span class="spacer"></span><button class="btn ghost klein" id="fs_reset">Filter zurücksetzen</button></div>'+
-    '<div class="knopfreihe" style="margin-bottom:12px"><button class="btn klein" id="fs_pdf">Treffer als PDF</button><button class="btn klein" id="fs_csv">Treffer als CSV</button><button class="btn klein" id="fs_rech">Neue Betriebe recherchieren</button></div>'+
+    '<div class="knopfreihe" style="margin-bottom:12px"><button class="btn klein" id="fs_pdf">Treffer als PDF</button><button class="btn klein" id="fs_csv">Treffer als CSV</button>'+(B?'<button class="btn klein" id="fs_rech">Neue Betriebe recherchieren</button>':'')+'</div>'+
     '<div class="liste" id="fs_liste"></div><div class="fs-mehr" id="fs_mehr"></div>';
 }
 function trefferKarte(x,i){
@@ -2187,7 +2195,7 @@ function trefferKarte(x,i){
   var idee=x.e[0].f.kooperationsidee;
   return '<button class="karte firma-treffer" data-fg="'+i+'"><span class="ft-text"><b>'+esc(x.name)+'</b>'+
       '<small>'+esc([x.branche,x.ort].filter(Boolean).join(" · ")||"Branche unbekannt")+'</small>'+
-      '<small>'+esc((cl.length>3 ? cl.slice(0,3).join(", ")+" und "+(cl.length-3)+" weitere" : cl.join(", "))+(arten.length?" · "+arten.join(", "):""))+'</small>'+
+      (FS_MODUS==="betriebe"?'':'<small>'+esc((cl.length>3 ? cl.slice(0,3).join(", ")+" und "+(cl.length-3)+" weitere" : cl.join(", "))+(arten.length?" · "+arten.join(", "):""))+'</small>')+
       (idee?'<small class="ft-idee">'+esc(idee)+'</small>':'')+
       (x.ap?'<span class="tags"><span class="chip ok">Ansprechpartner</span></span>':'')+
     '</span><span class="rechts"><span class="ft-n">'+(x.nutzen<0?'–':x.nutzen)+'</span><small>Nutzen</small></span></button>';
@@ -2203,7 +2211,7 @@ function trefferZeichnen(){
   $("fs_mehr").innerHTML=FT.length>z ? '<button class="btn" id="fs_mehrBtn">Mehr laden</button><span class="hint">'+tausend(z)+' von '+tausend(FT.length)+' angezeigt</span>' : '';
   if($("fs_mehrBtn")) $("fs_mehrBtn").onclick=function(){ o.zahl+=100; trefferZeichnen(); };
   var suchwort=o.branche||o.q.trim();
-  if(suchwort && FT.length<10){
+  if(FS_MODUS==="betriebe" && suchwort && FT.length<10){
     $("fs_mehr").innerHTML+='<div class="infobox fs-wenig"><span>Nur '+FT.length+' Treffer für „'+esc(suchwort)+'“. Claude kann weitere Betriebe dieser Branche suchen.</span>'+
       '<button class="btn primary klein" id="fs_wenigBtn">Recherchieren</button></div>';
     $("fs_wenigBtn").onclick=function(){ betriebeAuftrag(suchwort); };
@@ -2214,13 +2222,13 @@ function firmenSucheVerdrahten(){
   var o=S.fs;
   $("fs_q").oninput=function(){ o.q=this.value; o.zahl=100; trefferZeichnen(); };
   $("fs_branche").oninput=function(){ o.branche=this.value.trim(); o.zahl=100; trefferZeichnen(); };
-  $("fs_rech").onclick=function(){ betriebeAuftrag(o.branche||o.q.trim()); };
+  if($("fs_rech")) $("fs_rech").onclick=function(){ betriebeAuftrag(o.branche||o.q.trim()); };
   [["fs_club","club"],["fs_liga","liga"],["fs_vb","verbindung"],["fs_min","min"],["fs_sort","sort"]].forEach(function(p){
     var el=$(p[0]); if(el) el.onchange=function(){ o[p[1]]=el.value; o.zahl=100; trefferZeichnen(); };
   });
   $("fs_ap").onchange=function(){ o.ap=this.checked; o.zahl=100; trefferZeichnen(); };
   $("fs_box").addEventListener("toggle",function(){ o.offen=this.open; });
-  $("fs_reset").onclick=function(){ S.fs=fsLeer(o); zeichnen(); };
+  $("fs_reset").onclick=function(){ fsSetzen(fsLeer(o)); zeichnen(); };
   $("fs_pdf").onclick=function(){ trefferPdf(FT); };
   $("fs_csv").onclick=function(){ trefferCsv(FT); };
   $("fs_liste").onclick=function(ev_){ var b=ev_.target.closest("[data-fg]"); if(b) firmaDetails(FT[Number(b.dataset.fg)]); };
@@ -2271,7 +2279,7 @@ function zeichneClub(c){
   var box=$("sicht-clubs"), fs=firmenVon(c.id), sp=spieleVon(c);
   var evs=D.events.filter(function(e){ return e.clubId===c.id; });
   var h='<button class="btn ghost klein" id="alleClubs" style="margin:-6px 0 6px -8px;display:inline-flex;align-items:center;gap:4px">'+
-      '<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>'+(S.clubTab==="firmen"?"Alle Betriebe":"Alle Clubs")+'</button>'+
+      '<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>'+(S.clubTab==="firmen"?"Alle Firmen":"Alle Clubs")+'</button>'+
     '<h2 style="font-size:22px">'+esc(c.name)+'</h2>'+
     '<dl class="kv eckdaten" style="margin:10px 0 12px">'+
       (c.liga?'<dt>Liga</dt><dd>'+esc(c.liga)+'</dd>':'')+
@@ -2369,6 +2377,13 @@ function betriebeAuftrag(branche){
   function zeigen(){ $("b_befehl").textContent=befehl(); }
   zeigen(); ["b_branche","b_region"].forEach(function(id){ $(id).oninput=zeigen; }); $("b_anz").onchange=$("b_event").onchange=zeigen;
   $("b_kopie").onclick=function(){ kopieren(befehl()); };
+}
+function zeichneBetriebe(){
+  var box=$("sicht-clubs");
+  fsModus("betriebe");
+  box.innerHTML='<h2 style="font-size:22px;margin-bottom:10px">Betriebe</h2>'+firmenSucheHtml();
+  if($("clubImport")) $("clubImport").onclick=clubImportFenster;
+  firmenSucheVerdrahten();
 }
 function clubAuftrag(name){
   fenster("Recherche-Auftrag",
@@ -2868,7 +2883,7 @@ function start(){
   $("einstBtn").onclick=einstellungen;
   $("neuBtn").onclick=$("neuBtn2").onclick=function(){ eventFormular(null); };
   alle(".sl-knopf[data-ziel]",function(b){ b.onclick=function(){ navGehen(b.dataset.ziel); }; });
-  alle(".ul-knopf",function(b){ b.onclick=function(){ fensterZu(); S.sicht=b.dataset.sicht; if(S.sicht==="clubs") S.clubId=null; zeichnen(); }; });
+  alle(".ul-knopf",function(b){ b.onclick=function(){ fensterZu(); navGehen(b.dataset.sicht); }; });
   document.addEventListener("visibilitychange",function(){ if(!document.hidden) abrufen(); });
   window.addEventListener("focus",abrufen);
   window.addEventListener("hashchange",function(){ if(/^#(einladung|passwort)=/.test(location.hash)) location.reload(); });
