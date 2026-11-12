@@ -81,6 +81,17 @@ main{max-width:940px;margin:0 auto;padding:16px 16px 96px}
 .btn.danger{color:var(--bad);border-color:var(--bad)}
 .btn.klein{min-height:40px;padding:8px 12px;font-size:13.5px}
 .knopfreihe{display:flex;gap:8px;flex-wrap:wrap}
+.heute-kopf{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.heute-kopf .btn{text-transform:none;letter-spacing:0}
+.anruf-wege{display:flex;flex-direction:column;gap:8px}
+.btn.gross{min-height:48px;display:flex;align-items:center;justify-content:center;gap:8px;text-decoration:none;font-size:15px}
+.btn.gross small{font-weight:500;opacity:.8}
+.btn.gruen{background:var(--ok);border-color:var(--ok);color:#fff}
+.btn.rot{background:var(--bad);border-color:var(--bad);color:#fff}
+.ergebnis{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.ergebnis .btn{min-height:48px}
+.wunsch{display:flex;align-items:center;gap:12px;flex-wrap:wrap;justify-content:space-between}
+.wunsch>div:first-child{flex:1;min-width:200px}
 .modus{display:inline-flex;background:var(--surface-2);border:1px solid var(--line);border-radius:var(--radius);padding:3px;gap:2px;max-width:100%;overflow-x:auto}
 .modus button{border:0;background:transparent;border-radius:calc(var(--radius) - 2px);padding:9px 14px;font-size:13.5px;font-weight:600;color:var(--ink-3);cursor:pointer;white-space:nowrap;min-height:40px}
 .modus button[aria-pressed="true"]{background:var(--surface);color:var(--accent-ink);box-shadow:0 1px 2px rgba(15,35,70,.12)}
@@ -324,7 +335,7 @@ body.gesperrt header.kopf, body.gesperrt main, body.gesperrt .untenleiste{displa
 (function(){
 "use strict";
 
-var VERSION = "2026-11-13-0004";
+var VERSION = "2026-11-13-0015";
 
 /* ---------------- Feste Listen ---------------- */
 var STATUS = [
@@ -813,14 +824,14 @@ function kapazitaet(e){
 function zeichneStart(){
   var box=$("sicht-start");
   var e=naechstesEvent();
-  var h='<div class="hallo"><h2>Netboard</h2><p>Die richtigen Gäste für jeden Netzwerkabend, mit Begründung.</p></div>';
+  var h='<div class="hallo"><h2>Netboard</h2><p>Die richtigen Gäste für jeden Netzwerkabend, mit Begründung.</p></div>'+heuteBlock();
   if(!D.events.length){
     h+='<div class="leer">Noch kein Event angelegt. Über <b>+ Event</b> unten legst du das erste an.'+
        (istAdmin()?'<div class="knopfreihe" style="justify-content:center;margin-top:12px"><button class="btn" id="beispielBtn">Beispiel ansehen</button></div>':'')+'</div>';
     h+=pflegeBlock();
     box.innerHTML=h;
     if($("beispielBtn")) $("beispielBtn").onclick=beispielLaden;
-    profilVerdrahten(box);
+    profilVerdrahten(box); heuteVerdrahten(box);
     return;
   }
   if(e){
@@ -851,7 +862,7 @@ function zeichneStart(){
   }
   h+=pflegeBlock();
   box.innerHTML=h;
-  profilVerdrahten(box);
+  profilVerdrahten(box); heuteVerdrahten(box);
   alle("[data-ev]",function(b){ b.onclick=function(){ eventOeffnen(b.dataset.ev,"kandidaten"); }; },box);
   alle("[data-geh]",function(b){ b.onclick=function(){
     var g=b.dataset.geh;
@@ -1337,6 +1348,168 @@ function kontaktEintragen(p,danach){
   };
 }
 
+/* ---------------- Heute: Aufgaben, Kontakt-Fenster, Recherche-Wünsche ----------------
+   Für die Person, die die Loge betreut. Wiedervorlage liegt als wv {datum, notiz, versuche}
+   an der Einladung (mit Event) oder an der Person (ohne Event). Wünsche liegen am Event: e.wuensche. */
+var TEXT_NACHFASS = "Guten Tag {name}, ich wollte kurz nachhaken wegen unserer Einladung für den {datum} ({anlass}). Passt es Ihnen? Ich würde mich über eine kurze Rückmeldung freuen.";
+var ENDSTATUS=["zugesagt","abgesagt","aussortiert","erschienen","nicht_erschienen"];
+function plusTage(n){ return ymd(new Date(Date.now()+n*86400000)); }
+function eingeladenSeit(x){
+  var v=(x.verlauf||[]).filter(function(s){ return s.status==="eingeladen"; }).pop();
+  return v ? Math.floor((Date.now()-new Date(v.zeit).getTime())/86400000) : null;
+}
+function nachfassText(p,e){
+  return TEXT_NACHFASS.replace(/\{name\}/g,p.name.replace(/\s*\(.*?\)\s*/g,"").trim()).replace(/\{datum\}/g,deDatumLang(e.datum))
+    .replace(/\{anlass\}/g,e.spiel||e.name||"unser Netzwerkabend");
+}
+/* Wer ist heute dran? Fällige Wiedervorlagen zuerst, dann Eingeladene ohne Antwort seit 5 Tagen */
+function aufgaben(){
+  var h=ymd(new Date()), l=[];
+  D.einladungen.forEach(function(x){
+    var e=ev(x.eventId); if(!e || e.datum<h || ENDSTATUS.indexOf(x.status)>=0) return;
+    if(x.wv && x.wv.datum){
+      if(x.wv.datum<=h){ var p=pers(x.personId); if(p) l.push({ p:p, e:e, rang:1, datum:x.wv.datum, text:x.wv.notiz||"Wiedervorlage" }); }
+      return;
+    }
+    if(x.status==="eingeladen"){
+      var t=eingeladenSeit(x);
+      if(t!==null && t>=5){ var p2=pers(x.personId); if(p2) l.push({ p:p2, e:e, rang:2, datum:"", text:"Eingeladen vor "+t+" Tagen, keine Antwort" }); }
+    }
+  });
+  D.personen.forEach(function(p){ if(p.wv && p.wv.datum && p.wv.datum<=h) l.push({ p:p, e:null, rang:1, datum:p.wv.datum, text:p.wv.notiz||"Wiedervorlage" }); });
+  return l.sort(function(a,b){ return a.rang-b.rang || (a.datum<b.datum?-1:a.datum>b.datum?1:0) || vergleich(a.p.name,b.p.name); });
+}
+function offeneWuensche(){
+  var l=[];
+  D.events.forEach(function(e){ (e.wuensche||[]).forEach(function(w){ if(!w.erledigt) l.push({ e:e, w:w }); }); });
+  return l.sort(function(a,b){ return a.w.datum<b.w.datum?-1:1; });
+}
+function heuteBlock(){
+  var h=ymd(new Date()), l=aufgaben(), sammel=[];
+  D.events.filter(function(e){ return e.datum>=h; }).sort(function(a,b){ return a.datum<b.datum?-1:1; }).forEach(function(e){
+    var xs=einlVon(e.id);
+    var aus=xs.filter(function(x){ return x.status==="ausgewaehlt"; }).length, vor=xs.filter(function(x){ return x.status==="vorgeschlagen"; }).length;
+    if(aus) sammel.push('<button class="karte" data-texte="'+esc(e.id)+'"><span style="min-width:0"><b>'+plural(aus,"Ausgewählte Person","Ausgewählte Personen")+' einladen</b><small>'+esc(e.name)+' · Texte liegen bereit</small></span><span class="chip akz">Einladen</span></button>');
+    if(vor) sammel.push('<button class="karte" data-vorschl="'+esc(e.id)+'"><span style="min-width:0"><b>'+plural(vor,"neuer Vorschlag","neue Vorschläge")+' prüfen</b><small>'+esc(e.name)+'</small></span><span class="chip">Prüfen</span></button>');
+  });
+  var zahl=S.heuteAlle ? l.length : Math.min(l.length,8);
+  var karten=l.slice(0,zahl).map(function(a,i){
+    return '<button class="karte" data-aufgabe="'+i+'"><span class="avatar">'+esc(initialen(a.p.name))+'</span><span style="min-width:0"><b>'+esc(a.p.name)+'</b>'+
+      '<small>'+esc(a.text)+'</small><small>'+esc(a.e?a.e.name+" · "+deDatum(a.e.datum):(a.p.firma||""))+'</small></span>'+
+      '<span class="chip '+(a.rang===1?'warn':'')+'">'+(a.rang===1?'Melden':'Nachfassen')+'</span></button>';
+  }).join("");
+  var ws=offeneWuensche(), wsSicht=istAdmin()?ws:ws.filter(function(x){ return ICH && x.w.vonId===ICH.id; });
+  var wh=wsSicht.length ? '<div class="sec-label">'+(istAdmin()?'Recherche-Wünsche':'Deine Recherche-Wünsche')+'</div><div class="liste">'+wsSicht.map(function(x){
+      return '<div class="box wunsch"><div><b>'+esc(x.w.text)+'</b><small class="hint" style="display:block">'+esc([x.w.anzahl?x.w.anzahl+" gesucht":"", x.e.name, x.w.von?"von "+x.w.von:"", seitText(x.w.datum)].filter(Boolean).join(" · "))+'</small></div>'+
+        (istAdmin()?'<div class="knopfreihe"><button class="btn klein primary" data-wkopie="'+esc(x.e.id+"|"+x.w.id)+'">Auftrag kopieren</button><button class="btn klein" data-werledigt="'+esc(x.e.id+"|"+x.w.id)+'">Erledigt</button></div>'
+          :'<span class="chip">Wartet auf Recherche</span>')+'</div>';
+    }).join("")+'</div>' : '';
+  return '<div class="sec-label heute-kopf"><span>Heute zu tun</span><button class="btn ghost klein" id="wunschBtn">Recherche-Wunsch</button></div>'+
+    ((l.length||sammel.length) ? '<div class="liste">'+karten+sammel.join("")+'</div>'+
+      (l.length>8?'<button class="btn ghost klein" id="heuteAlle" style="margin-top:6px">'+(S.heuteAlle?'Weniger zeigen':'Alle '+l.length+' zeigen')+'</button>':'')
+      : '<p class="okbox">Für heute ist nichts offen.</p>')+wh;
+}
+function heuteVerdrahten(box){
+  var l=aufgaben();
+  alle("[data-aufgabe]",function(b){ b.onclick=function(){ var a=l[Number(b.dataset.aufgabe)]; if(a) kontaktFenster(a.p,a.e); }; },box);
+  alle("[data-texte]",function(b){ b.onclick=function(){ einladungstexte(ev(b.dataset.texte)); }; },box);
+  alle("[data-vorschl]",function(b){ b.onclick=function(){ S.filter="vorschlaege"; eventOeffnen(b.dataset.vorschl,"kandidaten"); }; },box);
+  if($("heuteAlle")) $("heuteAlle").onclick=function(){ S.heuteAlle=!S.heuteAlle; zeichnen(); };
+  if($("wunschBtn")) $("wunschBtn").onclick=function(){ wunschFenster(null,""); };
+  function finde(s){ var t=s.split("|"), e=ev(t[0]); return e ? { e:e, w:(e.wuensche||[]).filter(function(w){ return w.id===t[1]; })[0] } : null; }
+  alle("[data-wkopie]",function(b){ b.onclick=function(){ var x=finde(b.dataset.wkopie); if(x&&x.w) kopieren(wunschBefehl(x.e,x.w)); }; },box);
+  alle("[data-werledigt]",function(b){ b.onclick=function(){ var x=finde(b.dataset.werledigt); if(!x||!x.w) return; x.w.erledigt=true; x.w.erledigtAm=ymd(new Date()); speicher.sichern(D); zeichnen(); toast("Wunsch erledigt."); }; },box);
+}
+
+/* Kontakt-Fenster: anrufen oder schreiben, danach mit einem Tipp das Ergebnis festhalten */
+function mobilNummer(w){ var d=telLink(w).slice(4); return /^\+491[5-7]/.test(d) ? d.slice(1) : ""; }
+function kontaktFenster(p,e,danach){
+  danach=danach||fensterZu;
+  var x=e?einl(e.id,p.id):null;
+  var tels=(p.kontaktwege||[]).filter(function(k){ return k.art==="Telefon" && k.wert; });
+  var mail=(p.kontaktwege||[]).filter(function(k){ return k.art==="E-Mail" && k.wert; })[0];
+  var formular=(p.kontaktwege||[]).filter(function(k){ return k.art!=="Telefon" && k.art!=="E-Mail" && k.wert; })[0];
+  var text=e ? (x&&x.status==="eingeladen" ? nachfassText(p,e) : textFuer(p,e,true)) : "";
+  var mobil=tels.map(function(k){ return mobilNummer(k.wert); }).filter(Boolean)[0];
+  var wv=(x&&x.wv)||(!e&&p.wv)||null;
+  var h='<div><b style="font-size:17px">'+esc(p.name)+'</b><div class="hint">'+esc([p.position,p.firma].filter(Boolean).join(" · "))+'</div></div>'+
+    (e?'<div class="hint">'+esc(e.name+" · "+deDatum(e.datum))+(x&&x.status?' · '+chip(x.status):'')+'</div>':'')+
+    (wv?'<p class="warnbox">Wiedervorlage '+esc(deDatum(wv.datum))+(wv.notiz?': '+esc(wv.notiz):'')+(wv.versuche>1?' ('+wv.versuche+' Versuche)':'')+'</p>':'')+
+    '<div class="anruf-wege">'+
+      tels.map(function(k){ return '<a class="btn primary gross" href="'+esc(telLink(k.wert))+'">Anrufen <span class="mono">'+esc(k.wert)+'</span>'+(k.typ?' <small>'+esc(k.typ)+'</small>':'')+'</a>'; }).join("")+
+      (mobil?'<a class="btn gross" target="_blank" rel="noopener" href="https://wa.me/'+esc(mobil)+(text?'?text='+encodeURIComponent(text):'')+'">WhatsApp</a>':'')+
+      (mail?'<a class="btn gross" href="mailto:'+esc(mail.wert)+(text?'?body='+encodeURIComponent(text):'')+'">E-Mail an '+esc(mail.wert)+'</a>':'')+
+      (formular?'<a class="btn gross" target="_blank" rel="noopener" href="'+esc(linkUrl(formular.wert)||"#")+'">'+esc(formular.art||"Kontaktformular")+' öffnen</a>':'')+
+      (!tels.length&&!mail&&!formular?'<p class="warnbox">Noch kein Kontaktweg. Im Profil unter Bearbeiten ergänzen oder als Recherche-Wunsch eintragen.</p>':'')+
+    '</div>'+
+    (text?'<details class="fs-filter"><summary>'+(x&&x.status==="eingeladen"?'Nachfass-Text':'Einladungstext')+'<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></summary>'+
+      '<div class="textkarte" style="margin-bottom:10px">'+esc(text)+'</div><button class="btn klein" id="kfText" style="margin-bottom:12px">Text kopieren</button></details>':'')+
+    '<div class="sec-label" style="margin:4px 0 0">Ergebnis</div>'+
+    '<div class="field"><label for="kfNotiz">Notiz, kurz und beruflich</label><textarea id="kfNotiz" rows="2" placeholder="z. B. Sekretariat, ab Montag wieder da"></textarea></div>'+
+    '<div class="ergebnis">'+
+      (e?'<button class="btn gruen" data-erg="zugesagt">Zugesagt</button><button class="btn rot" data-erg="abgesagt">Abgesagt</button>'+
+         (!x||["vorgeschlagen","ausgewaehlt",null,undefined].indexOf(x.status)>=0?'<button class="btn" data-erg="eingeladen">Einladung verschickt</button>':'')
+        :'<button class="btn gruen" data-erg="gesprochen">Gesprochen</button>')+
+      '<button class="btn" data-erg="nicht">Nicht erreicht</button><button class="btn" data-erg="spaeter">Später nochmal</button>'+
+    '</div>'+
+    '<div id="kfSpaeter" hidden class="two"><div class="field"><label for="kfDatum">Wann nochmal?</label><input id="kfDatum" type="date" class="mono" value="'+plusTage(7)+'"></div>'+
+      '<div class="field" style="justify-content:flex-end"><button class="btn primary" id="kfSpaeterOk">Wiedervorlage speichern</button></div></div>'+
+    (wv?'<button class="btn ghost klein" id="kfWvWeg" style="align-self:flex-start">Wiedervorlage löschen</button>':'');
+  fenster("Kontakt",h,'<button class="btn" id="kfProfil">Profil</button>');
+  var body=document.querySelector("#fenster .panel-body");
+  if($("kfText")) $("kfText").onclick=function(){ kopieren(text); };
+  $("kfProfil").onclick=function(){ profil(p.id,e); };
+  function notiz(){ return $("kfNotiz").value.trim(); }
+  function kontakt(art,was){ var n=notiz(); p.kontakte=(p.kontakte||[]).concat([{ datum:ymd(new Date()), art:art, notiz:[was,n].filter(Boolean).join(": ") }]); }
+  function ziel(){ if(e){ return x||(x=zurEvent(e.id,p.id,null)); } return p; }
+  function fertig(t){ speicher.sichern(D); zeichnen(); toast(t); danach(); }
+  if($("kfWvWeg")) $("kfWvWeg").onclick=function(){ ziel().wv=null; fertig("Wiedervorlage gelöscht."); };
+  $("kfSpaeterOk").onclick=function(){
+    if(!$("kfDatum").value){ toast("Bitte ein Datum wählen."); return; }
+    var z=ziel(); z.wv={ datum:$("kfDatum").value, notiz:notiz()||"Nochmal melden", versuche:(z.wv&&z.wv.versuche)||0 };
+    fertig("Wiedervorlage am "+deDatum(z.wv.datum)+".");
+  };
+  alle("[data-erg]",function(b){ b.onclick=function(){
+    var erg=b.dataset.erg, z;
+    if(erg==="spaeter"){ $("kfSpaeter").hidden=false; $("kfDatum").focus(); return; }
+    if(erg==="nicht"){
+      z=ziel(); var vs=((z.wv&&z.wv.versuche)||0)+1;
+      z.wv={ datum:plusTage(2), notiz:"Nicht erreicht"+(notiz()?": "+notiz():""), versuche:vs };
+      return fertig("In 2 Tagen wieder auf der Liste.");
+    }
+    if(erg==="gesprochen"){ kontakt("Anruf",""); p.wv=null; return fertig("Kontakt eingetragen."); }
+    z=ziel(); statusSetzen(z,erg); z.wv=null;
+    if(erg==="zugesagt") kontakt("Anruf","Zusage für "+e.name);
+    else if(erg==="abgesagt") kontakt("Anruf","Absage für "+e.name);
+    else kontakt("Nachricht","Einladung für "+e.name);
+    fertig(erg==="zugesagt"?"Zusage eingetragen.":erg==="abgesagt"?"Absage eingetragen.":"Als eingeladen markiert.");
+  }; },body);
+}
+
+/* Recherche-Wunsch: wer selbst kein Claude bedient, trägt hier ein, was gesucht werden soll */
+function wunschBefehl(e,w){
+  return w.befehl || ["/netboard "+w.text+" "+(w.anzahl||15), "Region: "+(e.region||"NRW, Schwerpunkt Ruhrgebiet"), "Event: "+(e.name||e.thema)].join("\n");
+}
+function wunschFenster(e0,text,befehl){
+  var h=ymd(new Date());
+  var evs=D.events.filter(function(e){ return e.datum>=h; }).sort(function(a,b){ return a.datum<b.datum?-1:1; });
+  if(!evs.length) evs=D.events.slice();
+  if(!evs.length){ toast("Erst ein Event anlegen."); return; }
+  var e0id=(e0&&e0.id)||evs[0].id;
+  fenster("Recherche-Wunsch",
+    '<p style="margin:0">Was soll gesucht werden? Der Admin bekommt den Wunsch auf seiner Startseite und spielt das Ergebnis ins Event ein.</p>'+
+    '<div class="field"><label for="wText">Wer oder was wird gesucht?</label><textarea id="wText" rows="3" placeholder="z. B. Autohäuser im Ruhrgebiet, Inhaber oder Geschäftsführer">'+esc(text||"")+'</textarea></div>'+
+    '<div class="two"><div class="field"><label for="wAnz">Wie viele?</label><select id="wAnz"><option>10</option><option selected>15</option><option>20</option><option>30</option></select></div>'+
+    '<div class="field"><label for="wEvent">Für Event</label><select id="wEvent">'+evs.map(function(e){ return '<option value="'+esc(e.id)+'"'+(e.id===e0id?' selected':'')+'>'+esc(e.name||e.thema||"Event")+'</option>'; }).join("")+'</select></div></div>',
+    '<button class="btn primary" id="wSpeichern">Wunsch speichern</button>');
+  $("wSpeichern").onclick=function(){
+    var t=$("wText").value.trim(); if(!t){ toast("Bitte kurz beschreiben, was gesucht wird."); return; }
+    var e=ev($("wEvent").value);
+    e.wuensche=(e.wuensche||[]).concat([{ id:uid(), text:t, anzahl:Number($("wAnz").value), von:ICH?(ICH.name||ICH.email):"", vonId:ICH?ICH.id:"", datum:ymd(new Date()), erledigt:false, befehl:befehl||"" }]);
+    speicher.sichern(D); zeichnen(); fensterZu(); toast("Wunsch gespeichert.");
+  };
+}
+
 function personKarte(p){
   var b=bilanz(p), k=letzterKontakt(p);
   var marken=[wichtigChip(p), erreichbar(p)?'<span class="chip ok">erreichbar</span>':'', b.wertvoll?'<span class="chip ok">wertvoll</span>':'', b.nichtErneut?'<span class="chip bad">nicht erneut</span>':''].join("");
@@ -1625,11 +1798,12 @@ function profil(id,e){
   h+='<div><div class="sec-label" style="margin-top:0">Kontakte</div>'+
     (kl.length?kl.slice(0,5).map(function(k){ return '<div class="hint">'+esc(deDatum(k.datum)+" · "+k.art+(k.notiz?": "+k.notiz:""))+'</div>'; }).join(""):'<p class="hint" style="margin:0">Noch kein Kontakt eingetragen.</p>')+
     '<button class="btn klein" id="pKontakt" style="margin-top:8px">Kontakt eintragen</button></div>';
-  var fuss='<button class="btn" id="pBearb">Bearbeiten</button><button class="btn" id="pSteck">Steckbrief</button>';
+  var fuss='<button class="btn" id="pKontaktF">Kontaktieren</button><button class="btn" id="pBearb">Bearbeiten</button><button class="btn" id="pSteck">Steckbrief</button>';
   if(e && x && x.status==="vorgeschlagen") fuss+='<button class="btn primary" id="pWahl">Auswählen</button>';
   if(e && x && x.status!=="vorgeschlagen" && x.status!=="aussortiert") fuss+='<button class="btn primary" id="pText">Einladungstext</button>';
   fenster("Profil",h,fuss);
   $("pBearb").onclick=function(){ personFormular(p,e); };
+  $("pKontaktF").onclick=function(){ kontaktFenster(p,e,function(){ profil(id,e); }); };
   $("pSteck").onclick=function(){ steckbrief(p,e); };
   kopierKnoepfe(document.querySelector(".panel-body"));
   $("pKontakt").onclick=function(){ kontaktEintragen(p,function(){ profil(id,e); }); };
@@ -1936,8 +2110,9 @@ function sucheFenster(e){
         '<li>Claude legt eine Datei in <span class="mono">Downloads/netboard/recherche</span> ab.</li>'+
         '<li>Hier auf <b>Datei importieren</b> tippen und die Datei wählen.</li></ol>'+
       '',
-      '<button class="btn primary" id="zuImport">Datei importieren</button>');
+      '<button class="btn" id="aWunsch">Als Wunsch speichern</button><button class="btn primary" id="zuImport">Datei importieren</button>');
     $("zuImport").onclick=function(){ importFenster(e); };
+    $("aWunsch").onclick=function(){ wunschFenster(e,(e.thema||"")+((e.typen||[]).length?": "+e.typen.join(", "):""),auftragBefehl(e,$("a_anz").value)); };
     var befehl=function(){ $("a_befehl").textContent=auftragBefehl(e,$("a_anz").value); };
     befehl(); $("a_anz").onchange=befehl;
     $("a_kopie").onclick=function(){ kopieren(auftragBefehl(e,$("a_anz").value)); };
@@ -2366,7 +2541,8 @@ function betriebeAuftrag(branche){
     '<ol style="margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px">'+
       '<li>Auftrag kopieren und in Claude Code einfügen.</li>'+
       '<li>Claude sucht und spielt das Ergebnis direkt ins Event ein.</li>'+
-      '<li>Nach spätestens 30 Sekunden stehen die Betriebe in der App.</li></ol>');
+      '<li>Nach spätestens 30 Sekunden stehen die Betriebe in der App.</li></ol>',
+    '<button class="btn" id="bWunsch">Als Wunsch speichern</button>');
   function befehl(){
     var e=ev($("b_event").value), br=$("b_branche").value.trim()||"<Branche>";
     return ["/netboard "+br+" "+$("b_anz").value,
@@ -2377,6 +2553,7 @@ function betriebeAuftrag(branche){
   function zeigen(){ $("b_befehl").textContent=befehl(); }
   zeigen(); ["b_branche","b_region"].forEach(function(id){ $(id).oninput=zeigen; }); $("b_anz").onchange=$("b_event").onchange=zeigen;
   $("b_kopie").onclick=function(){ kopieren(befehl()); };
+  $("bWunsch").onclick=function(){ wunschFenster(ev($("b_event").value),"Betriebe der Branche "+($("b_branche").value.trim()||"?")+", Inhaber oder Geschäftsführer",befehl()); };
 }
 function zeichneBetriebe(){
   var box=$("sicht-clubs");
